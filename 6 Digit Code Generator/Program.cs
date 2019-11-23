@@ -1,15 +1,17 @@
-﻿using _6_Digit_Code_Generator;
-using System;
+﻿using System;
 using System.IO;
 
-class Program
+namespace _6_Digit_Code_Generator
 {
-
-    static void Main(string[] args)
+    class Program
     {
+
+        static void Main(string[] args)
+        {
             CodeGenerator codeGenerator = new CodeGenerator();
-            Console.WriteLine(Convert.ToString(codeGenerator.DigitalCode(40,10)));
+            Console.WriteLine(Convert.ToString(codeGenerator.DigitalCode(40, 10)));
             Console.ReadLine();
+        }
+
     }
-  
 }
