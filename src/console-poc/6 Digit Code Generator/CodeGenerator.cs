@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.IO;
 using System.Text;
 
@@ -7,6 +8,13 @@ namespace _6_Digit_Code_Generator
 {
     class CodeGenerator
     {
+        public CodeGenerator(string connectionString)
+        {
+            ConnectionString = connectionString;
+        }
+
+        public string ConnectionString { get; set; }
+
         public string alphabet { get; } = "2BCD3FGH4JKLMN5PQRST6VWXYZ";
 
         public void CreateDigitalCode(int amount)
@@ -14,7 +22,6 @@ namespace _6_Digit_Code_Generator
             var sql = new SQL("Data Source=.; Initial Catalog=Random-Code; Integrated Security=SSPI;");
 
             long offset = sql.GetSeedValue();
-
 
             if (offset % 4 != 0)
             {
