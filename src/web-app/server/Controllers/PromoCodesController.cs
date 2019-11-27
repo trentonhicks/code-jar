@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace CodeJar.WebApp.Controllers
@@ -19,9 +21,22 @@ namespace CodeJar.WebApp.Controllers
         }
 
         [HttpGet]
-        public IEnumerable<string> Get()
+        public List<Code> Get()
         {
-            return new[] { "AAAAAA", "BBBBBB", "CCCCCC" };
+            // Get the connection string from the appsetttings.json file
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+
+            IConfigurationRoot configuration = builder.Build();
+            var connectionString = configuration.GetConnectionString("Storage");
+
+            var sql = new SQL(connectionString);
+
+            // Get the list of codes from the database
+            var codes = sql.GetCodes();
+
+            return codes;
         }
     }
 }
