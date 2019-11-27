@@ -3,10 +3,6 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
-# Parcel
-.cache/
-dist
-
 # User-specific files
 *.suo
 *.user
@@ -332,3 +328,7 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
+
+# Parcel
+.cache/
+dist/
