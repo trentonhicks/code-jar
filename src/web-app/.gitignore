@@ -4,7 +4,7 @@
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
 # Parcel
-.cache
+.cache/
 dist
 
 # User-specific files
