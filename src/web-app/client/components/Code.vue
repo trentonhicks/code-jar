@@ -2,21 +2,21 @@
     
     tr
         //- Code
-        td {{ code.text }}
+        td {{ code.stringValue }}
 
         //- Status
         td
-            span.badge.badge-primary(v-if='code.isActive') Active
-            span.badge.badge-secondary(v-else='') Inactive
+            span.badge.badge-primary(v-if='code.state === "Active"') Active
+            span.badge.badge-secondary(v-else) Inactive
 
         //- Expiration
-        td {{ code.expiration }}
+        td {{ code.dateExpires }}
 
         //- Deactivate
         td
             button.btn.btn-sm(
-                v-bind:disabled='!code.isActive'
-                v-bind:class="{'btn-outline-danger': code.isActive, 'btn-secondary': !code.isActive}"
+                v-bind:disabled='code.state !== "Active"'
+                v-bind:class="{'btn-outline-danger': code.state === 'Active', 'btn-secondary': code.state !== 'Active'}"
                 v-on:click='DeactivateCode()') Deactivate
 
 </template>
@@ -33,8 +33,7 @@ module.exports = {
     props: ['code'],
     methods: {
         DeactivateCode() {
-            this.code.isActive = false;
-            console.log(`Deactivate code ${this.code.id}`);
+            this.code.state = 'Inactive';
         }
     },
 }

@@ -30,6 +30,7 @@
 </template>
 
 <script>
+import { HTTP } from '../js/http-common';
 
 module.exports = {
     name: 'Home',
@@ -38,35 +39,40 @@ module.exports = {
             enteredCode: '',
             submitted: false,
             success: false,
-            codes: [
-                { id: 0, text: 'af6356', expiration: 'Date', isActive: true },
-                { id: 1, text: 'bf6356', expiration: 'Date', isActive: false },
-                { id: 2, text: 'cf6356', expiration: 'Date', isActive: true },
-                { id: 3, text: 'df6356', expiration: 'Date', isActive: true },
-            ],
+            codes: [],
+            errors: []
         }
+    },
+    created() {
+        HTTP.get(`codes`)
+        .then(response => {
+            this.codes = response.data;
+        })
+        .catch(e => {
+            this.errors.push(e)
+        })
     },
     methods: {
         RedeemCode() {
-            const index = this.codes.findIndex(code => code.text == this.enteredCode);
+            const index = this.codes.findIndex(code => code.stringValue == this.enteredCode);
             this.submitted = true;
 
             // Check if code exists
             if(index !== -1) {
 
                 // Check if the code is active
-                if(this.codes[index].isActive) {
+                if(this.codes[index].state === "Active") {
 
                     // Redeem code
                     this.success = true;
 
                     // Set code to inactive
-                    this.$set(this.codes[index], 'isActive', false);
+                    this.$set(this.codes[index], 'state', "Inactive");
                 }
 
                 // If code isn't active, display error message
                 else {
-                    console.log(`Code with id ${this.codes[index].id} is not active`);
+                    console.log(`Code ${this.codes[index].stringValue} is not active`);
                 }
             }
 
