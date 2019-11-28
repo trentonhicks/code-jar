@@ -14,22 +14,18 @@ namespace CodeJar.WebApp.Controllers
     public class PromoCodesController : ControllerBase
     {
         private readonly ILogger<PromoCodesController> _logger;
+        private readonly IConfiguration _config;
 
-        public PromoCodesController(ILogger<PromoCodesController> logger)
+        public PromoCodesController(ILogger<PromoCodesController> logger, IConfiguration config)
         {
             _logger = logger;
+            _config = config;
         }
 
         [HttpGet]
         public List<Code> Get()
         {
-            // Get the connection string from the appsetttings.json file
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-
-            IConfigurationRoot configuration = builder.Build();
-            var connectionString = configuration.GetConnectionString("Storage");
+            var connectionString = _config.GetConnectionString("Storage");
 
             var sql = new SQL(connectionString);
 
