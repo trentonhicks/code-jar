@@ -43,7 +43,7 @@ import Code from './Code';
         data: function() {
             return {
                 codes: [],
-                numberOfCodes: 0
+                numberOfCodes: 3
             }
         },
         components: {
@@ -55,9 +55,9 @@ import Code from './Code';
                     axios({
                         method: 'post',
                         url: 'http://localhost:5000/codes',
-                        data: { count: 5 },
+                        data: this.numberOfCodes,
                         headers: {
-                            'Content-Type': 'application/json',
+                            'Content-Type': 'application/json'
                         }
                     }).then(response => {
                         console.log(response.data);

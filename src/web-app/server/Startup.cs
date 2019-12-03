@@ -20,7 +20,7 @@ namespace CodeJar.WebApp
             Configuration = configuration;
         }
 
-        readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+        readonly string MyAllowSpecificOrigins = "Policy";
 
         public IConfiguration Configuration { get; }
 
@@ -29,11 +29,12 @@ namespace CodeJar.WebApp
         {
             services.AddCors(options =>
             {
-                options.AddPolicy(MyAllowSpecificOrigins,
-                UriBuilder => 
-                {
-                    UriBuilder.WithOrigins("http://localhost:1234");
-                });
+                options.AddPolicy("Policy", builder => builder
+                    .WithOrigins("http://localhost:5002")
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials()
+                );
             });
 
             services.AddControllers();

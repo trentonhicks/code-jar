@@ -36,9 +36,9 @@ namespace CodeJar.WebApp.Controllers
         }
 
         [HttpPost]
-        public string Post([FromBody] int count)
+        public string Post([FromBody] int numberOfCodes)
         {
-            return count.ToString();
+            return numberOfCodes.ToString();
         }
     }
 }
