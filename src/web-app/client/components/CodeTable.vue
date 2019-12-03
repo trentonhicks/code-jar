@@ -36,6 +36,7 @@
 <script>
 
 import { HTTP } from '../js/http-common';
+import axios from 'axios';
 import Code from './Code';
 
     module.exports = {
@@ -50,10 +51,21 @@ import Code from './Code';
         },
         methods: {
             GenerateCodes() {
-                for(var i = 0; i < this.numberOfCodes; i++)
-                {
-                    this.codes.push({ id: this.codes.length + 1, text: `c863b${i}`, expiration: 'Date', isActive: true });
+                if(this.numberOfCodes > 0) {
+                    axios({
+                        method: 'post',
+                        url: 'http://localhost:5000/codes',
+                        data: { count: 5 },
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    }).then(response => {
+                        console.log(response.data);
+                    }).catch(e => {
+                        this.errors.push(e);
+                    });
                 }
+
                 this.numberOfCodes = 0;
             }
         },

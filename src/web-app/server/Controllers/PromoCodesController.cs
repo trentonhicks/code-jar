@@ -34,5 +34,11 @@ namespace CodeJar.WebApp.Controllers
 
             return codes;
         }
+
+        [HttpPost]
+        public string Post([FromBody] int count)
+        {
+            return count.ToString();
+        }
     }
 }
