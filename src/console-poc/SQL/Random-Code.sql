@@ -3,12 +3,6 @@ GO
 
 /****** Object:  Database [Random-Code]    Script Date: 11/22/2019 8:43:22 PM ******/
 CREATE DATABASE [Random-Code]
- CONTAINMENT = NONE
- ON  PRIMARY 
-( NAME = N'Random-Code', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL14.MSSQLSERVER\MSSQL\DATA\Random-Code.mdf' , SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
- LOG ON 
-( NAME = N'Random-Code_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL14.MSSQLSERVER\MSSQL\DATA\Random-Code_log.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
-GO
 
 IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
 begin
