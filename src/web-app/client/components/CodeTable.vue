@@ -80,7 +80,7 @@ import Code from './Code';
         },
         created() {
             this.GetCodes();
-        }
+        },
     }
 
 </script>

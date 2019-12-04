@@ -23,10 +23,16 @@
                         button.btn.btn-primary.btn-block(type="submit") Redeem code
 
                     div(v-show="submitted").mt-3
-                        img(v-if="success" src="https://media2.giphy.com/media/c4rB7DMXKgktG/giphy.gif?cid=790b7611f644663d62bcffedc8e322ae952375a74900b8ee&rid=giphy.gif" style="width:100%;")
-                        img(v-else src="https://media1.giphy.com/media/3ornk64Apg6Ip97m5W/giphy.gif?cid=790b7611b464b33152d7ac6f7a62ee15360ec11c6a9e70d2&rid=giphy.gif" style="width:100%;")
 
-
+                        div(v-if="success")
+                            img(src="https://media2.giphy.com/media/c4rB7DMXKgktG/giphy.gif?cid=790b7611f644663d62bcffedc8e322ae952375a74900b8ee&rid=giphy.gif" style="width:100%;")
+                            .alert.alert-success {{ successMsg }}
+                        div(v-else)    
+                            img(src="https://media1.giphy.com/media/3ornk64Apg6Ip97m5W/giphy.gif?cid=790b7611b464b33152d7ac6f7a62ee15360ec11c6a9e70d2&rid=giphy.gif" style="width:100%;")
+                            .alert.alert-danger {{ errorMsg }}
+                        
+                        
+                        
 </template>
 
 <script>
@@ -41,7 +47,8 @@ module.exports = {
             submitted: false,
             success: false,
             codes: [],
-            errors: []
+            successMsg: 'Your code has been redeemed!',
+            errorMsg: 'Your code sucks!'
         }
     },
     created() {
@@ -49,7 +56,7 @@ module.exports = {
     },
     methods: {
         RedeemCode() {
-            const index = this.codes.findIndex(code => code.stringValue == this.enteredCode);
+            var index = this.codes.findIndex(code => code.stringValue == this.enteredCode);
             this.submitted = true;
 
             // Check if code exists
@@ -76,15 +83,17 @@ module.exports = {
                     });
                 }
 
-                // If code isn't active, display error message
+                // Not active
                 else {
-                    console.log(`Code ${this.codes[index].stringValue} is not active`);
+                    this.success = false;
+                    this.errorMsg = 'Codes already taken!';
                 }
             }
 
-            // If code doesn't exist, display error message
+            // Doesn't exist
             else {
-                console.log("Code doesn't exist");
+                this.success = false;
+                this.errorMsg = "Doesn't exist";
             }
         },
         GetCodes() {

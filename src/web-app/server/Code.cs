@@ -12,5 +12,6 @@ namespace CodeJar.WebApp
         public string State { get; set; }
         public DateTime DateActive { get; set; }
         public DateTime DateExpires { get; set; }
+        public Boolean IsChecked { get; set; } = false;
     }
 }

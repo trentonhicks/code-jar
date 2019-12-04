@@ -46,7 +46,7 @@ namespace CodeJar.WebApp.Controllers
             cGenerate.CreateDigitalCode(numberOfCodes);
 
         }
-        
+
         //Set code status to inactive
         [HttpDelete]
         public void Delete([FromBody]int codeID)
