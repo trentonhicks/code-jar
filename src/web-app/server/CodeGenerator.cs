@@ -29,7 +29,7 @@ namespace CodeJar.WebApp
             }
 
 
-            string filePath = @"C:\git\gatheraround\BitFile.bin";
+            string filePath = @"C:\Users\Trenton Hicks\Documents\CodeFlip\Projects\code-jar\code-jar\src\web-app\Binary.bin";
 
             using (BinaryReader reader = new BinaryReader(File.Open(filePath, FileMode.Open)))
             {

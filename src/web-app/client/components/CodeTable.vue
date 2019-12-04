@@ -43,7 +43,7 @@ import Code from './Code';
         data: function() {
             return {
                 codes: [],
-                numberOfCodes: 3
+                numberOfCodes: 0
             }
         },
         components: {
@@ -60,23 +60,26 @@ import Code from './Code';
                             'Content-Type': 'application/json'
                         }
                     }).then(response => {
-                        console.log(response.data);
+                        this.GetCodes();
                     }).catch(e => {
                         this.errors.push(e);
                     });
                 }
 
                 this.numberOfCodes = 0;
+            },
+            GetCodes() {
+                HTTP.get(`codes`)
+                .then(response => {
+                    this.codes = response.data;
+                })
+                .catch(e => {
+                    this.errors.push(e)
+                });
             }
         },
         created() {
-            HTTP.get(`codes`)
-            .then(response => {
-                this.codes = response.data;
-            })
-            .catch(e => {
-                this.errors.push(e)
-            });
+            this.GetCodes();
         }
     }
 

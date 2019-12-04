@@ -120,5 +120,37 @@ namespace CodeJar.WebApp
             // Return the list of codes
             return codes;
         }
+
+        public void InactiveStatus(int codeID)
+        {
+            Connection.Open();
+
+            using (var command = Connection.CreateCommand())
+            {
+                command.CommandText = @"UPDATE [6 Digit Code] SET [State] = 'Inactive' WHERE ID = @codeID";
+
+                command.Parameters.AddWithValue("@codeID", codeID);
+
+                command.ExecuteNonQuery();
+            }
+
+            Connection.Close();
+        }
+
+        public void RedeemedStatus(int codeID)
+        {
+            Connection.Open();
+
+            using (var command = Connection.CreateCommand())
+            {
+                command.CommandText = @"UPDATE [6 Digit Code] SET [State] = 'Redeemed' WHERE ID = @codeID";
+
+                command.Parameters.AddWithValue("@codeID", codeID);
+
+                command.ExecuteNonQuery();
+            }
+
+            Connection.Close();
+        }
     }
 }

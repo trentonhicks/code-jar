@@ -36,9 +36,25 @@ namespace CodeJar.WebApp.Controllers
         }
 
         [HttpPost]
-        public string Post([FromBody] int numberOfCodes)
+        public void Post([FromBody] int numberOfCodes)
         {
-            return numberOfCodes.ToString();
+            var connectionString = _config.GetConnectionString("Storage");
+
+            var cGenerate = new CodeGenerator(connectionString);
+
+            //Creates n number of codes and stores them in DB
+            cGenerate.CreateDigitalCode(numberOfCodes);
+
+        }
+        
+        //Set code status to inactive
+        [HttpDelete]
+        public void Delete([FromBody]int codeID)
+        {
+           var connectionString = _config.GetConnectionString("Storage");
+            var sql = new SQL(connectionString);
+
+            sql.InactiveStatus(codeID);
         }
     }
 }

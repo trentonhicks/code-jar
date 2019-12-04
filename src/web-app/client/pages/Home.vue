@@ -31,6 +31,7 @@
 
 <script>
 import { HTTP } from '../js/http-common';
+import axios from 'axios';
 
 module.exports = {
     name: 'Home',
@@ -44,13 +45,7 @@ module.exports = {
         }
     },
     created() {
-        HTTP.get(`codes`)
-        .then(response => {
-            this.codes = response.data;
-        })
-        .catch(e => {
-            this.errors.push(e)
-        })
+        this.GetCodes();
     },
     methods: {
         RedeemCode() {
@@ -67,7 +62,18 @@ module.exports = {
                     this.success = true;
 
                     // Set code to inactive
-                    this.$set(this.codes[index], 'state', "Inactive");
+                    axios({
+                        method: 'post',
+                        url: 'http://localhost:5000/redeem-code',
+                        data: this.codes[index].id,
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }).then(response => {
+                        // Success
+                    }).catch(e => {
+                        // Error
+                    });
                 }
 
                 // If code isn't active, display error message
@@ -80,6 +86,15 @@ module.exports = {
             else {
                 console.log("Code doesn't exist");
             }
+        },
+        GetCodes() {
+            HTTP.get(`codes`)
+            .then(response => {
+                this.codes = response.data;
+            })
+            .catch(e => {
+                this.errors.push(e)
+            });
         },
     }
 }

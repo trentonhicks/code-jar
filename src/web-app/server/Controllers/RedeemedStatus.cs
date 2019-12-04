@@ -10,28 +10,25 @@ using Microsoft.Extensions.Logging;
 namespace CodeJar.WebApp.Controllers
 {
     [ApiController]
-    [Route("generatedcodes")]
-    public class GenerateCodes : ControllerBase
+    [Route("redeem-code")]
+    public class RedeemdedStatus : ControllerBase
     {
-        private readonly ILogger<GenerateCodes> _logger;
+        private readonly ILogger<RedeemdedStatus> _logger;
         private readonly IConfiguration _config;
 
-        public GenerateCodes(ILogger<GenerateCodes> logger, IConfiguration config)
+        public RedeemdedStatus(ILogger<RedeemdedStatus> logger, IConfiguration config)
         {
             _logger = logger;
             _config = config;
         }
 
-        [HttpGet]
-        public void Get(int amount)
+        [HttpPost]
+        public void Post([FromBody] int codeID)
         {
             var connectionString = _config.GetConnectionString("Storage");
+            var sql = new SQL(connectionString);
 
-            var generateCodes = new CodeGenerator(connectionString);
-
-            // Creates Codes and stores them into the database
-            generateCodes.CreateDigitalCode(amount);
-
+            sql.RedeemedStatus(codeID);
         }
     }
 }
