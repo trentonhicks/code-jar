@@ -12,6 +12,9 @@
                 label.sr-only(for='numberOfCodes') Number of codes
                 input#numberOfCodes.form-control.form-control-sm.mr-sm-2.ml-auto(v-model='numberOfCodes' type='number' min="0" max="1000" placeholder='Number of codes')
                 button.btn.btn-sm.btn-primary(type='submit') Generate Codes
+            form.form-inline
+                label.sr-only(for='searchCode') Search for Codes 
+                input#searchCode.form-control.form-control-sm.mr-sm-2.ml-auto(v-model='searchCodeVal' type='text' placeholder='Search codes')
 
         .card-body
             .table-responsive
@@ -29,7 +32,7 @@
                             th Expiration
                             th Deactivate
                     tbody
-                        Code(v-for='code in codes' :code='code' :key='code.id')
+                        Code(v-for='code in filteredCodes' :code='code' :key='code.id')
 
 </template>
 
@@ -43,7 +46,9 @@ import Code from './Code';
         data: function() {
             return {
                 codes: [],
-                numberOfCodes: 0
+                numberOfCodes: 0,
+                searchCodeVal: '',
+                filteredCodes: []
             }
         },
         components: {
@@ -72,10 +77,16 @@ import Code from './Code';
                 HTTP.get(`codes`)
                 .then(response => {
                     this.codes = response.data;
+                    this.filteredCodes = this.codes;
                 })
                 .catch(e => {
                     this.errors.push(e)
                 });
+            }
+        },
+        watch: {
+            searchCodeVal: function(val) {
+                this.filteredCodes = this.codes.filter(code => code.stringValue.includes(val));
             }
         },
         created() {
