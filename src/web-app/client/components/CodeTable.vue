@@ -98,7 +98,7 @@ import Code from './Code';
         },
         computed: {
             searchQuery() {
-                return [this.stringValue, this.searchSelect];
+                return [this.stringValue, this.state];
             },
         },
         watch: {
