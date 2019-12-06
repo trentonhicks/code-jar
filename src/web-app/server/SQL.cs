@@ -15,7 +15,7 @@ namespace CodeJar.WebApp
         }
 
         // SQL connection string
-        public static SqlConnection Connection { get; set; }
+        public SqlConnection Connection { get; set; }
 
         /// <summary>
         /// Stores codes in the database
