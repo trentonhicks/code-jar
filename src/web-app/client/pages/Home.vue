@@ -51,11 +51,11 @@ module.exports = {
             errorMsg: 'Your code sucks!'
         }
     },
-    created() {
-        this.GetCodes();
-    },
     methods: {
         RedeemCode() {
+            
+            // Get the latest codes
+            this.GetCodes();
             var index = this.codes.findIndex(code => code.stringValue == this.enteredCode);
             this.submitted = true;
 
@@ -93,7 +93,7 @@ module.exports = {
             // Doesn't exist
             else {
                 this.success = false;
-                this.errorMsg = "Doesn't exist";
+                this.errorMsg = "Code doesn't exist";
             }
         },
         GetCodes() {
