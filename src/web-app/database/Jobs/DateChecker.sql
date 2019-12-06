@@ -23,7 +23,7 @@ EXEC @ReturnCode =  msdb.dbo.sp_add_job @job_name=N'check_expired_codes',
 		@delete_level=0, 
 		@description=N'Runs at 12:00am to check if codes have expired and then changes the value of the state column to Expired when codes have expired.', 
 		@category_name=N'[Uncategorized (Local)]', 
-		@owner_login_name=N'LAPTOP-1V7Q5CKP\Trenton Hicks', @job_id = @jobId OUTPUT
+		@owner_login_name=N'NULL', @job_id = @jobId OUTPUT
 IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
 /****** Object:  Step [CompareDates]    Script Date: 12/5/2019 7:45:18 AM ******/
 EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'CompareDates', 
