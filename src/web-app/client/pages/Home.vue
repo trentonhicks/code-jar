@@ -55,6 +55,7 @@ module.exports = {
             // Get the latest codes
             this.GetCodes();
             var index = this.codes.findIndex(code => code.stringValue == this.enteredCode);
+            console.log(index);
             this.submitted = true;
 
             // Check if code exists
@@ -103,8 +104,9 @@ module.exports = {
                 this.errors.push(e)
             });
         },
-       
-
+    },
+    created() {
+        this.GetCodes();
     }
 }
 </script>

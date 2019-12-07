@@ -8,18 +8,20 @@ namespace CodeJar.WebApp
 {
     class CodeGenerator
     {
-        public CodeGenerator(string connectionString)
+        public CodeGenerator(string connectionString, string FilePath)
         {
             ConnectionString = connectionString;
+
+            filePath = FilePath;
         }
 
         public string ConnectionString { get; set; }
 
-        public string alphabet { get; } = "2BCD3FGH4JKLMN5PQRST6VWXYZ";
+        public string filePath {get; set;}
 
         public void CreateDigitalCode(int amount)
         {
-            var sql = new SQL("Data Source=.; Initial Catalog=Random-Code; Integrated Security=SSPI;");
+            var sql = new SQL(ConnectionString);
 
             long offset = sql.GetOffset();
 
@@ -27,9 +29,6 @@ namespace CodeJar.WebApp
             {
                 throw new ArgumentException("Offset must be divisible by 4");
             }
-
-
-            string filePath = @"C:\Users\Trenton Hicks\Documents\CodeFlip\Projects\code-jar\code-jar\src\web-app\Binary.bin";
 
             using (BinaryReader reader = new BinaryReader(File.Open(filePath, FileMode.Open)))
             {

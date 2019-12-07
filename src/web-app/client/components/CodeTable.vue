@@ -28,8 +28,6 @@
            
 
             .table-responsive
-               button(type="button" class="btn btn-secondary") Previous
-               button(type="button" class="btn btn-secondary") Next
                 table.table.table-bordered(width='100%' cellspacing='0')
                     thead
                         tr
@@ -45,11 +43,13 @@
                             th Deactivate
 
                     tbody
+                        Code(v-for='code in paginatedData' :code='code' :key='code.id')
 
-                       
-                
-                        Code(v-for='code in filteredCodes' :code='code' :key='code.id')
-
+                div(class="btn-group" role="group" aria-label="Basic example")
+                        button(v-on:click="prevPage" :disabled="pageNumber==0" class="btn btn-secondary") Previous
+                        button(v-on:click="nextPage" :disabled="pageNumber >= pageCount -1" class="btn btn-secondary") Next
+               
+</div>
 </template>
 
 <script>
@@ -67,6 +67,13 @@ import Code from './Code';
                 state: "Select status",
                 filteredCodes: [],
                 pageNumber: 0
+            }
+        },
+        props:{
+            size: {
+                type:Number,
+                required:false,
+                default: 10
             }
         },
         components: {
@@ -99,6 +106,12 @@ import Code from './Code';
                 .catch(e => {
                     this.errors.push(e)
                 });
+            },
+            nextPage() {
+            this.pageNumber++;
+            },
+            prevPage(){
+                this.pageNumber--;
             }
         },
         created() {
@@ -108,6 +121,16 @@ import Code from './Code';
             searchQuery() {
                 return [this.stringValue, this.state];
             },
+            pageCount(){
+               let l = this.filteredCodes.length,
+                   s = this.size;
+               return Math.ceil(l/s);
+            },
+            paginatedData(){
+                const start = this.pageNumber * this.size,
+                    end = start + this.size;
+                return this.filteredCodes.slice(start, end);
+            }
         },
         watch: {
             searchQuery([stringValue, state]) {
@@ -120,9 +143,6 @@ import Code from './Code';
                 }
             },
         },
-
-
-
     }
 
 </script>
@@ -141,9 +161,4 @@ import Code from './Code';
       height: calc(1.3em + .75rem + 2px);
        
     }
-
-    
-    
-    
-
 </style>

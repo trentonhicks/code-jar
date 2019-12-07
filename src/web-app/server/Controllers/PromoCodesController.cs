@@ -40,11 +40,13 @@ namespace CodeJar.WebApp.Controllers
         {
             var connectionString = _config.GetConnectionString("Storage");
 
-            var cGenerate = new CodeGenerator(connectionString);
+            var filePath = _config.GetConnectionString("Binary");
+
+
+            var cGenerate = new CodeGenerator(connectionString, filePath);
 
             //Creates n number of codes and stores them in DB
             cGenerate.CreateDigitalCode(numberOfCodes);
-
         }
 
         //Set code status to inactive

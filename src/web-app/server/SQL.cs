@@ -29,7 +29,7 @@ namespace CodeJar.WebApp
 
             using (var command = Connection.CreateCommand())
             {
-                command.CommandText = $@"INSERT INTO [6 Digit Code] (Seedvalue, State, DateActive, DateExpires) VALUES (@Seedvalue, @State, @DateActive, @DateExpires)";
+                command.CommandText = $@"INSERT INTO [6 digit code] (Seedvalue, State, DateActive, DateExpires) VALUES (@Seedvalue, @State, @DateActive, @DateExpires)";
 
                 // Insert values
                 command.Parameters.AddWithValue("@Seedvalue", seedValue);
@@ -46,7 +46,7 @@ namespace CodeJar.WebApp
 
             using (var command = Connection.CreateCommand())
             {
-                command.CommandText = $@"INSERT INTO Offset OffsetValue VALUES @Seedvalue";
+                command.CommandText = $@"UPDATE [Offset] SET OffsetValue = @Seedvalue WHERE ID = 1";
 
                 // Insert offset
                 command.Parameters.AddWithValue("@Seedvalue", offset);
@@ -98,7 +98,7 @@ namespace CodeJar.WebApp
             using(var command = Connection.CreateCommand())
             {
                 // Select all codes from the database
-                command.CommandText = "SELECT * FROM [6 Digit Code]";
+                command.CommandText = "SELECT * FROM [6 digit code]";
 
                 // Read all the rows
                 using(var reader = command.ExecuteReader())
@@ -165,7 +165,7 @@ namespace CodeJar.WebApp
 
             using (var command = Connection.CreateCommand())
             {
-                command.CommandText = @"UPDATE [6 Digit Code] SET [State] = 'Inactive' WHERE ID = @codeID";
+                command.CommandText = @"UPDATE [6 digit code] SET [State] = 'Inactive' WHERE ID = @codeID";
 
                 command.Parameters.AddWithValue("@codeID", codeID);
 
@@ -181,7 +181,7 @@ namespace CodeJar.WebApp
 
             using (var command = Connection.CreateCommand())
             {
-                command.CommandText = @"UPDATE [6 Digit Code] SET [State] = 'Redeemed'
+                command.CommandText = @"UPDATE [6 digit code] SET [State] = 'Redeemed'
                                         WHERE ID = @codeID AND [State] = 'Active'";
 
                 command.Parameters.AddWithValue("@codeID", codeID);
