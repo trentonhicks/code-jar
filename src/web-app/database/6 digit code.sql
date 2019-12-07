@@ -10,8 +10,7 @@ GO
 
 CREATE TABLE [dbo].[6 digit code](
 	[ID] [int] IDENTITY(1,1) NOT NULL,
-	[SeedValue] [bigint] NOT NULL,
-	[StringValue] [varchar](6) NOT NULL,
+	[SeedValue] [int] NOT NULL,
 	[State] [varchar](50) NOT NULL,
 	[DateActive] [datetime] NOT NULL,
 	[DateExpires] [datetime] NOT NULL,

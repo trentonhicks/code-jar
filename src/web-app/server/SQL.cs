@@ -22,7 +22,7 @@ namespace CodeJar.WebApp
         /// </summary>
         /// <param name="code"></param>
         /// <param name="offset"></param>
-        public void StoreRequestedCodes(long seedValue, long offset)
+        public void StoreRequestedCodes(int seedValue, long offset)
         {
 
             Connection.Open();
@@ -109,12 +109,13 @@ namespace CodeJar.WebApp
                         var code = new Code()
                         {
                             ID = (int)reader["ID"],
-                            SeedValue = (long)reader["SeedValue"],
-                            StringValue = ConvertToCode(code.seedValue),
+                            SeedValue = (int)reader["SeedValue"],
                             State = (string)reader["State"],
                             DateActive = (DateTime)reader["DateActive"],
                             DateExpires = (DateTime)reader["DateExpires"]
                         };
+
+                        code.StringValue = ConvertToCode(code.SeedValue);
 
                         // Add code to the list
                         codes.Add(code);
@@ -128,9 +129,9 @@ namespace CodeJar.WebApp
             return codes;
         }
 
-        private static string ConvertToCode(long seedvalue)
+        private static string ConvertToCode(int seedvalue)
         {
-            public string alphabet { get; } = "2BCD3FGH4JKLMN5PQRST6VWXYZ";
+            string alphabet = "2BCD3FGH4JKLMN5PQRST6VWXYZ";
 
             var result = EncodeToBaseString(seedvalue, alphabet);
 
@@ -139,7 +140,7 @@ namespace CodeJar.WebApp
             return result;
         }
 
-        private static string EncodeToBaseString(long seedvalue, string alphabet)
+        private static string EncodeToBaseString(int seedvalue, string alphabet)
         {
             var encBase = alphabet.Length;
 
