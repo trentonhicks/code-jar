@@ -31,8 +31,6 @@
                             img(src="https://media1.giphy.com/media/3ornk64Apg6Ip97m5W/giphy.gif?cid=790b7611b464b33152d7ac6f7a62ee15360ec11c6a9e70d2&rid=giphy.gif" style="width:100%;")
                             .alert.alert-danger {{ errorMsg }}
                         
-                        
-                        
 </template>
 
 <script>
@@ -48,7 +46,7 @@ module.exports = {
             success: false,
             codes: [],
             successMsg: 'Your code has been redeemed!',
-            errorMsg: 'Your code sucks!'
+            errorMsg: 'Your code sucks!',
         }
     },
     methods: {
@@ -105,6 +103,8 @@ module.exports = {
                 this.errors.push(e)
             });
         },
+       
+
     }
 }
 </script>

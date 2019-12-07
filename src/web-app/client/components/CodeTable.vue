@@ -23,9 +23,13 @@
                     option(value="Active") Active
                     option(value="Redeemed") Redemeed 
                     option(value="Expired") Expired
-                    option(value="Inactive") Inactive
+                    option(value="Inactive") Inactives
+
+           
 
             .table-responsive
+               button(type="button" class="btn btn-secondary") Previous
+               button(type="button" class="btn btn-secondary") Next
                 table.table.table-bordered(width='100%' cellspacing='0')
                     thead
                         tr
@@ -39,7 +43,11 @@
                             th Status
                             th Expiration
                             th Deactivate
+
                     tbody
+
+                       
+                
                         Code(v-for='code in filteredCodes' :code='code' :key='code.id')
 
 </template>
@@ -58,7 +66,7 @@ import Code from './Code';
                 stringValue: '',
                 state: "Select status",
                 filteredCodes: [],
-               
+                pageNumber: 0
             }
         },
         components: {
@@ -112,6 +120,9 @@ import Code from './Code';
                 }
             },
         },
+
+
+
     }
 
 </script>
@@ -130,6 +141,9 @@ import Code from './Code';
       height: calc(1.3em + .75rem + 2px);
        
     }
+
+    
+    
     
 
 </style>

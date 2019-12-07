@@ -21,22 +21,35 @@ namespace CodeJar.WebApp
         /// Stores codes in the database
         /// </summary>
         /// <param name="code"></param>
-        /// <param name="seedvalue"></param>
-        public void StoreRequestedCodes(string code, long seedvalue)
+        /// <param name="offset"></param>
+        public void StoreRequestedCodes(long seedValue, long offset)
         {
 
             Connection.Open();
 
             using (var command = Connection.CreateCommand())
             {
-                command.CommandText = $@"INSERT INTO [6 Digit Code] (Seedvalue, StringValue, State, DateActive, DateExpires) VALUES (@Seedvalue, @StringValue, @State, @DateActive, @DateExpires)";
+                command.CommandText = $@"INSERT INTO [6 Digit Code] (Seedvalue, State, DateActive, DateExpires) VALUES (@Seedvalue, @State, @DateActive, @DateExpires)";
 
                 // Insert values
-                command.Parameters.AddWithValue("@Seedvalue", seedvalue);
-                command.Parameters.AddWithValue("@StringValue", code);
+                command.Parameters.AddWithValue("@Seedvalue", seedValue);
                 command.Parameters.AddWithValue("@State", "Active");
                 command.Parameters.AddWithValue("@DateActive", DateTime.Now);
                 command.Parameters.AddWithValue("@DateExpires", DateTime.Today.AddDays(8));
+
+                command.ExecuteNonQuery();
+            }
+
+            Connection.Close();
+
+            Connection.Open();
+
+            using (var command = Connection.CreateCommand())
+            {
+                command.CommandText = $@"INSERT INTO Offset OffsetValue VALUES @Seedvalue";
+
+                // Insert offset
+                command.Parameters.AddWithValue("@Seedvalue", offset);
 
                 command.ExecuteNonQuery();
             }
@@ -48,7 +61,7 @@ namespace CodeJar.WebApp
         /// Gets the next seed value that will be used to generate codes
         /// </summary>
         /// <returns></returns>
-        public long GetSeedValue()
+        public long GetOffset()
         {
             long seedValue = 0;
 
@@ -56,18 +69,12 @@ namespace CodeJar.WebApp
 
             using (var command = Connection.CreateCommand())
             {
-                command.CommandText = "SELECT TOP 1 SeedValue FROM [6 Digit Code] ORDER BY ID DESC";
+                command.CommandText = "SELECT * FROM Offset";
                 using (var reader = command.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        seedValue = (long)reader["SeedValue"];
-
-                        //If the seed value is not equal to 0 add 4 to the previous seed value to keep the codes unique 
-                        if (seedValue != 0)
-                        {
-                            seedValue += 4;
-                        }
+                        seedValue = (long)reader["OffsetValue"];
                     }
                 }
                 command.ExecuteNonQuery();
@@ -103,7 +110,7 @@ namespace CodeJar.WebApp
                         {
                             ID = (int)reader["ID"],
                             SeedValue = (long)reader["SeedValue"],
-                            StringValue = (string)reader["StringValue"],
+                            StringValue = ConvertToCode(code.seedValue),
                             State = (string)reader["State"],
                             DateActive = (DateTime)reader["DateActive"],
                             DateExpires = (DateTime)reader["DateExpires"]
@@ -119,6 +126,36 @@ namespace CodeJar.WebApp
 
             // Return the list of codes
             return codes;
+        }
+
+        private static string ConvertToCode(long seedvalue)
+        {
+            public string alphabet { get; } = "2BCD3FGH4JKLMN5PQRST6VWXYZ";
+
+            var result = EncodeToBaseString(seedvalue, alphabet);
+
+            result = result.PadLeft(6, alphabet[0]);
+
+            return result;
+        }
+
+        private static string EncodeToBaseString(long seedvalue, string alphabet)
+        {
+            var encBase = alphabet.Length;
+
+            var digits = "";
+            var num = seedvalue;
+
+            if (num == 0)
+                return alphabet[0].ToString();
+
+            while (num > 0)
+            {
+                digits = alphabet[num % encBase] + digits;
+                num = num / encBase;
+            }
+
+            return digits;
         }
 
         public void InactiveStatus(int codeID)
@@ -143,7 +180,8 @@ namespace CodeJar.WebApp
 
             using (var command = Connection.CreateCommand())
             {
-                command.CommandText = @"UPDATE [6 Digit Code] SET [State] = 'Redeemed' WHERE ID = @codeID";
+                command.CommandText = @"UPDATE [6 Digit Code] SET [State] = 'Redeemed'
+                                        WHERE ID = @codeID AND [State] = 'Active'";
 
                 command.Parameters.AddWithValue("@codeID", codeID);
 

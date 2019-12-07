@@ -21,7 +21,7 @@ namespace CodeJar.WebApp
         {
             var sql = new SQL("Data Source=.; Initial Catalog=Random-Code; Integrated Security=SSPI;");
 
-            long offset = sql.GetSeedValue();
+            long offset = sql.GetOffset();
 
             if (offset % 4 != 0)
             {
@@ -36,40 +36,13 @@ namespace CodeJar.WebApp
                 reader.BaseStream.Position = offset;
                 for (var i = 0; i < amount; i++)
                 {
-                    var number = reader.ReadInt32();
-                    var code = ConvertToCode(number, alphabet);
-                    var seedvalue = reader.BaseStream.Position - 4;
-                    sql.StoreRequestedCodes(code, seedvalue);
+                    var seedvalue = reader.ReadInt32();
+                    var offset = reader.BaseStream.Position;
+                    sql.StoreRequestedCodes(seedvalue, offset);
                 }
             }
         }
 
-        private static string ConvertToCode(int number, string alphabet)
-        {
-            var result = EncodeToBaseString(number, alphabet);
-
-            result = result.PadLeft(6, alphabet[0]);
-
-            return result;
-        }
-
-        private static string EncodeToBaseString(int number, string alphabet)
-        {
-            var encBase = alphabet.Length;
-
-            var digits = "";
-            var num = number;
-
-            if (num == 0)
-                return alphabet[0].ToString();
-
-            while (num > 0)
-            {
-                digits = alphabet[num % encBase] + digits;
-                num = num / encBase;
-            }
-
-            return digits;
-        }
+        
     }
 }
