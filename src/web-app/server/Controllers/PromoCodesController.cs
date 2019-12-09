@@ -51,12 +51,9 @@ namespace CodeJar.WebApp.Controllers
 
         //Set code status to inactive
         [HttpDelete]
-        public void Delete([FromBody]int codeID)
+        public void Delete([FromBody]int[] codeID)
         {
-           var connectionString = _config.GetConnectionString("Storage");
-            var sql = new SQL(connectionString);
 
-            sql.InactiveStatus(codeID);
         }
     }
 }
