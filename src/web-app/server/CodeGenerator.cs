@@ -6,18 +6,18 @@ using System.Text;
 
 namespace CodeJar.WebApp
 {
-    class CodeGenerator
+    public class CodeGenerator
     {
-        public CodeGenerator(string connectionString, string FilePath)
+        public CodeGenerator(string connectionString, string filePath)
         {
             ConnectionString = connectionString;
 
-            filePath = FilePath;
+            FilePath = filePath;
         }
 
         public string ConnectionString { get; set; }
 
-        public string filePath {get; set;}
+        public string FilePath {get; set;}
 
         public void CreateDigitalCode(int amount)
         {
@@ -30,7 +30,9 @@ namespace CodeJar.WebApp
                 throw new ArgumentException("Offset must be divisible by 4");
             }
 
-            using (BinaryReader reader = new BinaryReader(File.Open(filePath, FileMode.Open)))
+            FilePath = "C:\\Binary.bin";
+
+            using (BinaryReader reader = new BinaryReader(File.Open(FilePath, FileMode.Open)))
             {
                 reader.BaseStream.Position = offset;
                 for (var i = 0; i < amount; i++)

@@ -54,6 +54,17 @@ namespace CodeJar.WebApp.Controllers
         public void Delete([FromBody]int[] codeID)
         {
 
+            var connectionString = _config.GetConnectionString("Storage");
+
+            var sql = new SQL(connectionString);
+
+            
+
+            for(var i = 1; i <= codeID.Length; i++)
+            {
+                sql.InactiveStatus(codeID[i - 1]);
+            }
+            
         }
     }
 }
