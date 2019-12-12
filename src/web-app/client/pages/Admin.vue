@@ -28,9 +28,9 @@
             //- Table where codes are displayed
             code-table(:codes="codes")
 
-            div(class="btn-group" role="group" aria-label="Basic example")
-                button(class="btn btn-secondary") Previous
-                button(class="btn btn-secondary") Next
+            div(class="btn-group" role="group" aria-label="Pagination")
+                button(class="btn btn-secondary" @click="PrevPage()" :disabled="pageNumber == 1") Previous
+                button(class="btn btn-secondary" @click="NextPage()") Next
 
 </template>
 
@@ -86,6 +86,12 @@ module.exports = {
                 });
             }
         },
+        PrevPage() {
+            this.pageNumber--;
+        },
+        NextPage() {
+            this.pageNumber++; 
+        }
     },
     created() {
         this.GetCodes();
@@ -95,6 +101,11 @@ module.exports = {
             return [this.stringValue, this.state];
         },
     },
+    watch: {
+        pageNumber: function() {
+            this.GetCodes();
+        }
+    }
 }
 </script>
 
