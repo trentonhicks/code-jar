@@ -2,9 +2,13 @@
 
     .wrapper().bg-dark
         .container
+
+            //- Form wrapper
             .card.card-login.mx-auto
                 .card-header Redeem code
                 .card-body(:style="success ? {'background-image': 'url(https://media2.giphy.com/media/Ah3aXWDIt2U6a3RiEE/giphy.gif?cid=790b76118f3628efc891ae78043a3e851388b3e827d8383f&rid=giphy.gif)'} : ''")
+                    
+                    //- Redeem codes form
                     form(v-on:submit.prevent='RedeemCode()')
                         .form-group
                             .form-label-group
@@ -12,18 +16,16 @@
                                     type='text' 
                                     pattern=".{6,}"
                                     maxlength="6"
-                                    placeholder='Enter 6-digit code'
+                                    placeholder='Enter code'
                                     required='required'
                                     autofocus='autofocus'
                                     title="6 characters required"
                                     v-model="enteredCode")
-
                                 label(for='inputEmail' class="sr-only") Enter code
-                        
                         button.btn.btn-primary.btn-block(type="submit") Redeem code
 
+                    //- Success and failure messages display here
                     div(v-show="submitted").mt-3
-
                         div(v-if="success")
                             .alert.alert-success {{ successMsg }}
                         div(v-else)    
@@ -40,15 +42,12 @@ module.exports = {
             enteredCode: '',
             submitted: false,
             success: false,
-            codes: [],
             successMsg: 'Code redeemed.',
             errorMsg: '',
         }
     },
     methods: {
         RedeemCode(stringValue) {
-            this.submitted = true;
-
             axios({
                 method: 'post',
                 url: 'http://localhost:5000/redeem-code',
@@ -58,9 +57,11 @@ module.exports = {
                 }
             }).then(response => {
                 this.success = true;
+                this.submitted = true;
             }).catch(e => {
                 this.success = false;
-                this.errorMsg = 'Error! Code was not redeemed.'
+                this.errorMsg = 'Error! Code was not redeemed.';
+                this.submitted = true;
             });
         }
     },
