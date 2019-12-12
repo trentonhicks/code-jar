@@ -25,16 +25,12 @@
                     div(v-show="submitted").mt-3
 
                         div(v-if="success")
-                            img(src="https://media2.giphy.com/media/c4rB7DMXKgktG/giphy.gif?cid=790b7611f644663d62bcffedc8e322ae952375a74900b8ee&rid=giphy.gif" style="width:100%;")
                             .alert.alert-success {{ successMsg }}
                         div(v-else)    
-                            img(src="https://media1.giphy.com/media/3ornk64Apg6Ip97m5W/giphy.gif?cid=790b7611b464b33152d7ac6f7a62ee15360ec11c6a9e70d2&rid=giphy.gif" style="width:100%;")
-                            .alert.alert-danger {{ errorMsg }}
-                        
+                            .alert.alert-danger {{ errorMsg }}                        
 </template>
 
 <script>
-import { HTTP } from '../js/http-common';
 import axios from 'axios';
 
 module.exports = {
@@ -45,69 +41,29 @@ module.exports = {
             submitted: false,
             success: false,
             codes: [],
-            successMsg: 'Your code has been redeemed!',
-            errorMsg: 'Your code sucks!',
+            successMsg: 'Code redeemed.',
+            errorMsg: '',
         }
     },
     methods: {
-        RedeemCode() {
-            
-            // Get the latest codes
-            this.GetCodes();
-            var index = this.codes.findIndex(code => code.stringValue == this.enteredCode);
-            console.log(index);
+        RedeemCode(stringValue) {
             this.submitted = true;
 
-            // Check if code exists
-            if(index !== -1) {
-
-                // Check if the code is active
-                if(this.codes[index].state === "Active") {
-
-                    // Redeem code
-                    this.success = true;
-
-                    // Set code to inactive
-                    axios({
-                        method: 'post',
-                        url: 'http://localhost:5000/redeem-code',
-                        data: this.codes[index].id,
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    }).then(response => {
-                        // Success
-                    }).catch(e => {
-                        // Error
-                    });
+            axios({
+                method: 'post',
+                url: 'http://localhost:5000/redeem-code',
+                data: stringValue,
+                headers: {
+                    'Content-Type': 'application/json'
                 }
-
-                // Not active
-                else {
-                    this.success = false;
-                    this.errorMsg = 'Codes already taken!';
-                }
-            }
-
-            // Doesn't exist
-            else {
+            }).then(response => {
+                this.success = true;
+            }).catch(e => {
                 this.success = false;
-                this.errorMsg = "Code doesn't exist";
-            }
-        },
-        GetCodes() {
-            HTTP.get(`codes`)
-            .then(response => {
-                this.codes = response.data;
-            })
-            .catch(e => {
-                this.errors.push(e)
+                this.errorMsg = 'Error! Code was not redeemed.'
             });
-        },
+        }
     },
-    created() {
-        this.GetCodes();
-    }
 }
 </script>
 
