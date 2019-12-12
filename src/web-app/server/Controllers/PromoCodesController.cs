@@ -23,14 +23,14 @@ namespace CodeJar.WebApp.Controllers
         }
 
         [HttpGet]
-        public List<Code> Get()
+        public List<Code> Get([FromQuery]int page)
         {
             var connectionString = _config.GetConnectionString("Storage");
 
             var sql = new SQL(connectionString);
 
             // Get the list of codes from the database
-            var codes = sql.GetCodes();
+            var codes = sql.GetCodes(page);
 
             return codes;
         }
