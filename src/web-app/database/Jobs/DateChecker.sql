@@ -36,10 +36,10 @@ EXEC @ReturnCode = msdb.dbo.sp_add_jobstep @job_id=@jobId, @step_name=N'CompareD
 		@retry_attempts=0, 
 		@retry_interval=0, 
 		@os_run_priority=0, @subsystem=N'TSQL', 
-		@command=N'UPDATE [6 digit code]
+		@command=N'UPDATE Codes
 SET [State] = ''Expired''
 WHERE CURRENT_TIMESTAMP >= DateExpires', 
-		@database_name=N'Random-Code', 
+		@database_name=N'RandomCode', 
 		@flags=0
 IF (@@ERROR <> 0 OR @ReturnCode <> 0) GOTO QuitWithRollback
 EXEC @ReturnCode = msdb.dbo.sp_update_job @job_id = @jobId, @start_step_id = 1
