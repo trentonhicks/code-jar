@@ -200,7 +200,7 @@ namespace CodeJar.WebApp
 
             using (var command = Connection.CreateCommand())
             {
-                command.CommandText = @"UPDATE [6 digit code] SET [State] = 'Inactive' WHERE SeedValue = @seedvalue";
+                command.CommandText = @"UPDATE Codes SET [State] = 'Inactive' WHERE SeedValue = @seedvalue";
 
                 command.Parameters.AddWithValue("@seedvalue", seedvalue);
 
@@ -218,7 +218,7 @@ namespace CodeJar.WebApp
 
             using (var command = Connection.CreateCommand())
             {
-                command.CommandText = @"UPDATE [6 digit code] SET [State] = 'Redeemed'
+                command.CommandText = @"UPDATE Codes SET [State] = 'Redeemed'
                                         WHERE SeedValue = @seedvalue AND [State] = 'Active'";
 
                 command.Parameters.AddWithValue("@seedvalue", seedvalue);

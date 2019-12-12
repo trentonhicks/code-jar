@@ -49,7 +49,7 @@ module.exports = {
             stringValue: '',
             state: "Select status",
             filteredCodes: [],
-            pageNumber: 0,
+            pageNumber: 1,
             size: 10
         }
     },
@@ -60,7 +60,10 @@ module.exports = {
         GetCodes() {
             axios({
                 method: 'get',
-                url: 'http://localhost:5000/codes'
+                url: 'http://localhost:5000/codes',
+                params: {
+                    page: this.pageNumber
+                }
             }).then(response => {
                 this.codes = response.data;
             }).catch(error => {
@@ -77,7 +80,7 @@ module.exports = {
                         'Content-Type': 'application/json'
                     }
                 }).then(response => {
-                    this.GetCodes();
+                    // Codes generated
                 }).catch(e => {
                     // Unable to generate codes
                 });

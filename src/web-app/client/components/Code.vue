@@ -39,7 +39,7 @@ module.exports = {
             axios({
                 method: 'delete',
                 url: 'http://localhost:5000/codes',
-                data: this.code.id,
+                data: [this.code.stringValue],
                 headers: {
                     'Content-Type': 'application/json'
                 }
