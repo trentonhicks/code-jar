@@ -30,8 +30,6 @@ namespace CodeJar.WebApp
                 throw new ArgumentException("Offset must be divisible by 4");
             }
 
-            FilePath = "C:\\Binary.bin";
-
             using (BinaryReader reader = new BinaryReader(File.Open(FilePath, FileMode.Open)))
             {
                 reader.BaseStream.Position = offset;

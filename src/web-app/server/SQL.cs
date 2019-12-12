@@ -117,14 +117,15 @@ namespace CodeJar.WebApp
                         // Store code in a variable
                         var code = new Code()
                         {
-                            ID = (int)reader["ID"],
-                            SeedValue = (int)reader["SeedValue"],
                             State = (string)reader["State"],
                             DateActive = (DateTime)reader["DateActive"],
                             DateExpires = (DateTime)reader["DateExpires"]
                         };
 
-                        code.StringValue = ConvertToCode(code.SeedValue);
+                        //Stores SeedValue outside of code object
+                        var seed = (int)reader["SeedValue"];
+
+                        code.StringValue = ConvertToCode(seed);
                         
                         // Add code to the list
                         codes.Add(code);
@@ -149,10 +150,8 @@ namespace CodeJar.WebApp
             return result;
         }
 
-        private static int ConvertFromCode(string code)
+        private static int ConvertFromCode(string code,string alphabet)
         {
-            string alphabet = "2BCD3FGH4JKLMN5PQRST6VWXYZ";
-
             var result = DecodeFromBaseString(code, alphabet);
 
             return result;      
@@ -193,15 +192,17 @@ namespace CodeJar.WebApp
             return result;
         }
 
-        public void InactiveStatus(int codeID)
+        public void InactiveStatus(string code, string alphabet)
         {
+            var seedvalue = ConvertFromCode(code, alphabet);
+
             Connection.Open();
 
             using (var command = Connection.CreateCommand())
             {
-                command.CommandText = @"UPDATE [6 digit code] SET [State] = 'Inactive' WHERE ID = @codeID";
+                command.CommandText = @"UPDATE [6 digit code] SET [State] = 'Inactive' WHERE SeedValue = @seedvalue";
 
-                command.Parameters.AddWithValue("@codeID", codeID);
+                command.Parameters.AddWithValue("@seedvalue", seedvalue);
 
                 command.ExecuteNonQuery();
             }
@@ -209,16 +210,18 @@ namespace CodeJar.WebApp
             Connection.Close();
         }
 
-        public void RedeemedStatus(int codeID)
+        public void RedeemedStatus(string code, string alphabet)
         {
+            var seedvalue = ConvertFromCode(code, alphabet);
+
             Connection.Open();
 
             using (var command = Connection.CreateCommand())
             {
                 command.CommandText = @"UPDATE [6 digit code] SET [State] = 'Redeemed'
-                                        WHERE ID = @codeID AND [State] = 'Active'";
+                                        WHERE SeedValue = @seedvalue AND [State] = 'Active'";
 
-                command.Parameters.AddWithValue("@codeID", codeID);
+                command.Parameters.AddWithValue("@seedvalue", seedvalue);
 
                 command.ExecuteNonQuery();
             }

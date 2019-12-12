@@ -23,12 +23,15 @@ namespace CodeJar.WebApp.Controllers
         }
 
         [HttpPost]
-        public void Post([FromBody] int codeID)
+        public void Post([FromBody] string code)
         {
             var connectionString = _config.GetConnectionString("Storage");
-            var sql = new SQL(connectionString);
 
-            sql.RedeemedStatus(codeID);
+            var alphabet = _config.GetSection("Base26")["alphabet"];
+
+            var sql = new SQL(connectionString);
+            
+            sql.RedeemedStatus(code, alphabet);
         }
     }
 }

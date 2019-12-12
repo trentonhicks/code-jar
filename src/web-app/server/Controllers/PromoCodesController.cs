@@ -29,7 +29,7 @@ namespace CodeJar.WebApp.Controllers
 
             var sql = new SQL(connectionString);
 
-            // Get the list of codes from the database
+            // Get 10 codes from the database based on the page you are on in the app
             var codes = sql.GetCodes(page);
 
             return codes;
@@ -40,7 +40,7 @@ namespace CodeJar.WebApp.Controllers
         {
             var connectionString = _config.GetConnectionString("Storage");
 
-            var filePath = _config.GetConnectionString("Binary");
+            var filePath = _config.GetSection("BinaryFile")["Binary"];
 
 
             var cGenerate = new CodeGenerator(connectionString, filePath);
@@ -51,18 +51,17 @@ namespace CodeJar.WebApp.Controllers
 
         //Set code status to inactive
         [HttpDelete]
-        public void Delete([FromBody]int[] codeID)
+        public void Delete([FromBody]string [] code)
         {
 
             var connectionString = _config.GetConnectionString("Storage");
+            var alphabet = _config.GetSection("Base26")["alphabet"];
 
             var sql = new SQL(connectionString);
 
-            
-
-            for(var i = 1; i <= codeID.Length; i++)
+            for(var i = 1; i <= code.Length; i++)
             {
-                sql.InactiveStatus(codeID[i - 1]);
+                sql.InactiveStatus(code[i - 1], alphabet);
             }
             
         }
