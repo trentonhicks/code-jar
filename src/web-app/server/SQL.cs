@@ -125,7 +125,7 @@ namespace CodeJar.WebApp
                         };
 
                         code.StringValue = ConvertToCode(code.SeedValue);
-
+                        
                         // Add code to the list
                         codes.Add(code);
                     }
@@ -149,6 +149,15 @@ namespace CodeJar.WebApp
             return result;
         }
 
+        private static int ConvertFromCode(string code)
+        {
+            string alphabet = "2BCD3FGH4JKLMN5PQRST6VWXYZ";
+
+            var result = DecodeFromBaseString(code, alphabet);
+
+            return result;      
+        }
+
         private static string EncodeToBaseString(int seedvalue, string alphabet)
         {
             var encBase = alphabet.Length;
@@ -166,6 +175,22 @@ namespace CodeJar.WebApp
             }
 
             return digits;
+        }
+        
+        private static int DecodeFromBaseString(string value, string alphabet)
+        {
+            var result = 0;
+
+            for (int i = 0; i < value.Length; i++)
+            {
+                var c = value[value.Length - 1 - i];
+                var index = alphabet.IndexOf(c);
+                var p = index * (int)Math.Pow(alphabet.Length, i);
+                
+                result = result + p;
+            }
+
+            return result;
         }
 
         public void InactiveStatus(int codeID)
