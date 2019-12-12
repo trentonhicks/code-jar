@@ -219,14 +219,27 @@ namespace CodeJar.WebApp
             using (var command = Connection.CreateCommand())
             {
                 command.CommandText = @"SELECT [State] FROM Codes
-                                        WHERE SeedValue = @seedvalue AND [State] != 'Active'";
+                                        WHERE SeedValue = @seedvalue";
 
                 command.Parameters.AddWithValue("@seedvalue", seedvalue);
 
-                // If code is not redeemable return false
+                // Read the code that matched the query
                 using(var reader = command.ExecuteReader())
                 {
+                    var codeFound = false;
                     while(reader.Read())
+                    {
+                        codeFound = true;
+
+                        // If code is not redeemable return false
+                        if((string)reader["State"] != "Active")
+                        {
+                            return false;
+                        }
+                    }
+
+                    // If the code doesn't exist, return false
+                    if(!codeFound)
                     {
                         return false;
                     }
