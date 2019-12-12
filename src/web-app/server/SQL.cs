@@ -29,7 +29,7 @@ namespace CodeJar.WebApp
 
             using (var command = Connection.CreateCommand())
             {
-                command.CommandText = $@"INSERT INTO [6 digit code] (Seedvalue, State, DateActive, DateExpires) VALUES (@Seedvalue, @State, @DateActive, @DateExpires)";
+                command.CommandText = $@"INSERT INTO Codes (Seedvalue, State, DateActive, DateExpires) VALUES (@Seedvalue, @State, @DateActive, @DateExpires)";
 
                 // Insert values
                 command.Parameters.AddWithValue("@Seedvalue", seedValue);
@@ -46,7 +46,7 @@ namespace CodeJar.WebApp
 
             using (var command = Connection.CreateCommand())
             {
-                command.CommandText = $@"UPDATE [Offset] SET OffsetValue = @Seedvalue WHERE ID = 1";
+                command.CommandText = $@"UPDATE Offset SET OffsetValue = @Seedvalue WHERE ID = 1";
 
                 // Insert offset
                 command.Parameters.AddWithValue("@Seedvalue", offset);
@@ -88,17 +88,26 @@ namespace CodeJar.WebApp
         /// Returns a list of all the codes from the database
         /// </summary>
         /// <returns></returns>
-        public List<Code> GetCodes()
+        public List<Code> GetCodes(int page)
         {
             // Create list to store codes gathered from the database
             var codes = new List<Code>();
 
             Connection.Open();
 
+            page -= 1;
+
+            if(page > 0)
+            {
+                page *= 10;
+            }
+
             using(var command = Connection.CreateCommand())
             {
                 // Select all codes from the database
-                command.CommandText = "SELECT * FROM [6 digit code]";
+                command.CommandText = "SELECT * FROM Codes ORDER BY ID OFFSET @page ROWS FETCH NEXT 10 ROWS ONLY";
+
+                command.Parameters.AddWithValue("@page", page);
 
                 // Read all the rows
                 using(var reader = command.ExecuteReader())
@@ -190,7 +199,7 @@ namespace CodeJar.WebApp
 
             using (var command = Connection.CreateCommand())
             {
-                command.CommandText = @"UPDATE [6 digit code] SET [State] = 'Inactive' WHERE ID = @codeID";
+                command.CommandText = @"UPDATE Codes SET [State] = 'Inactive' WHERE ID = @codeID";
 
                 command.Parameters.AddWithValue("@codeID", codeID);
 
@@ -206,7 +215,7 @@ namespace CodeJar.WebApp
 
             using (var command = Connection.CreateCommand())
             {
-                command.CommandText = @"UPDATE [6 digit code] SET [State] = 'Redeemed'
+                command.CommandText = @"UPDATE Codes SET [State] = 'Redeemed'
                                         WHERE ID = @codeID AND [State] = 'Active'";
 
                 command.Parameters.AddWithValue("@codeID", codeID);
