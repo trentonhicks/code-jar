@@ -210,7 +210,7 @@ namespace CodeJar.WebApp
             Connection.Close();
         }
 
-        public void RedeemedStatus(string code, string alphabet)
+        public Boolean RedeemedStatus(string code, string alphabet)
         {
             var seedvalue = ConvertFromCode(code, alphabet);
 
@@ -218,15 +218,29 @@ namespace CodeJar.WebApp
 
             using (var command = Connection.CreateCommand())
             {
-                command.CommandText = @"UPDATE Codes SET [State] = 'Redeemed'
-                                        WHERE SeedValue = @seedvalue AND [State] = 'Active'";
+                command.CommandText = @"SELECT [State] FROM Codes
+                                        WHERE SeedValue = @seedvalue AND [State] != 'Active'";
 
                 command.Parameters.AddWithValue("@seedvalue", seedvalue);
+
+                // If code is not redeemable return false
+                using(var reader = command.ExecuteReader())
+                {
+                    while(reader.Read())
+                    {
+                        return false;
+                    }
+                }
+
+                command.CommandText = @"UPDATE Codes SET [State] = 'Redeemed'
+                                        WHERE SeedValue = @seedvalue AND [State] = 'Active'";
 
                 command.ExecuteNonQuery();
             }
 
             Connection.Close();
+
+            return true;
         }
     }
 }

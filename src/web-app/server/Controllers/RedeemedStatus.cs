@@ -23,7 +23,7 @@ namespace CodeJar.WebApp.Controllers
         }
 
         [HttpPost]
-        public void Post([FromBody] string code)
+        public IActionResult Post([FromBody] string code)
         {
             var connectionString = _config.GetConnectionString("Storage");
 
@@ -31,7 +31,13 @@ namespace CodeJar.WebApp.Controllers
 
             var sql = new SQL(connectionString);
             
-            sql.RedeemedStatus(code, alphabet);
+            var response = sql.RedeemedStatus(code, alphabet);
+
+            if(response)
+            {
+                return Ok();
+            }
+            return BadRequest();
         }
     }
 }

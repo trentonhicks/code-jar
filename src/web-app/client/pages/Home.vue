@@ -47,13 +47,13 @@ module.exports = {
         }
     },
     methods: {
-        RedeemCode(stringValue) {
+        RedeemCode() {
             axios({
                 method: 'post',
                 url: 'http://localhost:5000/redeem-code',
-                data: stringValue,
+                data: `"${this.enteredCode}"`,
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 }
             }).then(response => {
                 this.success = true;
