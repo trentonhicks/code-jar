@@ -139,6 +139,49 @@ namespace CodeJar.WebApp
             return codes;
         }
 
+         public int PageCount()
+         {
+
+              var pages = 0;
+
+              var pagesRemainder = 0;
+
+            Connection.Open();
+
+             using (var command = Connection.CreateCommand())
+             {
+
+                 command.CommandText = "SELECT COUNT(*) AS Number Codes";
+
+                  using(var reader = command.ExecuteReader())
+                  {
+                     
+
+                      while(reader.Read())
+                      {
+                        
+                        var numberOfCodes = (int)reader["Number"] ;
+
+                        pages = numberOfCodes / 10;
+
+                        pagesRemainder = numberOfCodes % 10;
+
+                        if(pagesRemainder > 0)
+                        {
+                            pages++;
+                        }
+
+                      }
+                       
+                  }
+                 
+             }
+
+             Connection.Close();
+
+             return pages;
+         }
+
         private static string ConvertToCode(int seedvalue)
         {
             string alphabet = "2BCD3FGH4JKLMN5PQRST6VWXYZ";

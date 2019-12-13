@@ -23,16 +23,22 @@ namespace CodeJar.WebApp.Controllers
         }
 
         [HttpGet]
-        public List<Code> Get([FromQuery]int page)
+        public TableData Get([FromQuery]int page)
         {
             var connectionString = _config.GetConnectionString("Storage");
+
+        
 
             var sql = new SQL(connectionString);
 
             // Get 10 codes from the database based on the page you are on in the app
             var codes = sql.GetCodes(page);
+            var pages = sql.PageCount();
 
-            return codes;
+            var tableData = new TableData(codes, pages);
+            
+
+            return tableData;
         }
 
         [HttpPost]
