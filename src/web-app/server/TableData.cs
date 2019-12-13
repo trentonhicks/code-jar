@@ -12,11 +12,12 @@ namespace CodeJar.WebApp
 
         public TableData(List<Code> codes, int pages) 
         {
-          
+            Codes = codes;
+            Pages = pages;
         }
         public List<Code> Codes {get; set;}
 
-        public List<Code> Pages {get; set;}
+        public int Pages {get; set;}
 
        
     }
