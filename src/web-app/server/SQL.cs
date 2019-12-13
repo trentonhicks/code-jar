@@ -151,7 +151,7 @@ namespace CodeJar.WebApp
              using (var command = Connection.CreateCommand())
              {
 
-                 command.CommandText = "SELECT COUNT(*) AS Number Codes";
+                 command.CommandText = "SELECT COUNT(*) AS Number FROM Codes";
 
                   using(var reader = command.ExecuteReader())
                   {
