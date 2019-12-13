@@ -15,7 +15,7 @@ namespace CodeJar.WebApp
             Codes = codes;
             Pages = pages;
         }
-        public List<Code> Codes {get; set;}
+        public List<Code> Codes {get; set;} = new List<Code>();
 
         public int Pages {get; set;}
 
