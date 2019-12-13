@@ -30,7 +30,8 @@
 
             div(class="btn-group" role="group" aria-label="Pagination")
                 button(class="btn btn-secondary" @click="PrevPage()" :disabled="pageNumber == 1") Previous
-                button(class="btn btn-secondary" @click="NextPage()") Next
+                button(class="btn btn-secondary" @click="NextPage()" :disabled="pageNumber == pages") Next
+            span.text-secondary.ml-3 {{ pageNumber }} of {{ pages }}
 
 </template>
 
@@ -50,6 +51,7 @@ module.exports = {
             state: "Select status",
             filteredCodes: [],
             pageNumber: 1,
+            pages: 0,
             size: 10
         }
     },
@@ -57,7 +59,7 @@ module.exports = {
         CodeTable
     },
     methods: {
-        GetCodes() {
+        GetTableData() {
             axios({
                 method: 'get',
                 url: 'http://localhost:5000/codes',
@@ -65,7 +67,8 @@ module.exports = {
                     page: this.pageNumber
                 }
             }).then(response => {
-                this.codes = response.data;
+                this.codes = response.data.codes;
+                this.pages = response.data.pages;
             }).catch(error => {
                 // Unable to get codes
             });
@@ -80,7 +83,7 @@ module.exports = {
                         'Content-Type': 'application/json'
                     }
                 }).then(response => {
-                    // Codes generated
+                    this.GetTableData();
                 }).catch(e => {
                     // Unable to generate codes
                 });
@@ -94,7 +97,7 @@ module.exports = {
         }
     },
     created() {
-        this.GetCodes();
+        this.GetTableData();
     },
     computed: {
         searchQuery() {
@@ -103,7 +106,7 @@ module.exports = {
     },
     watch: {
         pageNumber: function() {
-            this.GetCodes();
+            this.GetTableData();
         }
     }
 }

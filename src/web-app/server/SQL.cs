@@ -29,7 +29,7 @@ namespace CodeJar.WebApp
 
             using (var command = Connection.CreateCommand())
             {
-                command.CommandText = $@"INSERT INTO Codes (Seedvalue, State, DateActive, DateExpires) VALUES (@Seedvalue, @State, @DateActive, @DateExpires)";
+                command.CommandText = $@"INSERT INTO Codes (SeedValue, State, DateActive, DateExpires) VALUES (@Seedvalue, @State, @DateActive, @DateExpires)";
 
                 // Insert values
                 command.Parameters.AddWithValue("@Seedvalue", seedValue);

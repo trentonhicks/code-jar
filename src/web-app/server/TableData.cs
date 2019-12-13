@@ -18,8 +18,6 @@ namespace CodeJar.WebApp
         public List<Code> Codes {get; set;} = new List<Code>();
 
         public int Pages {get; set;}
-
-       
     }
     
 }
