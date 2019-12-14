@@ -25,6 +25,8 @@ namespace CodeJar.WebApp
 
             long offset = sql.GetOffset();
 
+             var BatchID = sql.CreateBatch();
+
             if (offset % 4 != 0)
             {
                 throw new ArgumentException("Offset must be divisible by 4");
@@ -37,7 +39,7 @@ namespace CodeJar.WebApp
                 {
                     var seedvalue = reader.ReadInt32();
                     offset = reader.BaseStream.Position;
-                    sql.StoreRequestedCodes(seedvalue, offset);
+                    sql.StoreRequestedCodes(seedvalue, offset, BatchID);
                 }
             }
         }

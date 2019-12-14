@@ -22,17 +22,18 @@ namespace CodeJar.WebApp
         /// </summary>
         /// <param name="code"></param>
         /// <param name="offset"></param>
-        public void StoreRequestedCodes(int seedValue, long offset)
+        public void StoreRequestedCodes(int seedValue, long offset,int BatchID)
         {
 
             Connection.Open();
 
             using (var command = Connection.CreateCommand())
             {
-                command.CommandText = $@"INSERT INTO Codes (SeedValue, State, DateActive, DateExpires) VALUES (@Seedvalue, @State, @DateActive, @DateExpires)";
+                command.CommandText = $@"INSERT INTO Codes (SeedValue, BatchID, State, DateActive, DateExpires) VALUES (@Seedvalue, @BatchID, @State, @DateActive, @DateExpires)";
 
                 // Insert values
                 command.Parameters.AddWithValue("@Seedvalue", seedValue);
+                command.Parameters.AddWithValue("@BatchID", BatchID);
                 command.Parameters.AddWithValue("@State", "Active");
                 command.Parameters.AddWithValue("@DateActive", DateTime.Now);
                 command.Parameters.AddWithValue("@DateExpires", DateTime.Today.AddDays(8));
@@ -46,15 +47,46 @@ namespace CodeJar.WebApp
 
             using (var command = Connection.CreateCommand())
             {
-                command.CommandText = $@"UPDATE Offset SET OffsetValue = @Seedvalue WHERE ID = 1";
+                command.CommandText = $@"UPDATE Offset SET OffsetValue = @Offset WHERE ID = 1";
 
                 // Insert offset
-                command.Parameters.AddWithValue("@Seedvalue", offset);
+                command.Parameters.AddWithValue("@Offset", offset);
 
                 command.ExecuteNonQuery();
             }
 
             Connection.Close();
+        }
+
+        public int CreateBatch()
+        {
+            Connection.Open();
+
+            int BatchID = 0;
+
+            using (var command = Connection.CreateCommand())
+            {
+                command.CommandText = $@"DECLARE @BatchValue int;
+
+                                    SET @BatchValue = (SELECT TOP 1 BatchValue FROM Batch ORDER BY ID DESC);
+
+                                    SET @BatchValue = @BatchValue + 1;
+
+                                    INSERT INTO Batch (BatchValue) Values (@BatchValue);
+                                    
+                                    SELECT TOP 1 ID FROM Batch ORDER BY ID DESC";
+                
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        BatchID = (int)reader["ID"];
+                    }
+                    
+                }
+            }
+            Connection.Close();
+            return BatchID;
         }
 
         /// <summary>
@@ -77,7 +109,6 @@ namespace CodeJar.WebApp
                         seedValue = (long)reader["OffsetValue"];
                     }
                 }
-                command.ExecuteNonQuery();
             }
 
             Connection.Close();
@@ -182,7 +213,7 @@ namespace CodeJar.WebApp
              return pages;
          }
 
-        private static string ConvertToCode(int seedvalue)
+        private string ConvertToCode(int seedvalue)
         {
             string alphabet = "2BCD3FGH4JKLMN5PQRST6VWXYZ";
 
@@ -193,7 +224,7 @@ namespace CodeJar.WebApp
             return result;
         }
 
-        private static int ConvertFromCode(string code,string alphabet)
+        private int ConvertFromCode(string code,string alphabet)
         {
             var result = DecodeFromBaseString(code, alphabet);
 

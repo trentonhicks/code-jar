@@ -27,8 +27,6 @@ namespace CodeJar.WebApp.Controllers
         {
             var connectionString = _config.GetConnectionString("Storage");
 
-        
-
             var sql = new SQL(connectionString);
 
             // Get 10 codes from the database based on the page you are on in the app
@@ -37,7 +35,6 @@ namespace CodeJar.WebApp.Controllers
 
             var tableData = new TableData(codes, pages);
             
-
             return tableData;
         }
 
@@ -47,7 +44,6 @@ namespace CodeJar.WebApp.Controllers
             var connectionString = _config.GetConnectionString("Storage");
 
             var filePath = _config.GetSection("BinaryFile")["Binary"];
-
 
             var cGenerate = new CodeGenerator(connectionString, filePath);
 
