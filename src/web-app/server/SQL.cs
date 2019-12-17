@@ -22,18 +22,17 @@ namespace CodeJar.WebApp
         /// </summary>
         /// <param name="code"></param>
         /// <param name="offset"></param>
-        public void StoreRequestedCodes(int seedValue, long offset,int BatchID)
+        public void StoreRequestedCodes(int seedValue, long offset)
         {
 
             Connection.Open();
 
             using (var command = Connection.CreateCommand())
             {
-                command.CommandText = $@"INSERT INTO Codes (SeedValue, BatchID, State, DateActive, DateExpires) VALUES (@Seedvalue, @BatchID, @State, @DateActive, @DateExpires)";
+                command.CommandText = $@"INSERT INTO Codes (SeedValue, State, DateActive, DateExpires) VALUES (@Seedvalue, @State, @DateActive, @DateExpires)";
 
                 // Insert values
                 command.Parameters.AddWithValue("@Seedvalue", seedValue);
-                command.Parameters.AddWithValue("@BatchID", BatchID);
                 command.Parameters.AddWithValue("@State", "Active");
                 command.Parameters.AddWithValue("@DateActive", DateTime.Now);
                 command.Parameters.AddWithValue("@DateExpires", DateTime.Today.AddDays(8));
@@ -82,7 +81,6 @@ namespace CodeJar.WebApp
                     {
                         BatchID = (int)reader["ID"];
                     }
-                    
                 }
             }
             Connection.Close();
@@ -126,7 +124,7 @@ namespace CodeJar.WebApp
 
             Connection.Open();
 
-            page -= 1;
+            page = 0;
 
             if(page > 0)
             {
@@ -201,11 +199,8 @@ namespace CodeJar.WebApp
                         {
                             pages++;
                         }
-
                       }
-                       
                   }
-                 
              }
 
              Connection.Close();

@@ -1,9 +1,7 @@
-USE [RandomCode]
+USE [RandomCode]
 GO
-
-CREATE TABLE [dbo].[Batch](
-	ID int PRIMARY KEY IDENTITY(1,1) NOT NULL,
-	BatchValue int NOT NULL,)
-
-INSERT INTO Batch (ID, BatchValue)
-	VALUES (1,0);
+CREATE TABLE [dbo].[Batch](
+    ID int PRIMARY KEY IDENTITY(1,1) NOT NULL,
+    BatchValue int DEFAULT 0 NOT NULL);
+INSERT INTO Batch (BatchValue)
+    VALUES (0);
