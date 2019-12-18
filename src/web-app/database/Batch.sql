@@ -4,4 +4,4 @@ CREATE TABLE [dbo].[Batch](
     ID int PRIMARY KEY IDENTITY(1,1) NOT NULL,
 	CodeIDStart int FOREIGN KEY REFERENCES Codes(ID) NOT NULL,
 	CodeIDEnd int FOREIGN KEY REFERENCES Codes(ID) NOT NULL,
-    [BatchSize] int DEFAULT 0 NOT NULL,);
+    [BatchSize] int DEFAULT 0 NOT NULL);
