@@ -37,6 +37,29 @@
                 "/consoleloggerparameters:NoSummary"
             ],
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Start client",
+            "type": "npm",
+            "script": "dev",
+            "problemMatcher": []
+        },
+        {
+            "label": "Start server",
+            "type": "npm",
+            "script": "server",
+            "problemMatcher": []
+        },
+        {
+            "label": "Start Project",
+            "dependsOn": [
+                "Start server",
+                "Start client"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         }
     ]
 }
