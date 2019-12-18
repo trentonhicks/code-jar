@@ -33,7 +33,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import HTTP from '../js/http-common.js';
 
 module.exports = {
     name: 'Home',
@@ -48,9 +48,9 @@ module.exports = {
     },
     methods: {
         RedeemCode() {
-            axios({
+            HTTP({
                 method: 'post',
-                url: 'http://localhost:5000/redeem-code',
+                url: 'redeem-code',
                 data: `"${this.enteredCode}"`,
                 headers: {
                     'Content-Type': 'application/json',

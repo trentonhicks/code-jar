@@ -26,7 +26,7 @@
 
 <script>
 
-import axios from 'axios';
+import HTTP from '../js/http-common.js';
 import Code from './Code';
 
 module.exports = {
@@ -36,7 +36,7 @@ module.exports = {
     props: ['code'],
     methods: {
         DeactivateCode() {
-            axios({
+            HTTP({
                 method: 'delete',
                 url: 'http://localhost:5000/codes',
                 data: [this.code.stringValue],
