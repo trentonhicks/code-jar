@@ -60,7 +60,7 @@
                             .col-md
                                 h5.card-title.mb-1.mb-md-3 {{ batch.batchName }}
                                 span.badge.badge-primary.mr-2 {{ batch.batchSize }} codes
-                                span.badge.badge-secondary Expires on {{ batch.dateExpires }}
+                                span.badge.badge-secondary Expires on {{ batch.dateExpires | formatDate }}
                             .col-md.mt-3.mt-md-0
                                 button.btn.btn-sm.btn-block.btn-outline-primary(@click="ViewBatch()") View Codes
                                 button.btn.btn-sm.btn-block.btn-outline-danger() Deactivate
@@ -106,17 +106,34 @@ module.exports = {
                         'Content-Type': 'application/json'
                     }
                 }).then(response => {
-                    // Show new batch in the list of batches
+                    this.GetBatches();
                 }).catch(e => {
                     // Unable to create batch
                 });
             }
+        },
+        GetBatches() {
+            HTTP({
+                method: 'get',
+                url: 'batchcodes'
+            }).then(response => {
+                this.batches = response.data;
+            });
         },
         ViewBatch() {
             this.batchSelected = true;
         },
         GoBack() {
             this.batchSelected = false;
+        }
+    },
+    created() {
+        this.GetBatches();
+    },
+    filters: {
+        formatDate: function(dateString) {
+            var date = new Date(dateString);
+            return date.getMonth()+1 + "/" + date.getDate() + "/" + date.getFullYear();
         }
     },
 }

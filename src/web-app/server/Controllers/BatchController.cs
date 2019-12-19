@@ -22,6 +22,13 @@ namespace CodeJar.WebApp.Controllers
             _config = config;
         }
 
+        [HttpGet]
+        public List<Batch> Get()
+        {
+            var sql = new SQL(_config.GetConnectionString("Storage"));
+            return sql.GetBatches();
+        }
+
         [HttpPost]
         public void Post(Batch batch)
         {
