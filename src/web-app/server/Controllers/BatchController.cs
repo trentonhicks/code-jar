@@ -21,5 +21,31 @@ namespace CodeJar.WebApp.Controllers
             _logger = logger;
             _config = config;
         }
+
+        [HttpPost]
+        public void Post(Batch batch)
+        {
+            // Create CodeGenerator instance
+            var codeGenerator = new CodeGenerator(
+                _config.GetConnectionString("Storage"),
+                _config.GetSection("BinaryFile")["Binary"]
+            );
+
+            // Get the CodeIDStart and CodeIDEnd values for the batch and store them as part of the batch
+            var sql = new SQL(_config.GetConnectionString("Storage"));
+            var codeIDStartAndEnd = sql.GetCodeIDStartAndEnd(batch.BatchSize);
+
+            // Start value
+            batch.CodeIDStart = codeIDStartAndEnd[0];
+
+            // End value
+            batch.CodeIDEnd = codeIDStartAndEnd[1];
+
+            // Generate codes based on the number stored in batch size
+            codeGenerator.CreateDigitalCode(batch.BatchSize);
+
+            // Create batch
+            sql.CreateBatch(batch);
+        }
     }
 }

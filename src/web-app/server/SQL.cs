@@ -24,18 +24,15 @@ namespace CodeJar.WebApp
         /// <param name="offset"></param>
         public void StoreRequestedCodes(int seedValue, long offset)
         {
-
             Connection.Open();
 
             using (var command = Connection.CreateCommand())
             {
-                command.CommandText = $@"INSERT INTO Codes (SeedValue, State, DateActive, DateExpires) VALUES (@Seedvalue, @State, @DateActive, @DateExpires)";
+                command.CommandText = $@"INSERT INTO Codes (SeedValue, State) VALUES (@Seedvalue, @State)";
 
                 // Insert values
                 command.Parameters.AddWithValue("@Seedvalue", seedValue);
-                command.Parameters.AddWithValue("@State", "Active");
-                command.Parameters.AddWithValue("@DateActive", DateTime.Now);
-                command.Parameters.AddWithValue("@DateExpires", DateTime.Today.AddDays(8));
+                command.Parameters.AddWithValue("@State", 1); // TODO: Replace 1 with enum
 
                 command.ExecuteNonQuery();
             }
@@ -57,34 +54,25 @@ namespace CodeJar.WebApp
             Connection.Close();
         }
 
-        public int CreateBatch()
+        public void CreateBatch(Batch batch)
         {
             Connection.Open();
 
-            int BatchID = 0;
-
             using (var command = Connection.CreateCommand())
             {
-                command.CommandText = $@"DECLARE @BatchValue int;
+                command.CommandText = @"INSERT INTO Batch (BatchName, CodeIDStart, CodeIDEnd, DateActive, DateExpires)
+                                        VALUES(@batchName, @codeIDStart, @codeIDEnd, @dateActive, @dateExpires)";
 
-                                    SET @BatchValue = (SELECT TOP 1 BatchValue FROM Batch ORDER BY ID DESC);
+                command.Parameters.AddWithValue("@batchName", batch.BatchName);
+                command.Parameters.AddWithValue("@codeIDStart", batch.CodeIDStart);
+                command.Parameters.AddWithValue("@codeIDEnd", batch.CodeIDEnd);
+                command.Parameters.AddWithValue("@dateActive", batch.DateActive);
+                command.Parameters.AddWithValue("@dateExpires", batch.DateExpires);
 
-                                    SET @BatchValue = @BatchValue + 1;
-
-                                    INSERT INTO Batch (BatchValue) Values (@BatchValue);
-                                    
-                                    SELECT TOP 1 ID FROM Batch ORDER BY ID DESC";
-                
-                using (var reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        BatchID = (int)reader["ID"];
-                    }
-                }
+                command.ExecuteNonQuery();
             }
+
             Connection.Close();
-            return BatchID;
         }
 
         /// <summary>
@@ -323,6 +311,31 @@ namespace CodeJar.WebApp
             Connection.Close();
 
             return true;
+        }
+
+        public int[] GetCodeIDStartAndEnd(int batchSize)
+        {
+            var codeIDStart = 1;
+
+            // Get the last code generated and add one (this is the next code that will be generated)
+            Connection.Open();
+
+            using(var command = Connection.CreateCommand())
+            {
+                command.CommandText = @"SELECT TOP 1 ID FROM Codes ORDER BY ID DESC";
+                
+                using(var reader = command.ExecuteReader())
+                {
+                    while(reader.Read())
+                    {
+                        codeIDStart = (int)reader["ID"] + 1;
+                    }
+                }
+            }
+
+            Connection.Close();
+
+            return new int[2] {codeIDStart, codeIDStart + batchSize - 1};
         }
     }
 }

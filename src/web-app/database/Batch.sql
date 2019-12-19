@@ -5,6 +5,6 @@ CREATE TABLE [dbo].[Batch](
 	BatchName varchar(50) NOT NULL,
 	CodeIDStart int FOREIGN KEY REFERENCES Codes(ID) NOT NULL,
 	CodeIDEnd int FOREIGN KEY REFERENCES Codes(ID) NOT NULL,
-    [BatchSize] AS CodeIDStart - CodeIDEnd + 1, 
+    [BatchSize] AS CodeIDEnd - CodeIDStart + 1,
 	DateActive DATETIME NOT NULL,
 	DateExpires DATETIME NOT NULL)
