@@ -143,14 +143,14 @@ namespace CodeJar.WebApp
         /// Returns a list of all the codes from the database
         /// </summary>
         /// <returns></returns>
-        public List<Code> GetCodes(int page)
+        public List<Code> GetCodes(int batchID, int page)
         {
             // Create list to store codes gathered from the database
             var codes = new List<Code>();
 
             Connection.Open();
 
-            page = 0;
+            page--;
 
             if(page > 0)
             {
@@ -159,10 +159,28 @@ namespace CodeJar.WebApp
 
             using(var command = Connection.CreateCommand())
             {
+                var codeIDStart = 0;
+                var codeIDEnd = 0;
+
+                command.CommandText = @"SELECT CodeIDStart, CodeIDEnd FROM Batch WHERE ID = @batchID";
+                command.Parameters.AddWithValue("batchID", batchID);
+
+                using(var reader = command.ExecuteReader())
+                {
+                    while(reader.Read())
+                    {
+                        codeIDStart = (int)reader["CodeIDStart"];
+                        codeIDEnd = (int)reader["CodeIDEnd"];
+                    }
+                }
+
                 // Select all codes from the database
-                command.CommandText = "SELECT * FROM Codes ORDER BY ID OFFSET @page ROWS FETCH NEXT 10 ROWS ONLY";
+                command.CommandText = @"SELECT * FROM Codes WHERE ID BETWEEN @codeIDStart AND @codeIDEnd
+                                        ORDER BY ID OFFSET @page ROWS FETCH NEXT 10 ROWS ONLY";
 
                 command.Parameters.AddWithValue("@page", page);
+                command.Parameters.AddWithValue("@codeIDStart", codeIDStart);
+                command.Parameters.AddWithValue("@codeIDEnd", codeIDEnd);
 
                 // Read all the rows
                 using(var reader = command.ExecuteReader())
@@ -170,12 +188,7 @@ namespace CodeJar.WebApp
                     while(reader.Read())
                     {
                         // Store code in a variable
-                        var code = new Code()
-                        {
-                            State = (string)reader["State"],
-                            DateActive = (DateTime)reader["DateActive"],
-                            DateExpires = (DateTime)reader["DateExpires"]
-                        };
+                        var code = new Code();
 
                         //Stores SeedValue outside of code object
                         var seed = (int)reader["SeedValue"];

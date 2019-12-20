@@ -8,7 +8,7 @@ namespace CodeJar.WebApp
     public class Code
     {
         public string StringValue { get; set; }
-        public string State { get; set; }
+        public string State { get; set; } = "Active";
         public DateTime DateActive { get; set; }
         public DateTime DateExpires { get; set; }
         public Boolean IsChecked { get; set; } = false;

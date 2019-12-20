@@ -10,7 +10,6 @@ using Microsoft.Extensions.Logging;
 namespace CodeJar.WebApp.Controllers
 {
     [ApiController]
-    [Route("batchcodes")]
     public class BatchController : ControllerBase
     {
         private readonly ILogger<PromoCodesController> _logger;
@@ -22,14 +21,23 @@ namespace CodeJar.WebApp.Controllers
             _config = config;
         }
 
-        [HttpGet]
+        [HttpGet("batch")]
         public List<Batch> Get()
         {
             var sql = new SQL(_config.GetConnectionString("Storage"));
             return sql.GetBatches();
         }
 
-        [HttpPost]
+        [HttpGet("batch/{id}")]
+        public TableData GetCodes(int id, [FromQuery] int page)
+        {
+            var sql = new SQL(_config.GetConnectionString("Storage"));
+            var codes = sql.GetCodes(id, page);
+
+            return new TableData(codes, page);
+        }
+
+        [HttpPost("batch")]
         public void Post(Batch batch)
         {
             // Create CodeGenerator instance

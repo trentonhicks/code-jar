@@ -95,7 +95,7 @@ module.exports = {
             if(this.batchSize > 0) {
                 HTTP({
                     method: 'post',
-                    url: 'batchcodes',
+                    url: 'batch',
                     data: {
                         batchName: this.batchName,
                         batchSize: parseInt(this.batchSize),
@@ -115,7 +115,7 @@ module.exports = {
         GetBatches() {
             HTTP({
                 method: 'get',
-                url: 'batchcodes'
+                url: 'batch'
             }).then(response => {
                 this.batches = response.data;
             });
