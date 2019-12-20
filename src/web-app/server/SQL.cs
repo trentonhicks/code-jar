@@ -32,7 +32,7 @@ namespace CodeJar.WebApp
 
                 // Insert values
                 command.Parameters.AddWithValue("@Seedvalue", seedValue);
-                command.Parameters.AddWithValue("@State", 1); // TODO: Replace 1 with enum
+                command.Parameters.AddWithValue("@State", States.Generated);
 
                 command.ExecuteNonQuery();
             }
@@ -193,6 +193,7 @@ namespace CodeJar.WebApp
                         //Stores SeedValue outside of code object
                         var seed = (int)reader["SeedValue"];
 
+                        code.State = States.ConvertToString((byte)reader["State"]);
                         code.StringValue = ConvertToCode(seed);
                         
                         // Add code to the list
@@ -310,9 +311,10 @@ namespace CodeJar.WebApp
 
             using (var command = Connection.CreateCommand())
             {
-                command.CommandText = @"UPDATE Codes SET [State] = 'Inactive' WHERE SeedValue = @seedvalue";
+                command.CommandText = @"UPDATE Codes SET [State] = @inactive WHERE SeedValue = @seedvalue";
 
                 command.Parameters.AddWithValue("@seedvalue", seedvalue);
+                command.Parameters.AddWithValue("@inactive", States.Inactive);
 
                 command.ExecuteNonQuery();
             }
@@ -342,7 +344,7 @@ namespace CodeJar.WebApp
                         codeFound = true;
 
                         // If code is not redeemable return false
-                        if((string)reader["State"] != "Active")
+                        if((byte)reader["State"] != States.Active)
                         {
                             return false;
                         }
@@ -355,8 +357,11 @@ namespace CodeJar.WebApp
                     }
                 }
 
-                command.CommandText = @"UPDATE Codes SET [State] = 'Redeemed'
-                                        WHERE SeedValue = @seedvalue AND [State] = 'Active'";
+                command.CommandText = @"UPDATE Codes SET [State] = @redeemed
+                                        WHERE SeedValue = @seedvalue AND [State] = @active";
+
+                command.Parameters.AddWithValue("@redeemed", States.Redeemed);
+                command.Parameters.AddWithValue("@active", States.Active);            
 
                 command.ExecuteNonQuery();
             }

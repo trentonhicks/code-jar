@@ -10,7 +10,8 @@
             span.badge.badge-primary(v-if='code.state === "Active"') Active
             span.badge.badge-success(v-else-if='code.state==="Redeemed"') Redeemed
             span.badge.badge-danger(v-else-if='code.state==="Expired"') Expired
-            span.badge.badge-secondary(v-else) Inactive
+            span.badge.badge-secondary(v-else-if='code.state==="Inactive"') Inactive
+            span.badge.badge-secondary(v-else-if='code.state==="Generated"') Generated
 
         //- Expiration
         td {{ code.dateExpires | formatDate }}
@@ -26,8 +27,7 @@
 
 <script>
 
-import HTTP from '../js/http-common.js';
-import Code from './Code';
+import { HTTP } from '../js/http-common';
 
 module.exports = {
     data: function() {
@@ -38,7 +38,7 @@ module.exports = {
         DeactivateCode() {
             HTTP({
                 method: 'delete',
-                url: 'http://localhost:5000/codes',
+                url: 'codes',
                 data: [this.code.stringValue],
                 headers: {
                     'Content-Type': 'application/json'

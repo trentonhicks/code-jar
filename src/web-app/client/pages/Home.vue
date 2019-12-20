@@ -33,7 +33,7 @@
 </template>
 
 <script>
-import HTTP from '../js/http-common.js';
+import { HTTP } from '../js/http-common.js';
 
 module.exports = {
     name: 'Home',
