@@ -207,7 +207,7 @@ namespace CodeJar.WebApp
             return codes;
         }
 
-         public int PageCount()
+         public int PageCount(int id)
          {
 
               var pages = 0;
@@ -218,8 +218,10 @@ namespace CodeJar.WebApp
 
              using (var command = Connection.CreateCommand())
              {
+                 command.CommandText = "SELECT BatchSize FROM Batch WHERE ID = @id";
 
-                 command.CommandText = "SELECT COUNT(*) AS Number FROM Codes";
+                 command.Parameters.AddWithValue("@id", id);
+
 
                   using(var reader = command.ExecuteReader())
                   {
@@ -228,7 +230,7 @@ namespace CodeJar.WebApp
                       while(reader.Read())
                       {
                         
-                        var numberOfCodes = (int)reader["Number"] ;
+                        var numberOfCodes = (int)reader["BatchSize"] ;
 
                         pages = numberOfCodes / 10;
 

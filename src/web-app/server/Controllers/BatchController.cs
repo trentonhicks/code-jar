@@ -33,8 +33,9 @@ namespace CodeJar.WebApp.Controllers
         {
             var sql = new SQL(_config.GetConnectionString("Storage"));
             var codes = sql.GetCodes(id, page);
+            var pages = sql.PageCount(id);
 
-            return new TableData(codes, page);
+            return new TableData(codes, pages);
         }
 
         [HttpPost("batch")]
