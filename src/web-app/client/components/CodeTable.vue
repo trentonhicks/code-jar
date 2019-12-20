@@ -54,6 +54,7 @@ import { HTTP } from '../js/http-common';
                 size: 10,
             }
         },
+        props: ['batchID'],
         components: {
             Code
         },
@@ -61,7 +62,7 @@ import { HTTP } from '../js/http-common';
             GetTableData() {
                 HTTP({
                     method: 'get',
-                    url: 'codes',
+                    url: `batch/${this.batchID}`,
                     params: {
                         page: this.pageNumber
                     }

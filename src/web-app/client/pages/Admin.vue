@@ -12,7 +12,7 @@
                 button.mb-2.btn.btn-sm.btn-outline-secondary(@click="GoBack()")
                     i.fa.fa-angle-left
                     |  Batch list
-                code-table
+                code-table(:batchID="batchIDSelected")
 
             //- Show batch list when batch isn't selected
             .batch-list(v-if="!batchSelected")
@@ -62,7 +62,7 @@
                                 span.badge.badge-primary.mr-2 {{ batch.batchSize }} codes
                                 span.badge.badge-secondary Expires on {{ batch.dateExpires | formatDate }}
                             .col-md.mt-3.mt-md-0
-                                button.btn.btn-sm.btn-block.btn-outline-primary(@click="ViewBatch()") View Codes
+                                button.btn.btn-sm.btn-block.btn-outline-primary(@click="ViewBatch(batch.id)") View Codes
                                 button.btn.btn-sm.btn-block.btn-outline-danger() Deactivate
 
                 //- Alert when there are no batches
@@ -80,6 +80,7 @@ module.exports = {
     data: function() {
         return {
             batchSelected: false,
+            batchIDSelected: '',
             batchName: '',
             batchSize: 0,
             dateActive: '',
@@ -120,8 +121,9 @@ module.exports = {
                 this.batches = response.data;
             });
         },
-        ViewBatch() {
+        ViewBatch(id) {
             this.batchSelected = true;
+            this.batchIDSelected = id;
         },
         GoBack() {
             this.batchSelected = false;
