@@ -13,9 +13,6 @@
             span.badge.badge-secondary(v-else-if='code.state==="Inactive"') Inactive
             span.badge.badge-secondary(v-else-if='code.state==="Generated"') Generated
 
-        //- Expiration
-        td {{ code.dateExpires | formatDate }}
-
         //- Deactivate
         td
             button.btn.btn-sm(
@@ -130,7 +127,7 @@ module.exports = {
             -webkit-transform: rotate(45deg);
             -ms-transform: rotate(45deg);
             transform: rotate(45deg);
-                    }
+        }
     }
  
 </style>

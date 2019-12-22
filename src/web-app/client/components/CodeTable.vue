@@ -8,9 +8,8 @@
             select#searchStatuses.custom-select(v-model='state')
                 option(selected) Select status
                 option(value="Active") Active
-                option(value="Redeemed") Redemeed 
-                option(value="Expired") Expired
-                option(value="Inactive") Inactives
+                option(value="Redeemed") Redeemed 
+                option(value="Inactive") Inactive
 
         .table-responsive
             table.table.table-bordered(width='100%' cellspacing='0')
@@ -18,13 +17,11 @@
                     tr
                         th Code
                         th Status
-                        th Expiration
                         th Deactivate
                 tfoot
                     tr
                         th Code
                         th Status
-                        th Expiration
                         th Deactivate
 
                 tbody
@@ -59,13 +56,21 @@ import { HTTP } from '../js/http-common';
             Code
         },
         methods: {
-            GetTableData() {
+            GetTableData(stringValue, state) {
+                var params = { page: this.pageNumber };
+
+                if(stringValue != "") {
+                    params.stringValue = this.stringValue;
+                }
+
+                if(state != "Select status") {
+                    params.state = this.state;
+                }
+
                 HTTP({
                     method: 'get',
                     url: `batch/${this.batchID}`,
-                    params: {
-                        page: this.pageNumber
-                    }
+                    params,
                 }).then(response => {
                     this.codes = response.data.codes;
                     this.pages = response.data.pages;
@@ -78,10 +83,10 @@ import { HTTP } from '../js/http-common';
             },
             NextPage() {
                 this.pageNumber++; 
-            }
+            },
         },
         created() {
-            this.GetTableData();
+            this.GetTableData(this.stringValue, this.state);
         },
         computed: {
             searchQuery() {
@@ -90,9 +95,12 @@ import { HTTP } from '../js/http-common';
         },
         watch: {
             pageNumber: function() {
-                this.GetTableData();
+                this.GetTableData(this.stringValue, this.state);
+            },
+            searchQuery: function() {
+                this.GetTableData(this.stringValue, this.state);
             }
-        }
+        },
     }
 
 </script>

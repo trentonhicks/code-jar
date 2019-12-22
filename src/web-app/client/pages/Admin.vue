@@ -63,7 +63,7 @@
                                 span.badge.badge-secondary Expires on {{ batch.dateExpires | formatDate }}
                             .col-md.mt-3.mt-md-0
                                 button.btn.btn-sm.btn-block.btn-outline-primary(@click="ViewBatch(batch.id)") View Codes
-                                button.btn.btn-sm.btn-block.btn-outline-danger() Deactivate
+                                button.btn.btn-sm.btn-block.btn-outline-danger(@click="DeactivateBatch(batch)") Deactivate
 
                 //- Alert when there are no batches
                 p.text-muted.mt-3.mb-0(v-if="batches.length == 0" role="alert") No batches have been created yet.
@@ -124,6 +124,18 @@ module.exports = {
         ViewBatch(id) {
             this.batchSelected = true;
             this.batchIDSelected = id;
+        },
+        DeactivateBatch(batch) {
+            HTTP({
+                method: 'delete',
+                url: 'batch',
+                data: {
+                    "codeIDStart": parseInt(batch.codeIDStart),
+                    "codeIDEnd": parseInt(batch.codeIDEnd)
+                }
+            }).then(() => {
+                
+            });
         },
         GoBack() {
             this.batchSelected = false;

@@ -321,6 +321,26 @@ namespace CodeJar.WebApp
 
             Connection.Close();
         }
+        
+        public void DeactivateBatch(Batch batch)
+        {
+            Connection.Open();
+
+            using(var command = Connection.CreateCommand())
+            {
+                command.CommandText = @"UPDATE Codes SET [State] = @inactive
+                                        WHERE ID BETWEEN @codeIDStart AND @codeIDEnd AND [State] = @active";
+
+                command.Parameters.AddWithValue("@inactive", States.Inactive);
+                command.Parameters.AddWithValue("@active", States.Active);
+                command.Parameters.AddWithValue("@codeIDStart", batch.CodeIDStart);
+                command.Parameters.AddWithValue("@codeIDEnd", batch.CodeIDEnd);
+
+                command.ExecuteNonQuery();
+            }
+
+            Connection.Close();
+        }
 
         public Boolean RedeemedStatus(string code, string alphabet)
         {

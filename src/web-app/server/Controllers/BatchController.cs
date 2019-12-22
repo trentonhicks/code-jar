@@ -38,6 +38,13 @@ namespace CodeJar.WebApp.Controllers
             return new TableData(codes, pages);
         }
 
+        [HttpDelete("batch")]
+        public void DeactivateBatch([FromBody] Batch batch)
+        {
+            var sql = new SQL(_config.GetConnectionString("Storage"));
+            sql.DeactivateBatch(batch);
+        }
+
         [HttpPost("batch")]
         public void Post(Batch batch)
         {
