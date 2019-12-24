@@ -34,7 +34,7 @@ namespace CodeJar.WebApp
                     {
                         var seedvalue = reader.ReadInt32();
                         offset = reader.BaseStream.Position;
-                        sql.StoreRequestedCodes(seedvalue, offset);
+                        sql.StoreRequestedCodes(seedvalue, offset, dateActive);
                     }
                 }
                 return true;

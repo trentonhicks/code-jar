@@ -22,19 +22,26 @@ namespace CodeJar.WebApp
         /// </summary>
         /// <param name="code"></param>
         /// <param name="offset"></param>
-        public void StoreRequestedCodes(int seedValue, long offset)
+        public void StoreRequestedCodes(int seedValue, long offset, DateTime dateActive)
         {
             Connection.Open();
 
             using (var command = Connection.CreateCommand())
             {
-                command.CommandText = $@"INSERT INTO Codes (SeedValue, State) VALUES (@Seedvalue, @State)";
+                command.CommandText = $@"INSERT INTO Codes (SeedValue, State) VALUES (@Seedvalue, @StateGenerated)";
 
                 // Insert values
                 command.Parameters.AddWithValue("@Seedvalue", seedValue);
-                command.Parameters.AddWithValue("@State", States.Generated);
+                command.Parameters.AddWithValue("@StateGenerated", States.Generated);
 
                 command.ExecuteNonQuery();
+
+                if(dateActive.Day == DateTime.Now.Day)
+                {
+                    command.CommandText = "UPDATE Codes SET State = @StateActive WHERE SeedValue = @Seedvalue";
+                    command.Parameters.AddWithValue("@StateActive", States.Active);
+                    command.ExecuteNonQuery();
+                }
             }
 
             Connection.Close();
