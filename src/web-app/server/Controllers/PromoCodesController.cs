@@ -22,7 +22,7 @@ namespace CodeJar.WebApp.Controllers
             _config = config;
         }
 
-        [HttpPost]
+        /*[HttpPost]
         public void Post([FromBody] int numberOfCodes)
         {
             var connectionString = _config.GetConnectionString("Storage");
@@ -33,7 +33,7 @@ namespace CodeJar.WebApp.Controllers
 
             //Creates n number of codes and stores them in DB
             cGenerate.CreateDigitalCode(numberOfCodes);
-        }
+        }*/
 
         //Set code status to inactive
         [HttpDelete]

@@ -14,7 +14,7 @@ namespace CodeJar.WebApp
         }
         public string ConnectionString { get; set; }
         public string FilePath {get; set;}
-        public void CreateDigitalCode(int amount)
+        public Boolean CreateDigitalCode(DateTime dateActive, DateTime dateExpires, int amount)
         {
             var sql = new SQL(ConnectionString);
             long offset = sql.GetOffset();
@@ -22,17 +22,25 @@ namespace CodeJar.WebApp
             {
                 throw new ArgumentException("Offset must be divisible by 4");
             }
-            using (BinaryReader reader = new BinaryReader(File.Open(FilePath, FileMode.Open)))
-            {
-                reader.BaseStream.Position = offset;
-                for (var i = 0; i < amount; i++)
-                {
-                    var seedvalue = reader.ReadInt32();
-                    offset = reader.BaseStream.Position;
-                    sql.StoreRequestedCodes(seedvalue, offset);
-                }
-            }
 
+            // Date active must be less than date expires and greater than or equal to the current date time in order to generate codes
+            if(dateActive < dateExpires && dateActive.Day >= DateTime.Now.Day)
+            {
+
+                using (BinaryReader reader = new BinaryReader(File.Open(FilePath, FileMode.Open)))
+                {
+                    reader.BaseStream.Position = offset;
+                    for (var i = 0; i < amount; i++)
+                    {
+                        var seedvalue = reader.ReadInt32();
+                        offset = reader.BaseStream.Position;
+                        sql.StoreRequestedCodes(seedvalue, offset);
+                    }
+                }
+                return true;
+            }
+
+                return false;
         }
         
     }
