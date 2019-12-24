@@ -146,6 +146,26 @@ namespace CodeJar.WebApp
             return seedValue;
         }
 
+        public string GetCodeState(string stringValue, string alphabet)
+        {
+            var seedValue = ConvertFromCode(stringValue, alphabet);
+            byte state = 0;
+
+            Connection.Open();
+
+            using(var command = Connection.CreateCommand())
+            {
+                command.CommandText = @"SELECT [State] FROM Codes WHERE SeedValue = @seedValue";
+                command.Parameters.AddWithValue("@seedValue", seedValue);
+
+                state = (byte)command.ExecuteScalar();
+            }
+
+            Connection.Close();
+
+            return States.ConvertToString(state);
+        }
+
         /// <summary>
         /// Returns a list of all the codes from the database
         /// </summary>

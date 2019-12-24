@@ -41,9 +41,18 @@ module.exports = {
                     'Content-Type': 'application/json'
                 }
             }).then(response => {
-                this.code.state = "Inactive";
+                // After the state is changed update the code
+                HTTP({
+                    method: 'get',
+                    url: 'codes',
+                    params: {
+                        stringValue: this.code.stringValue,
+                    }
+                }).then(response => {
+                    this.code.state = response.data;
+                });
             }).catch(e => {
-                
+
             });
         },
     },

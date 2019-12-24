@@ -35,6 +35,17 @@ namespace CodeJar.WebApp.Controllers
             cGenerate.CreateDigitalCode(numberOfCodes);
         }*/
 
+        [HttpGet]
+        public string Get([FromQuery] string stringValue)
+        {
+            var connectionString = _config.GetConnectionString("Storage");
+            var alphabet = _config.GetSection("Base26")["alphabet"];
+            var sql = new SQL(connectionString);
+
+            // Return state as a string
+            return sql.GetCodeState(stringValue, alphabet);
+        }
+
         //Set code status to inactive
         [HttpDelete]
         public void Delete([FromBody]string [] code)
