@@ -318,14 +318,16 @@ namespace CodeJar.WebApp
 
             using (var command = Connection.CreateCommand())
             {
-                command.CommandText = @"UPDATE Codes SET [State] = @inactive WHERE SeedValue = @seedvalue";
+                command.CommandText = @"UPDATE Codes SET [State] = @inactive
+                                        WHERE SeedValue = @seedvalue AND [State] = @active";
 
-                command.Parameters.AddWithValue("@seedvalue", seedvalue);
                 command.Parameters.AddWithValue("@inactive", States.Inactive);
+                command.Parameters.AddWithValue("@active", States.Active);
+                command.Parameters.AddWithValue("@seedvalue", seedvalue);
+
 
                 command.ExecuteNonQuery();
             }
-
             Connection.Close();
         }
         

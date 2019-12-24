@@ -43,7 +43,7 @@ module.exports = {
             }).then(response => {
                 this.code.state = "Inactive";
             }).catch(e => {
-                // Error
+                
             });
         },
     },
