@@ -29,13 +29,15 @@
                     input#dateActive.form-control.form-control-sm.mr-sm-2.mb-2.mb-sm-0(
                         v-model="dateActive" 
                         type='text' onfocus="(this.type='date')" 
+                        :min="dateActiveMin"
                         placeholder='Start Date' 
                         required)
 
                     //- Date Expires
                     input#dateExpires.form-control.form-control-sm.mr-sm-2.mb-2.mb-sm-0(
                         v-model="dateExpires" 
-                        type='text' 
+                        type='text'
+                        :min="dateExpiresMin" 
                         onfocus="(this.type='date')" 
                         placeholder='End Date')
                     
@@ -72,6 +74,20 @@
 
 <script>
 
+function formatDate(date) {
+    var day = ("0" + date.getDate()).slice(-2);
+    var month = ("0" + (date.getMonth() + 1)).slice(-2);
+    var dateString = date.getFullYear()+"-"+(month)+"-"+(day);
+    return dateString;
+}
+
+var today = new Date();
+var tomorrow = new Date();
+tomorrow.setDate(tomorrow.getDate() + 1);
+
+var dateActiveMin = formatDate(today);
+var dateExpiresMin = formatDate(tomorrow);
+
 import CodeTable from '../components/CodeTable';
 import { HTTP } from '../js/http-common';
 
@@ -85,7 +101,9 @@ module.exports = {
             batchSize: 0,
             dateActive: '',
             dateExpires: '',
-            batches: []
+            batches: [],
+            dateActiveMin,
+            dateExpiresMin,
         }
     },
     components: {
