@@ -16,7 +16,7 @@
 
             //- Show batch list when batch isn't selected
             .batch-list(v-if="!batchSelected")
-                form.form-inline(v-on:submit.prevent='CreateBatch()')
+                form.form-inline(v-on:submit.prevent='CreateBatch()').mb-3
                     
                     //- Batch Name
                     input#batchName.form-control.form-control-sm.mr-sm-2.mb-2.mb-sm-0(
@@ -50,6 +50,11 @@
 
                     //- Create Batch
                     button.btn.btn-sm.btn-primary(type='submit') Create Batch
+                
+                //- Success or failure for batch creation
+                div(v-if="formSubmitted")
+                    .alert.alert-danger(v-if="batchError") Couldn't create batch! Try again.
+                    .alert.alert-success(v-else) Batch was created successfully.
 
                 //- Batch list
                 .card(
@@ -99,11 +104,13 @@ module.exports = {
             batchIDSelected: '',
             batchName: '',
             batchSize: 0,
+            batchError: false,
             dateActive: '',
             dateExpires: '',
             batches: [],
             dateActiveMin,
             dateExpiresMin,
+            formSubmitted: false,
         }
     },
     components: {
@@ -127,9 +134,10 @@ module.exports = {
                 }).then(response => {
                     this.GetBatches();
                 }).catch(e => {
-                    // Unable to create batch
+                    this.batchError = true;
                 });
             }
+            this.formSubmitted = true;
         },
         GetBatches() {
             HTTP({
