@@ -146,31 +146,38 @@ namespace CodeJar.WebApp
             return seedValue;
         }
 
-        public string GetCodeState(string stringValue, string alphabet)
+        public Code GetCode(string stringValue, string alphabet)
         {
             var seedValue = ConvertFromCode(stringValue, alphabet);
-            byte state = 0;
+            var code = new Code();
 
             Connection.Open();
 
             using(var command = Connection.CreateCommand())
             {
-                command.CommandText = @"SELECT [State] FROM Codes WHERE SeedValue = @seedValue";
+                command.CommandText = @"SELECT * FROM Codes WHERE SeedValue = @seedValue";
                 command.Parameters.AddWithValue("@seedValue", seedValue);
 
-                state = (byte)command.ExecuteScalar();
+                using(var reader = command.ExecuteReader())
+                {
+                    while(reader.Read()) {
+                        var seed = (int)reader["SeedValue"];
+                        code.State = States.ConvertToString((byte)reader["State"]);
+                        code.StringValue = ConvertToCode(seed);
+                    }
+                }
             }
 
             Connection.Close();
 
-            return States.ConvertToString(state);
+            return code;
         }
 
         /// <summary>
         /// Returns a list of all the codes from the database
         /// </summary>
         /// <returns></returns>
-        public List<Code> GetCodes(int batchID, int page)
+        public List<Code> GetCodes(int batchID, int page, string stringValue, string state, string alphabet)
         {
             // Create list to store codes gathered from the database
             var codes = new List<Code>();
@@ -202,8 +209,28 @@ namespace CodeJar.WebApp
                 }
 
                 // Select all codes from the database
-                command.CommandText = @"SELECT * FROM Codes WHERE ID BETWEEN @codeIDStart AND @codeIDEnd
-                                        ORDER BY ID OFFSET @page ROWS FETCH NEXT 10 ROWS ONLY";
+                command.CommandText = "SELECT * FROM Codes WHERE ID BETWEEN @codeIDStart AND @codeIDEnd ";
+                
+                if(stringValue != null && state != null)
+                {
+                    command.CommandText += "AND SeedValue = @seedValue AND [State] = @state ";
+                    command.Parameters.AddWithValue("@seedValue", ConvertFromCode(stringValue, alphabet));
+                    command.Parameters.AddWithValue("@state", States.ConvertToByte(state));
+                }
+
+                else if(stringValue != null)
+                {
+                    command.CommandText += "AND SeedValue = @seedValue ";
+                    command.Parameters.AddWithValue("@seedValue", ConvertFromCode(stringValue, alphabet));
+                }
+
+                else if(state != null)
+                {
+                    command.CommandText += "AND [State] = @state ";
+                    command.Parameters.AddWithValue("@state", States.ConvertToByte(state));
+                }
+
+                command.CommandText += "ORDER BY ID OFFSET @page ROWS FETCH NEXT 10 ROWS ONLY";
 
                 command.Parameters.AddWithValue("@page", page);
                 command.Parameters.AddWithValue("@codeIDStart", codeIDStart);
@@ -237,7 +264,6 @@ namespace CodeJar.WebApp
 
          public int PageCount(int id)
          {
-
               var pages = 0;
 
               var pagesRemainder = 0;

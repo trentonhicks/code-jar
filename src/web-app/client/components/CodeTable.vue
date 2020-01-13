@@ -1,16 +1,6 @@
 <template lang="pug">
 
     div
-        form#searchCodes.form-inline
-            label.sr-only(for='searchCode') Search for Codes 
-            input#searchCode.form-control.form-control-sm.mr-sm-2(v-model='stringValue' type='text' placeholder='Search codes') 
-        
-            select#searchStatuses.custom-select(v-model='state')
-                option(selected) Select status
-                option(value="Active") Active
-                option(value="Redeemed") Redeemed 
-                option(value="Inactive") Inactive
-
         .table-responsive
             table.table.table-bordered(width='100%' cellspacing='0')
                 thead
@@ -27,10 +17,15 @@
                 tbody
                     Code(v-for='code in codes' :code='code' :key='code.id')
 
-        div(class="btn-group" role="group" aria-label="Pagination")
+                    tr(v-if="codes.length < 1")
+                        td Unable to find codes that match your search
+                        td
+                        td
+
+        div(class="btn-group" role="group" aria-label="Pagination" v-if="!searchResults")
             button(class="btn btn-secondary" @click="PrevPage()" :disabled="pageNumber == 1") Previous
             button(class="btn btn-secondary" @click="NextPage()" :disabled="pageNumber == pages") Next
-        span.text-secondary.ml-3 {{ pageNumber }} of {{ pages }}
+        span.text-secondary.ml-3(v-if="!searchResults") {{ pageNumber }} of {{ pages }}
 
 </template>
 
@@ -44,36 +39,43 @@ import { HTTP } from '../js/http-common';
             return {
                 codes: [],
                 filteredCodes: [],
-                state: "Select status",
                 stringValue: '',
                 pageNumber: 1,
                 pages: 0,
                 size: 10,
+                searchResults: false,
             }
         },
-        props: ['batchID'],
+        props: ['batchID', 'search'],
         components: {
             Code
         },
         methods: {
-            GetTableData(stringValue, state) {
-                var params = { page: this.pageNumber };
+            GetTableData(search) {
+                var params = {};
+                var url = this.batchID != undefined ? `batch/${this.batchID}` : 'codes';
 
-                if(stringValue != "") {
-                    params.stringValue = this.stringValue;
+                // Add search query if user searched
+                if(this.search != undefined) {
+                    params.stringValue = this.search;
                 }
 
-                if(state != "Select status") {
-                    params.state = this.state;
+                else {
+                    params.page = this.pageNumber;
                 }
 
                 HTTP({
                     method: 'get',
-                    url: `batch/${this.batchID}`,
+                    url,
                     params,
                 }).then(response => {
-                    this.codes = response.data.codes;
-                    this.pages = response.data.pages;
+                    if(this.batchID != undefined) {
+                        this.codes = response.data.codes;
+                        this.pages = response.data.pages;
+                    }
+                    else if(response.data.state != null) {
+                        this.codes.push(response.data);
+                    }
                 }).catch(error => {
                     // Unable to get codes
                 });
@@ -86,19 +88,23 @@ import { HTTP } from '../js/http-common';
             },
         },
         created() {
-            this.GetTableData(this.stringValue, this.state);
+            this.GetTableData(this.stringValue);
+
+            if(this.search != undefined) {
+                this.searchResults = true;
+            }
         },
         computed: {
             searchQuery() {
-                return [this.stringValue, this.state];
+                return [this.stringValue];
             },
         },
         watch: {
             pageNumber: function() {
-                this.GetTableData(this.stringValue, this.state);
+                this.GetTableData(this.search);
             },
             searchQuery: function() {
-                this.GetTableData(this.stringValue, this.state);
+                this.GetTableData(this.search);
             }
         },
     }

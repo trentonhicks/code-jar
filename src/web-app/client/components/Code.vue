@@ -49,7 +49,7 @@ module.exports = {
                         stringValue: this.code.stringValue,
                     }
                 }).then(response => {
-                    this.code.state = response.data;
+                    this.code.state = response.data.state;
                 });
             }).catch(e => {
 

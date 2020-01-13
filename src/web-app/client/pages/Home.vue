@@ -28,8 +28,11 @@
                     div(v-show="submitted").mt-3
                         div(v-if="success")
                             .alert.alert-success {{ successMsg }}
-                        div(v-else)    
-                            .alert.alert-danger {{ errorMsg }}                        
+                            img(class="img-fluid" style="width: 100%;" src="https://media.giphy.com/media/6nuiJjOOQBBn2/giphy.gif")
+                        div(v-else)
+                            .alert.alert-danger {{ errorMsg }}
+                            img(class="img-fluid" style="width: 100%;" src="https://media.giphy.com/media/z75PUpyuVxcxa/giphy.gif")
+
 </template>
 
 <script>

@@ -36,14 +36,14 @@ namespace CodeJar.WebApp.Controllers
         }*/
 
         [HttpGet]
-        public string Get([FromQuery] string stringValue)
+        public Code Get([FromQuery] string stringValue)
         {
             var connectionString = _config.GetConnectionString("Storage");
             var alphabet = _config.GetSection("Base26")["alphabet"];
             var sql = new SQL(connectionString);
 
             // Return state as a string
-            return sql.GetCodeState(stringValue, alphabet);
+            return sql.GetCode(stringValue, alphabet);
         }
 
         //Set code status to inactive

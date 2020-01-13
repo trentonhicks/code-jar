@@ -8,14 +8,24 @@
                 |  Random Codes
           
         .card-body
+
+            //- Batch view
             .single-batch(v-if="batchSelected")
-                button.mb-2.btn.btn-sm.btn-outline-secondary(@click="GoBack()")
+                button.mb-2.btn.btn-sm.btn-light(@click="GoBack()")
                     i.fa.fa-angle-left
                     |  Batch list
                 code-table(:batchID="batchIDSelected")
 
+            //- Search results view
+            .search-results(v-else-if="isSearching")
+                button.mb-2.mr-2.btn.btn-sm.btn-light(@click="GoBack()")
+                    i.fa.fa-angle-left
+                    |  Batch list
+                span Search results for <em>{{ codeSearchVal }}</em>
+                code-table(:search="codeSearchVal")
+
             //- Show batch list when batch isn't selected
-            .batch-list(v-if="!batchSelected")
+            .batch-list(v-if="!batchSelected && !isSearching")
                 form.form-inline(v-on:submit.prevent='CreateBatch()').mb-3
                     
                     //- Batch Name
@@ -51,6 +61,17 @@
                     //- Create Batch
                     button.btn.btn-sm.btn-primary(type='submit') Create Batch
                 
+                //- Search codes form
+                form.form-inline(v-on:submit.prevent="SearchCodes()")
+                    input#codeSearchVal.form-control.form-control-sm.mr-sm-2.mb-2.mb-sm-0(
+                        v-model='codeSearchVal'
+                        placeholder='Search codes'
+                        pattern=".{6,}"
+                        maxlength="6"
+                        required)
+
+                    button.btn.btn-sm.btn-primary(type='submit') Search codes
+
                 //- Success or failure for batch creation
                 div(v-if="formSubmitted")
                     .alert.alert-danger(v-if="batchError") Couldn't create batch! Try again.
@@ -111,6 +132,8 @@ module.exports = {
             dateActiveMin,
             dateExpiresMin,
             formSubmitted: false,
+            codeSearchVal: '',
+            isSearching: false,
         }
     },
     components: {
@@ -165,6 +188,10 @@ module.exports = {
         },
         GoBack() {
             this.batchSelected = false;
+            this.isSearching = false;
+        },
+        SearchCodes() {
+            this.isSearching = true;
         }
     },
     created() {
