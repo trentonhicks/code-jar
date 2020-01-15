@@ -78,7 +78,7 @@
                     .alert.alert-success(v-else) Batch was created successfully.
 
                 //- Batch list
-                .card(
+                .batch.card(
                     class="m-0 mt-3" 
                     v-for="batch in batches" 
                     :key="batch.id" 
@@ -89,9 +89,9 @@
                                 h5.card-title.mb-1.mb-md-3 {{ batch.batchName }}
                                 span.badge.badge-primary.mr-2 {{ batch.batchSize }} codes
                                 span.badge.badge-secondary Expires on {{ batch.dateExpires | formatDate }}
-                            .col-md.mt-3.mt-md-0
-                                button.btn.btn-sm.btn-block.btn-outline-primary(@click="ViewBatch(batch.id)") View Codes
-                                button.btn.btn-sm.btn-block.btn-outline-danger(@click="DeactivateBatch(batch)") Deactivate
+                            .col-md.mt-3.mt-md-0.batch-controls
+                                button.btn.btn-sm.btn-outline-primary(@click="ViewBatch(batch.id)") View Codes
+                                button.btn.btn-sm.btn-outline-danger(@click="DeactivateBatch(batch)") Deactivate
 
                 //- Alert when there are no batches
                 p.text-muted.mt-3.mb-0(v-if="batches.length == 0" role="alert") No batches have been created yet.
@@ -210,6 +210,24 @@ module.exports = {
 
 .card {
     margin: 30px 15px;
+}
+
+.batch {
+    .batch-controls {
+        .btn {
+            display: block;
+            width: 100%;
+
+            @media (min-width: 768px) {
+                max-width: 200px;
+                margin-left: auto;
+            }
+
+            &:first-child {
+                margin-bottom: 10px;
+            }
+        }
+    }
 }
 
 </style>
