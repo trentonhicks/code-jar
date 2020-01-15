@@ -14,10 +14,10 @@ namespace CodeJar.WebApp
         }
         public string ConnectionString { get; set; }
         public string FilePath {get; set;}
-        public Boolean CreateDigitalCode(DateTime dateActive, DateTime dateExpires, int amount)
+        public Boolean CreateDigitalCode(DateTime dateActive, DateTime dateExpires, SqlCommand command)
         {
             var sql = new SQL(ConnectionString);
-            long offset = sql.GetOffset();
+            long offset = sql.GetOffset(command);
             if (offset % 4 != 0)
             {
                 throw new ArgumentException("Offset must be divisible by 4");
@@ -30,18 +30,18 @@ namespace CodeJar.WebApp
                 using (BinaryReader reader = new BinaryReader(File.Open(FilePath, FileMode.Open)))
                 {
                     reader.BaseStream.Position = offset;
-                    for (var i = 0; i < amount; i++)
-                    {
-                        var seedvalue = reader.ReadInt32();
-                        offset = reader.BaseStream.Position;
-                        sql.StoreRequestedCodes(seedvalue, offset, dateActive);
-                    }
+                    var seedvalue = reader.ReadInt32();
+                    offset = reader.BaseStream.Position;
+                    sql.StoreRequestedCodes(seedvalue, offset, dateActive, command);
+                    
                 }
                 return true;
             }
 
                 return false;
         }
+
+
         
     }
 }

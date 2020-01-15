@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Text;
+using System.IO;
 
 
 namespace CodeJar.WebApp
@@ -22,51 +23,52 @@ namespace CodeJar.WebApp
         /// </summary>
         /// <param name="code"></param>
         /// <param name="offset"></param>
-        public void StoreRequestedCodes(int seedValue, long offset, DateTime dateActive)
+        public void StoreRequestedCodes(int seedValue, long offset, DateTime dateActive, SqlCommand command)
         {
-            Connection.Open();
+            command.Parameters.Clear();
+            command.CommandText = $@"INSERT INTO Codes (SeedValue, State) VALUES (@Seedvalue, @StateGenerated)";
 
-            using (var command = Connection.CreateCommand())
+            // Insert values
+            command.Parameters.AddWithValue("@Seedvalue", seedValue);
+            command.Parameters.AddWithValue("@StateGenerated", States.Generated);
+
+            command.ExecuteNonQuery();
+
+            if(dateActive.Day == DateTime.Now.Day)
             {
-                command.CommandText = $@"INSERT INTO Codes (SeedValue, State) VALUES (@Seedvalue, @StateGenerated)";
-
-                // Insert values
-                command.Parameters.AddWithValue("@Seedvalue", seedValue);
-                command.Parameters.AddWithValue("@StateGenerated", States.Generated);
-
-                command.ExecuteNonQuery();
-
-                if(dateActive.Day == DateTime.Now.Day)
-                {
-                    command.CommandText = "UPDATE Codes SET State = @StateActive WHERE SeedValue = @Seedvalue";
-                    command.Parameters.AddWithValue("@StateActive", States.Active);
-                    command.ExecuteNonQuery();
-                }
-            }
-
-            Connection.Close();
-
-            Connection.Open();
-
-            using (var command = Connection.CreateCommand())
-            {
-                command.CommandText = $@"UPDATE Offset SET OffsetValue = @Offset WHERE ID = 1";
-
-                // Insert offset
-                command.Parameters.AddWithValue("@Offset", offset);
-
+                command.CommandText = "UPDATE Codes SET State = @StateActive WHERE SeedValue = @Seedvalue";
+                command.Parameters.AddWithValue("@StateActive", States.Active);
                 command.ExecuteNonQuery();
             }
 
-            Connection.Close();
+            command.CommandText = $@"UPDATE Offset SET OffsetValue = @Offset WHERE ID = 1";
+
+            // Insert offset
+            command.Parameters.AddWithValue("@Offset", offset);
+
+            command.ExecuteNonQuery();
         }
 
-        public void CreateBatch(Batch batch)
+        public void CreateBatch(Batch batch, CodeGenerator codeGenerator)
         {
+            SqlTransaction transaction;
             Connection.Open();
+            
+            // Begin transaction
+            transaction = Connection.BeginTransaction();
+            
+            // Create command and assiociate it with the transaction
+            var command = Connection.CreateCommand();
+            command.Transaction = transaction;
 
-            using (var command = Connection.CreateCommand())
+            try
             {
+                for(int i = 0; i < batch.BatchSize; i++)
+                {
+                     
+                     codeGenerator.CreateDigitalCode(batch.DateActive, batch.DateExpires, command);
+                }
+                 //Store codeIDStart and codeIDEnd from the codes                
                 command.CommandText = @"INSERT INTO Batch (BatchName, CodeIDStart, CodeIDEnd, DateActive, DateExpires)
                                         VALUES(@batchName, @codeIDStart, @codeIDEnd, @dateActive, @dateExpires)";
 
@@ -77,7 +79,15 @@ namespace CodeJar.WebApp
                 command.Parameters.AddWithValue("@dateExpires", batch.DateExpires);
 
                 command.ExecuteNonQuery();
+
+                transaction.Commit();
+
             }
+            catch(Exception ex)
+            {
+                transaction.Rollback();
+            }
+            
 
             Connection.Close();
         }
@@ -124,25 +134,19 @@ namespace CodeJar.WebApp
         /// Gets the next seed value that will be used to generate codes
         /// </summary>
         /// <returns></returns>
-        public long GetOffset()
+        public long GetOffset(SqlCommand command)
         {
             long seedValue = 0;
 
-            Connection.Open();
-
-            using (var command = Connection.CreateCommand())
+            command.CommandText = "SELECT * FROM Offset";
+            using (var reader = command.ExecuteReader())
             {
-                command.CommandText = "SELECT * FROM Offset";
-                using (var reader = command.ExecuteReader())
+                while (reader.Read())
                 {
-                    while (reader.Read())
-                    {
-                        seedValue = (long)reader["OffsetValue"];
-                    }
+                    seedValue = (long)reader["OffsetValue"];
                 }
             }
 
-            Connection.Close();
             return seedValue;
         }
 

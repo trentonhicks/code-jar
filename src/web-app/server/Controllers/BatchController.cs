@@ -47,7 +47,7 @@ namespace CodeJar.WebApp.Controllers
         }
 
         [HttpPost("batch")]
-        public IActionResult Post(Batch batch)
+        public void Post(Batch batch)
         {
             // Create CodeGenerator instance
             var codeGenerator = new CodeGenerator(
@@ -65,17 +65,8 @@ namespace CodeJar.WebApp.Controllers
             // End value
             batch.CodeIDEnd = codeIDStartAndEnd[1];
 
-            // Generate codes based on the number stored in batch size
-            var codesGenerated = codeGenerator.CreateDigitalCode(batch.DateActive, batch.DateExpires, batch.BatchSize);
-
-            if(codesGenerated)
-            {
-                // Create batch
-                sql.CreateBatch(batch);
-                return Ok();
-            }
-
-            return BadRequest();
+            // Create batch
+            sql.CreateBatch(batch, codeGenerator);
         }
     }
 }
