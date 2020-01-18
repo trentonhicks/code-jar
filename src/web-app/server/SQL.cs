@@ -23,31 +23,7 @@ namespace CodeJar.WebApp
         /// </summary>
         /// <param name="code"></param>
         /// <param name="offset"></param>
-        public void StoreRequestedCodes(int seedValue, long offset, DateTime dateActive, SqlCommand command)
-        {
-            command.Parameters.Clear();
-            command.CommandText = $@"INSERT INTO Codes (SeedValue, State) VALUES (@Seedvalue, @StateGenerated)";
-
-            // Insert values
-            command.Parameters.AddWithValue("@Seedvalue", seedValue);
-            command.Parameters.AddWithValue("@StateGenerated", States.Generated);
-
-            command.ExecuteNonQuery();
-
-            if(dateActive.Day == DateTime.Now.Day)
-            {
-                command.CommandText = "UPDATE Codes SET State = @StateActive WHERE SeedValue = @Seedvalue";
-                command.Parameters.AddWithValue("@StateActive", States.Active);
-                command.ExecuteNonQuery();
-            }
-
-            command.CommandText = $@"UPDATE Offset SET OffsetValue = @Offset WHERE ID = 1";
-
-            // Insert offset
-            command.Parameters.AddWithValue("@Offset", offset);
-
-            command.ExecuteNonQuery();
-        }
+       
 
         public void CreateBatch(Batch batch, CodeGenerator codeGenerator)
         {
@@ -62,13 +38,11 @@ namespace CodeJar.WebApp
             command.Transaction = transaction;
 
             try
-            {
-                for(int i = 0; i < batch.BatchSize; i++)
-                {
-                     
-                     codeGenerator.CreateDigitalCode(batch.DateActive, batch.DateExpires, command);
-                }
-                 //Store codeIDStart and codeIDEnd from the codes                
+            { 
+                codeGenerator.CreateDigitalCode(batch.BatchSize, batch.DateActive, batch.DateExpires, command);
+                command.Parameters.Clear();
+
+                //Store codeIDStart and codeIDEnd from the codes                
                 command.CommandText = @"INSERT INTO Batch (BatchName, CodeIDStart, CodeIDEnd, DateActive, DateExpires)
                                         VALUES(@batchName, @codeIDStart, @codeIDEnd, @dateActive, @dateExpires)";
 
@@ -79,16 +53,12 @@ namespace CodeJar.WebApp
                 command.Parameters.AddWithValue("@dateExpires", batch.DateExpires);
 
                 command.ExecuteNonQuery();
-
                 transaction.Commit();
-
             }
             catch(Exception ex)
             {
                 transaction.Rollback();
             }
-            
-
             Connection.Close();
         }
 
