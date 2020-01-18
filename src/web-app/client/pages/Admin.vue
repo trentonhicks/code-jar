@@ -73,9 +73,9 @@
                     button.btn.btn-sm.btn-primary(type='submit') Search codes
 
                 //- Success or failure for batch creation
-                div(v-if="formSubmitted").mb-2
-                    .alert.alert-danger(v-if="batchError") Couldn't create batch! Try again.
-                    .alert.alert-success(v-else) Batch was created successfully.
+                div(v-if="formSubmitted")
+                    .alert.alert-danger(v-if="batchError").mb-3 Couldn't create batch! Try again.
+                    .alert.alert-success(v-else).mb-3 Batch was created successfully.
 
                 //- Batch list
                 .batch.card(

@@ -17,7 +17,7 @@
         td
             button.btn.btn-sm(
                 v-bind:disabled='code.state !== "Active"'
-                v-bind:class="{'btn-outline-danger': code.state === 'Active', 'btn-secondary': code.state !== 'Active'}"
+                v-bind:class="{'btn-danger': code.state === 'Active', 'btn-secondary': code.state !== 'Active'}"
                 v-on:click='DeactivateCode()') Deactivate
 
 </template>
