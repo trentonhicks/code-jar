@@ -1,6 +1,6 @@
 <template lang="pug">
 
-    .card.mb-3
+    .card.mb-3(:class="{ 'bg-dark text-white': $darkMode }")
         .card-header.d-flex.justify-content-between.align-items-start
 
             .project-name
@@ -73,13 +73,14 @@
                     button.btn.btn-sm.btn-primary(type='submit') Search codes
 
                 //- Success or failure for batch creation
-                div(v-if="formSubmitted")
+                div(v-if="formSubmitted").mb-2
                     .alert.alert-danger(v-if="batchError") Couldn't create batch! Try again.
                     .alert.alert-success(v-else) Batch was created successfully.
 
                 //- Batch list
                 .batch.card(
-                    class="m-0 mt-3" 
+                    class="m-0 mt-3"
+                    :class="{ 'bg-dark text-white': $darkMode }"
                     v-for="batch in batches" 
                     :key="batch.id" 
                     :disabled="batch.state == 'Inactive'")
@@ -90,8 +91,8 @@
                                 span.badge.badge-primary.mr-2 {{ batch.batchSize }} codes
                                 span.badge.badge-secondary Expires on {{ batch.dateExpires | formatDate }}
                             .col-md.mt-3.mt-md-0.batch-controls
-                                button.btn.btn-sm.btn-outline-primary(@click="ViewBatch(batch.id)") View Codes
-                                button.btn.btn-sm.btn-outline-danger(@click="DeactivateBatch(batch)") Deactivate
+                                button.btn.btn-sm.btn-primary(@click="ViewBatch(batch.id)") View Codes
+                                button.btn.btn-sm.btn-danger(@click="DeactivateBatch(batch)") Deactivate
 
                 //- Alert when there are no batches
                 p.text-muted.mt-3.mb-0(v-if="batches.length == 0" role="alert") No batches have been created yet.

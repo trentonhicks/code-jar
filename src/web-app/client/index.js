@@ -5,6 +5,23 @@ import App from './App';
 
 Vue.use(VueRouter);
 
+// Set global property for color theme based on user's preferences
+const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+const isLightMode = window.matchMedia("(prefers-color-scheme: light)").matches;
+const isNotSpecified = window.matchMedia("(prefers-color-scheme: no-preference)").matches;
+const hasNoSupport = !isDarkMode && !isLightMode && !isNotSpecified;
+
+if(isDarkMode) {
+    Vue.prototype.$darkMode = true;
+    document.querySelector('body').style.backgroundColor = '#212121';
+}
+if(isLightMode) {
+    Vue.prototype.$darkMode = false;
+}
+if(isNotSpecified || hasNoSupport) {
+    Vue.prototype.$darkMode = false;
+}
+
 // 1. Define route components
 import Home from './pages/Home';
 import Login from './pages/Login';

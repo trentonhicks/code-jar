@@ -2,7 +2,7 @@
 
     div
         .table-responsive
-            table.table.table-bordered(width='100%' cellspacing='0')
+            table.table.table-bordered(width='100%' cellspacing='0' :class="{ 'table-dark': $darkMode }")
                 thead
                     tr
                         th Code
