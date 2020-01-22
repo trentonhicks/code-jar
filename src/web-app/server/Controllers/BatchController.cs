@@ -47,26 +47,38 @@ namespace CodeJar.WebApp.Controllers
         }
 
         [HttpPost("batch")]
-        public void Post(Batch batch)
+        public IActionResult Post(Batch batch, DateTime dateActive, DateTime dateExpires)
         {
-            // Create CodeGenerator instance
-            var codeGenerator = new CodeGenerator(
-                _config.GetConnectionString("Storage"),
-                _config.GetSection("BinaryFile")["Binary"]
-            );
+             // Date active must be less than date expires and greater than or equal to the current date time in order to generate codes
 
-            // Get the CodeIDStart and CodeIDEnd values for the batch and store them as part of the batch
-            var sql = new SQL(_config.GetConnectionString("Storage"));
-            var codeIDStartAndEnd = sql.GetCodeIDStartAndEnd(batch.BatchSize);
+             if(dateActive < dateExpires && dateActive.Day >= DateTime.Now.Day)
+             {
+                            // Create CodeGenerator instance
+                        var codeGenerator = new CodeGenerator(
+                            _config.GetConnectionString("Storage"),
+                            _config.GetSection("BinaryFile")["Binary"]
+                        );
 
-            // Start value
-            batch.CodeIDStart = codeIDStartAndEnd[0];
+                        // Get the CodeIDStart and CodeIDEnd values for the batch and store them as part of the batch
+                        var sql = new SQL(_config.GetConnectionString("Storage"));
+                        var codeIDStartAndEnd = sql.GetCodeIDStartAndEnd(batch.BatchSize);
 
-            // End value
-            batch.CodeIDEnd = codeIDStartAndEnd[1];
+                        // Start value
+                        batch.CodeIDStart = codeIDStartAndEnd[0];
 
-            // Create batch
-            sql.CreateBatch(batch, codeGenerator);
+                        // End value
+                        batch.CodeIDEnd = codeIDStartAndEnd[1];
+
+                        // Create batch
+                        sql.CreateBatch(batch, codeGenerator);
+
+                        return Ok();
+             }
+             else
+             {
+                 return BadRequest();
+             }
+         
         }
     }
 }

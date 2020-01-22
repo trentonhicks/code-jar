@@ -20,9 +20,6 @@ namespace CodeJar.WebApp
         {
             var sql = new SQL(ConnectionString);
 
-            // Date active must be less than date expires and greater than or equal to the current date time in order to generate codes
-            if(dateActive < dateExpires && dateActive.Day >= DateTime.Now.Day)
-            {
                 // Loop through number of codes to generate
                 using (BinaryReader reader = new BinaryReader(File.Open(FilePath, FileMode.Open)))
                 {
@@ -68,7 +65,7 @@ namespace CodeJar.WebApp
 
                     }
                 }
-            }
+            
         }
     }
 }
