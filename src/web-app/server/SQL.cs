@@ -122,7 +122,7 @@ namespace CodeJar.WebApp
 
         public Code GetCode(string stringValue, string alphabet)
         {
-            var seedValue = ConvertFromCode(stringValue, alphabet);
+            var seedValue = CodeConverter.ConvertFromCode(stringValue, alphabet);
             var code = new Code();
 
             Connection.Open();
@@ -137,7 +137,7 @@ namespace CodeJar.WebApp
                     while(reader.Read()) {
                         var seed = (int)reader["SeedValue"];
                         code.State = States.ConvertToString((byte)reader["State"]);
-                        code.StringValue = ConvertToCode(seed);
+                        code.StringValue = CodeConverter.ConvertToCode(seed);
                     }
                 }
             }
@@ -188,14 +188,14 @@ namespace CodeJar.WebApp
                 if(stringValue != null && state != null)
                 {
                     command.CommandText += "AND SeedValue = @seedValue AND [State] = @state ";
-                    command.Parameters.AddWithValue("@seedValue", ConvertFromCode(stringValue, alphabet));
+                    command.Parameters.AddWithValue("@seedValue", CodeConverter.ConvertFromCode(stringValue, alphabet));
                     command.Parameters.AddWithValue("@state", States.ConvertToByte(state));
                 }
 
                 else if(stringValue != null)
                 {
                     command.CommandText += "AND SeedValue = @seedValue ";
-                    command.Parameters.AddWithValue("@seedValue", ConvertFromCode(stringValue, alphabet));
+                    command.Parameters.AddWithValue("@seedValue", CodeConverter.ConvertFromCode(stringValue, alphabet));
                 }
 
                 else if(state != null)
@@ -222,7 +222,7 @@ namespace CodeJar.WebApp
                         var seed = (int)reader["SeedValue"];
 
                         code.State = States.ConvertToString((byte)reader["State"]);
-                        code.StringValue = ConvertToCode(seed);
+                        code.StringValue = CodeConverter.ConvertToCode(seed);
                         
                         // Add code to the list
                         codes.Add(code);
@@ -277,62 +277,11 @@ namespace CodeJar.WebApp
              return pages;
          }
 
-        private string ConvertToCode(int seedvalue)
-        {
-            string alphabet = "2BCD3FGH4JKLMN5PQRST6VWXYZ";
-
-            var result = EncodeToBaseString(seedvalue, alphabet);
-
-            result = result.PadLeft(6, alphabet[0]);
-
-            return result;
-        }
-
-        private int ConvertFromCode(string code,string alphabet)
-        {
-            var result = DecodeFromBaseString(code, alphabet);
-
-            return result;      
-        }
-
-        private static string EncodeToBaseString(int seedvalue, string alphabet)
-        {
-            var encBase = alphabet.Length;
-
-            var digits = "";
-            var num = seedvalue;
-
-            if (num == 0)
-                return alphabet[0].ToString();
-
-            while (num > 0)
-            {
-                digits = alphabet[num % encBase] + digits;
-                num = num / encBase;
-            }
-
-            return digits;
-        }
         
-        private static int DecodeFromBaseString(string value, string alphabet)
-        {
-            var result = 0;
-
-            for (int i = 0; i < value.Length; i++)
-            {
-                var c = value[value.Length - 1 - i];
-                var index = alphabet.IndexOf(c);
-                var p = index * (int)Math.Pow(alphabet.Length, i);
-                
-                result = result + p;
-            }
-
-            return result;
-        }
 
         public void InactiveStatus(string code, string alphabet)
         {
-            var seedvalue = ConvertFromCode(code, alphabet);
+            var seedvalue = CodeConverter.ConvertFromCode(code, alphabet);
 
             Connection.Open();
 
@@ -373,7 +322,7 @@ namespace CodeJar.WebApp
 
         public Boolean RedeemedStatus(string code, string alphabet)
         {
-            var seedvalue = ConvertFromCode(code, alphabet);
+            var seedvalue = CodeConverter.ConvertFromCode(code, alphabet);
 
             Connection.Open();
 
