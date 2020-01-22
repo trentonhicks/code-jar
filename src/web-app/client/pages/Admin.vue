@@ -74,8 +74,8 @@
 
                 //- Success or failure for batch creation
                 div(v-if="formSubmitted")
-                    .alert.alert-danger(v-if="batchError").mb-3 Couldn't create batch! Try again.
-                    .alert.alert-success(v-else).mb-3 Batch was created successfully.
+                    .alert.alert-danger(v-if="batchError").mt-3 Couldn't create batch! Try again.
+                    .alert.alert-success(v-else).mt-3 Batch was created successfully.
 
                 //- Batch list
                 .batch.card(
@@ -89,7 +89,7 @@
                             .col-md
                                 h5.card-title.mb-1.mb-md-3 {{ batch.batchName }}
                                 span.badge.badge-primary.mr-2 {{ batch.batchSize }} codes
-                                span.badge.badge-secondary Expires on {{ batch.dateExpires | formatDate }}
+                                span.badge.badge-secondary {{ batch.dateActive | formatDate }} - {{ batch.dateExpires | formatDate }}
                             .col-md.mt-3.mt-md-0.batch-controls
                                 button.btn.btn-sm.btn-primary(@click="ViewBatch(batch.id)") View Codes
                                 button.btn.btn-sm.btn-danger(@click="DeactivateBatch(batch)") Deactivate
