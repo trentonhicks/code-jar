@@ -11,10 +11,8 @@ namespace CodeJar.WebApp
 {
     public static class CodeConverter
     {
-        public static string ConvertToCode(int seedvalue)
+        public static string ConvertToCode(int seedvalue, string alphabet)
         {
-            string alphabet = "2BCD3FGH4JKLMN5PQRST6VWXYZ";
-
             var result = EncodeToBaseString(seedvalue, alphabet);
 
             result = result.PadLeft(6, alphabet[0]);
@@ -22,7 +20,7 @@ namespace CodeJar.WebApp
             return result;
         }
 
-        public static int ConvertFromCode(string code,string alphabet)
+        public static int ConvertFromCode(string code, string alphabet)
         {
             var result = DecodeFromBaseString(code, alphabet);
 

@@ -137,7 +137,7 @@ namespace CodeJar.WebApp
                     while(reader.Read()) {
                         var seed = (int)reader["SeedValue"];
                         code.State = States.ConvertToString((byte)reader["State"]);
-                        code.StringValue = CodeConverter.ConvertToCode(seed);
+                        code.StringValue = CodeConverter.ConvertToCode(seed, alphabet);
                     }
                 }
             }
@@ -222,7 +222,7 @@ namespace CodeJar.WebApp
                         var seed = (int)reader["SeedValue"];
 
                         code.State = States.ConvertToString((byte)reader["State"]);
-                        code.StringValue = CodeConverter.ConvertToCode(seed);
+                        code.StringValue = CodeConverter.ConvertToCode(seed, alphabet);
                         
                         // Add code to the list
                         codes.Add(code);
