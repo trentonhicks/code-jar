@@ -320,7 +320,7 @@ namespace CodeJar.WebApp
             Connection.Close();
         }
 
-        public Boolean RedeemedStatus(string code, string alphabet)
+        public bool CheckIfCodeCanBeRedeemed(string code, string alphabet)
         {
             var seedvalue = CodeConverter.ConvertFromCode(code, alphabet);
 
