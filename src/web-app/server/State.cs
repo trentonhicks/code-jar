@@ -34,6 +34,9 @@ namespace CodeJar.WebApp
                 case 4:
                     stateString = "Inactive";
                     break;
+                default:
+                    stateString = "";
+                    break;
             }
 
             return stateString;
