@@ -31,7 +31,7 @@ namespace CodeJar.WebApp.Controllers
 
             var sql = new SQL(connectionString);
             
-            var response = sql.RedeemedStatus(code, alphabet);
+            var response = sql.CheckIfCodeCanBeRedeemed(code, alphabet);
 
             if(response)
             {
