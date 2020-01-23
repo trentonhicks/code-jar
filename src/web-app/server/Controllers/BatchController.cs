@@ -29,11 +29,12 @@ namespace CodeJar.WebApp.Controllers
         }
 
         [HttpGet("batch/{id}")]
-        public TableData GetCodes(int id, [FromQuery] int page, [FromQuery] string stringValue, [FromQuery] string state)
+        public TableData GetCodes(int id, [FromQuery] int page, int pageNumber, [FromQuery] string stringValue, [FromQuery] string state)
         {
             var alphabet = _config.GetSection("Base26")["alphabet"];
             var sql = new SQL(_config.GetConnectionString("Storage"));
-            var codes = sql.GetCodes(id, page, stringValue, state, alphabet);
+            var pageSize = Convert.ToInt32(_config.GetSection("Pagination")["PageNumber"]);
+            var codes = sql.GetCodes(id, page, stringValue, state, alphabet, pageNumber);
             var pages = sql.PageCount(id);
 
             return new TableData(codes, pages);

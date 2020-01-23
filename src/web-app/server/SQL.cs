@@ -151,19 +151,14 @@ namespace CodeJar.WebApp
         /// Returns a list of all the codes from the database
         /// </summary>
         /// <returns></returns>
-        public List<Code> GetCodes(int batchID, int page, string stringValue, string state, string alphabet)
+        public List<Code> GetCodes(int batchID, int pageNumber, string stringValue, string state, string alphabet, int pageSize)
         {
             // Create list to store codes gathered from the database
             var codes = new List<Code>();
 
             Connection.Open();
 
-            page--;
-
-            if(page > 0)
-            {
-                page *= 10;
-            }
+           var p = Pagination.PaginationPageNumber(pageNumber, pageSize);
 
             using(var command = Connection.CreateCommand())
             {
@@ -206,7 +201,7 @@ namespace CodeJar.WebApp
 
                 command.CommandText += "ORDER BY ID OFFSET @page ROWS FETCH NEXT 10 ROWS ONLY";
 
-                command.Parameters.AddWithValue("@page", page);
+                command.Parameters.AddWithValue("@page", p);
                 command.Parameters.AddWithValue("@codeIDStart", codeIDStart);
                 command.Parameters.AddWithValue("@codeIDEnd", codeIDEnd);
 
