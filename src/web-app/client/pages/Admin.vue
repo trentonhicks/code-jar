@@ -157,6 +157,7 @@ module.exports = {
                     }
                 }).then(response => {
                     this.GetBatches();
+                    this.batchError = false;
                 }).catch(e => {
                     this.batchError = true;
                 });
