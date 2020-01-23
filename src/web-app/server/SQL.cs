@@ -323,50 +323,30 @@ namespace CodeJar.WebApp
         public bool CheckIfCodeCanBeRedeemed(string code, string alphabet)
         {
             var seedvalue = CodeConverter.ConvertFromCode(code, alphabet);
+            int recordsAffected = 0;
 
             Connection.Open();
 
             using (var command = Connection.CreateCommand())
             {
-                command.CommandText = @"SELECT [State] FROM Codes
-                                        WHERE SeedValue = @seedvalue";
-
-                command.Parameters.AddWithValue("@seedvalue", seedvalue);
-
-                // Read the code that matched the query
-                using(var reader = command.ExecuteReader())
-                {
-                    var codeFound = false;
-                    while(reader.Read())
-                    {
-                        codeFound = true;
-
-                        // If code is not redeemable return false
-                        if((byte)reader["State"] != States.Active)
-                        {
-                            return false;
-                        }
-                    }
-
-                    // If the code doesn't exist, return false
-                    if(!codeFound)
-                    {
-                        return false;
-                    }
-                }
-
                 command.CommandText = @"UPDATE Codes SET [State] = @redeemed
                                         WHERE SeedValue = @seedvalue AND [State] = @active";
 
                 command.Parameters.AddWithValue("@redeemed", States.Redeemed);
-                command.Parameters.AddWithValue("@active", States.Active);            
+                command.Parameters.AddWithValue("@active", States.Active);   
+                command.Parameters.AddWithValue("@seedvalue", seedvalue); 
 
-                command.ExecuteNonQuery();
+                recordsAffected = command.ExecuteNonQuery();
             }
 
             Connection.Close();
 
-            return true;
+            if(recordsAffected > 0)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         public int[] GetCodeIDStartAndEnd(int batchSize)
