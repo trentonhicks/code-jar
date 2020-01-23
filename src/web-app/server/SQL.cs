@@ -151,7 +151,7 @@ namespace CodeJar.WebApp
         /// Returns a list of all the codes from the database
         /// </summary>
         /// <returns></returns>
-        public List<Code> GetCodes(int batchID, int pageNumber, string stringValue, string state, string alphabet, int pageSize)
+        public List<Code> GetCodes(int batchID, int pageNumber, string alphabet, int pageSize)
         {
             // Create list to store codes gathered from the database
             var codes = new List<Code>();
@@ -178,28 +178,8 @@ namespace CodeJar.WebApp
                 }
 
                 // Select all codes from the database
-                command.CommandText = "SELECT * FROM Codes WHERE ID BETWEEN @codeIDStart AND @codeIDEnd ";
-                
-                if(stringValue != null && state != null)
-                {
-                    command.CommandText += "AND SeedValue = @seedValue AND [State] = @state ";
-                    command.Parameters.AddWithValue("@seedValue", CodeConverter.ConvertFromCode(stringValue, alphabet));
-                    command.Parameters.AddWithValue("@state", States.ConvertToByte(state));
-                }
-
-                else if(stringValue != null)
-                {
-                    command.CommandText += "AND SeedValue = @seedValue ";
-                    command.Parameters.AddWithValue("@seedValue", CodeConverter.ConvertFromCode(stringValue, alphabet));
-                }
-
-                else if(state != null)
-                {
-                    command.CommandText += "AND [State] = @state ";
-                    command.Parameters.AddWithValue("@state", States.ConvertToByte(state));
-                }
-
-                command.CommandText += "ORDER BY ID OFFSET @page ROWS FETCH NEXT 10 ROWS ONLY";
+                command.CommandText = @"SELECT * FROM Codes WHERE ID BETWEEN @codeIDStart AND @codeIDEnd
+                                        ORDER BY ID OFFSET @page ROWS FETCH NEXT 10 ROWS ONLY";
 
                 command.Parameters.AddWithValue("@page", p);
                 command.Parameters.AddWithValue("@codeIDStart", codeIDStart);
@@ -328,8 +308,8 @@ namespace CodeJar.WebApp
                                         WHERE SeedValue = @seedvalue AND [State] = @active";
 
                 command.Parameters.AddWithValue("@redeemed", States.Redeemed);
-                command.Parameters.AddWithValue("@active", States.Active);   
-                command.Parameters.AddWithValue("@seedvalue", seedvalue); 
+                command.Parameters.AddWithValue("@active", States.Active);
+                command.Parameters.AddWithValue("@seedvalue", seedvalue);
 
                 recordsAffected = command.ExecuteNonQuery();
             }

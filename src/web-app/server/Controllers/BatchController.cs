@@ -34,7 +34,7 @@ namespace CodeJar.WebApp.Controllers
             var alphabet = _config.GetSection("Base26")["alphabet"];
             var sql = new SQL(_config.GetConnectionString("Storage"));
             var pageSize = Convert.ToInt32(_config.GetSection("Pagination")["PageNumber"]);
-            var codes = sql.GetCodes(id, page, stringValue, state, alphabet, pageNumber);
+            var codes = sql.GetCodes(id, page, alphabet, pageNumber);
             var pages = sql.PageCount(id);
 
             return new TableData(codes, pages);
