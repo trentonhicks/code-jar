@@ -29,12 +29,12 @@ namespace CodeJar.WebApp.Controllers
         }
 
         [HttpGet("batch/{id}")]
-        public TableData GetCodes(int id, [FromQuery] int page, int pageNumber, [FromQuery] string stringValue, [FromQuery] string state)
+        public TableData GetCodes(int id, [FromQuery] int page, [FromQuery] string stringValue, [FromQuery] string state)
         {
             var alphabet = _config.GetSection("Base26")["alphabet"];
             var sql = new SQL(_config.GetConnectionString("Storage"));
             var pageSize = Convert.ToInt32(_config.GetSection("Pagination")["PageNumber"]);
-            var codes = sql.GetCodes(id, page, alphabet, pageNumber);
+            var codes = sql.GetCodes(id, page, alphabet, pageSize);
             var pages = sql.PageCount(id);
 
             return new TableData(codes, pages);
@@ -52,7 +52,7 @@ namespace CodeJar.WebApp.Controllers
         {
              // Date active must be less than date expires and greater than or equal to the current date time in order to generate codes
 
-             if(dateActive < dateExpires && dateActive.Day >= DateTime.Now.Day)
+             if(batch.DateActive < batch.DateExpires && batch.DateActive.Day >= DateTime.Now.Day)
              {
                             // Create CodeGenerator instance
                         var codeGenerator = new CodeGenerator(

@@ -162,35 +162,25 @@ namespace CodeJar.WebApp
 
             using(var command = Connection.CreateCommand())
             {
-                var codeIDStart = 0;
-                var codeIDEnd = 0;
 
-                command.CommandText = @"SELECT CodeIDStart, CodeIDEnd FROM Batch WHERE ID = @batchID";
-                command.Parameters.AddWithValue("batchID", batchID);
+                command.CommandText = @"DECLARE @codeIDStart int
+                                        DECLARE @codeIDEnd int
+                                        SET @codeIDStart = (SELECT CodeIDStart FROM Batch WHERE ID = @batchID)
+                                        SET @codeIDEnd = (SELECT CodeIDEnd FROM Batch WHERE ID = @batchID)
+
+                                        SELECT * FROM Codes WHERE ID BETWEEN @codeIDStart AND @codeIDEnd
+                                        ORDER BY ID OFFSET @page ROWS FETCH NEXT @pageSize ROWS ONLY";
+
+                command.Parameters.AddWithValue("@page", p);                                         
+                command.Parameters.AddWithValue("@pageSize", pageSize);                                         
+                command.Parameters.AddWithValue("@batchID", batchID);
 
                 using(var reader = command.ExecuteReader())
                 {
                     while(reader.Read())
                     {
-                        codeIDStart = (int)reader["CodeIDStart"];
-                        codeIDEnd = (int)reader["CodeIDEnd"];
-                    }
-                }
 
-                // Select all codes from the database
-                command.CommandText = @"SELECT * FROM Codes WHERE ID BETWEEN @codeIDStart AND @codeIDEnd
-                                        ORDER BY ID OFFSET @page ROWS FETCH NEXT 10 ROWS ONLY";
-
-                command.Parameters.AddWithValue("@page", p);
-                command.Parameters.AddWithValue("@codeIDStart", codeIDStart);
-                command.Parameters.AddWithValue("@codeIDEnd", codeIDEnd);
-
-                // Read all the rows
-                using(var reader = command.ExecuteReader())
-                {
-                    while(reader.Read())
-                    {
-                        // Store code in a variable
+                          // Store code in a variable
                         var code = new Code();
 
                         //Stores SeedValue outside of code object
@@ -202,7 +192,17 @@ namespace CodeJar.WebApp
                         // Add code to the list
                         codes.Add(code);
                     }
+
+
+
                 }
+
+                // Select all codes from the database
+
+               
+
+                // Read all the rows
+               
             }
 
             Connection.Close();
