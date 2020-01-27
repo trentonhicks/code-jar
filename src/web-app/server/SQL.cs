@@ -118,15 +118,12 @@ namespace CodeJar.WebApp
                                    OUTPUT INSERTED.OffsetValue
                                    WHERE ID = 1";
             command.Parameters.AddWithValue("@offsetIncrement", offsetIncrement);
+            var updatedOffset = (long)command.ExecuteScalar();
 
-            using (var reader = command.ExecuteReader())
-            {
-                if(reader.Read())
-                {
-                    firstAndLastOffset[0] = (long)reader["OffsetValue"] - offsetIncrement;
-                    firstAndLastOffset[1] = (long)reader["OffsetValue"];
-                }
-            }
+            // Set starting and ending offset positions
+            firstAndLastOffset[0] = updatedOffset - offsetIncrement;
+            firstAndLastOffset[1] = updatedOffset;
+
             return firstAndLastOffset;
         }
 
