@@ -23,21 +23,20 @@ namespace CodeJar.WebApp
                 // Loop through number of codes to generate
                 using (BinaryReader reader = new BinaryReader(File.Open(FilePath, FileMode.Open)))
                 {
-                    for(var i = 0; i < batchSize; i++)
+
+                    // Get the next offset position
+                    var firstAndLastOffset = sql.GetOffset(command, batchSize);
+                    if (firstAndLastOffset[0] % 4 != 0)
+                    {
+                        throw new ArgumentException("Offset must be divisible by 4");
+                    }
+
+                    // Loop to the last offset position
+                    for(var i = firstAndLastOffset[0]; i < firstAndLastOffset[1]; i+= 4)
                     {
-                        // Get the next offset position
-                        long offset = sql.GetOffset(command);
-                        if (offset % 4 != 0)
-                        {
-                            throw new ArgumentException("Offset must be divisible by 4");
-                        }
-
                         // Set reader to offset position
-                        reader.BaseStream.Position = offset;
+                        reader.BaseStream.Position = i;
                         var seedvalue = reader.ReadInt32();
-
-                        // Store the next offset position
-                        offset = reader.BaseStream.Position;
 
                         // Insert code
                         command.Parameters.Clear();
@@ -54,15 +53,7 @@ namespace CodeJar.WebApp
                             command.CommandText = "UPDATE Codes SET State = @StateActive WHERE SeedValue = @Seedvalue";
                             command.Parameters.AddWithValue("@StateActive", States.Active);
                             command.ExecuteNonQuery();
-                        }
-
-                        // Update offset value
-                        command.CommandText = $@"UPDATE Offset SET OffsetValue = @Offset WHERE ID = 1";
-
-                        // Insert offset
-                        command.Parameters.AddWithValue("@Offset", offset);
-                        command.ExecuteNonQuery();                   
-
+                        }               
                     }
                 }
             

@@ -39,20 +39,24 @@ namespace CodeJar.WebApp
 
             try
             { 
-                codeGenerator.CreateDigitalCode(batch.BatchSize, batch.DateActive, batch.DateExpires, command);
-                command.Parameters.Clear();
+                // Create batch            
+                command.CommandText = @"
+                DECLARE @codeIDStart int
+                SET @codeIDStart = (SELECT ISNULL(MAX(CodeIDEnd), 0) FROM Batch) + 1
 
-                //Store codeIDStart and codeIDEnd from the codes                
-                command.CommandText = @"INSERT INTO Batch (BatchName, CodeIDStart, CodeIDEnd, DateActive, DateExpires)
-                                        VALUES(@batchName, @codeIDStart, @codeIDEnd, @dateActive, @dateExpires)";
+                INSERT INTO Batch (BatchName, CodeIDStart, BatchSize, DateActive, DateExpires)
+                VALUES(@batchName, @codeIDStart, @batchSize, @dateActive, @dateExpires)";
 
                 command.Parameters.AddWithValue("@batchName", batch.BatchName);
-                command.Parameters.AddWithValue("@codeIDStart", batch.CodeIDStart);
-                command.Parameters.AddWithValue("@codeIDEnd", batch.CodeIDEnd);
+                command.Parameters.AddWithValue("@batchSize", batch.BatchSize);
                 command.Parameters.AddWithValue("@dateActive", batch.DateActive);
                 command.Parameters.AddWithValue("@dateExpires", batch.DateExpires);
-
                 command.ExecuteNonQuery();
+
+                // Insert codes into the batch
+                codeGenerator.CreateDigitalCode(batch.BatchSize, batch.DateActive, batch.DateExpires, command);
+
+                // Commit transaction upon success
                 transaction.Commit();
             }
             catch(Exception ex)
@@ -104,20 +108,26 @@ namespace CodeJar.WebApp
         /// Gets the next seed value that will be used to generate codes
         /// </summary>
         /// <returns></returns>
-        public long GetOffset(SqlCommand command)
+        public long[] GetOffset(SqlCommand command, int batchSize)
         {
-            long seedValue = 0;
+            var firstAndLastOffset = new long[2];
+            var offsetIncrement = batchSize * 4;
 
-            command.CommandText = "SELECT * FROM Offset";
+            command.CommandText = @"UPDATE Offset
+                                   SET OffsetValue = OffsetValue + @offsetIncrement
+                                   OUTPUT INSERTED.OffsetValue
+                                   WHERE ID = 1";
+            command.Parameters.AddWithValue("@offsetIncrement", offsetIncrement);
+
             using (var reader = command.ExecuteReader())
             {
-                while (reader.Read())
+                if(reader.Read())
                 {
-                    seedValue = (long)reader["OffsetValue"];
+                    firstAndLastOffset[0] = (long)reader["OffsetValue"] - offsetIncrement;
+                    firstAndLastOffset[1] = (long)reader["OffsetValue"];
                 }
             }
-
-            return seedValue;
+            return firstAndLastOffset;
         }
 
         public Code GetCode(string stringValue, string alphabet)
@@ -192,17 +202,7 @@ namespace CodeJar.WebApp
                         // Add code to the list
                         codes.Add(code);
                     }
-
-
-
                 }
-
-                // Select all codes from the database
-
-               
-
-                // Read all the rows
-               
             }
 
             Connection.Close();
@@ -251,9 +251,6 @@ namespace CodeJar.WebApp
 
              return pages;
          }
-
-        
-
         public void InactiveStatus(string code, string alphabet)
         {
             var seedvalue = CodeConverter.ConvertFromCode(code, alphabet);
