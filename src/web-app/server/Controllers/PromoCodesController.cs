@@ -22,19 +22,6 @@ namespace CodeJar.WebApp.Controllers
             _config = config;
         }
 
-        /*[HttpPost]
-        public void Post([FromBody] int numberOfCodes)
-        {
-            var connectionString = _config.GetConnectionString("Storage");
-
-            var filePath = _config.GetSection("BinaryFile")["Binary"];
-
-            var cGenerate = new CodeGenerator(connectionString, filePath);
-
-            //Creates n number of codes and stores them in DB
-            cGenerate.CreateDigitalCode(numberOfCodes);
-        }*/
-
         [HttpGet]
         public Code Get([FromQuery] string stringValue)
         {
@@ -58,7 +45,7 @@ namespace CodeJar.WebApp.Controllers
 
             for(var i = 1; i <= code.Length; i++)
             {
-                sql.InactiveStatus(code[i - 1], alphabet);
+                sql.DeactivateCode(code[i - 1], alphabet);
             }
             
         }

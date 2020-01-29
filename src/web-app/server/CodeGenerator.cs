@@ -25,7 +25,7 @@ namespace CodeJar.WebApp
                 {
 
                     // Get the next offset position
-                    var firstAndLastOffset = sql.GetOffset(command, batchSize);
+                    var firstAndLastOffset = sql.UpdateOffset(command, batchSize);
                     if (firstAndLastOffset[0] % 4 != 0)
                     {
                         throw new ArgumentException("Offset must be divisible by 4");
