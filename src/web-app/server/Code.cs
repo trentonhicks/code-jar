@@ -9,7 +9,6 @@ namespace CodeJar.WebApp
     {
         public string StringValue { get; set; }
         public string State { get; set; }
-        public DateTime DateActive { get; set; }
-        public DateTime DateExpires { get; set; }
+       
     }
 }
