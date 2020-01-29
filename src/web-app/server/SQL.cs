@@ -318,30 +318,5 @@ namespace CodeJar.WebApp
 
             return false;
         }
-
-        public int[] GetCodeIDStartAndEnd(int batchSize)
-        {
-            var codeIDStart = 1;
-
-            // Get the last code generated and add one (this is the next code that will be generated)
-            Connection.Open();
-
-            using(var command = Connection.CreateCommand())
-            {
-                command.CommandText = @"SELECT TOP 1 ID FROM Codes ORDER BY ID DESC";
-                
-                using(var reader = command.ExecuteReader())
-                {
-                    while(reader.Read())
-                    {
-                        codeIDStart = (int)reader["ID"] + 1;
-                    }
-                }
-            }
-
-            Connection.Close();
-
-            return new int[2] {codeIDStart, codeIDStart + batchSize - 1};
-        }
     }
 }

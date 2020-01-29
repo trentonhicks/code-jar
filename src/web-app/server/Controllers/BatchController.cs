@@ -51,7 +51,6 @@ namespace CodeJar.WebApp.Controllers
         public IActionResult Post(Batch batch, DateTime dateActive, DateTime dateExpires)
         {
              // Date active must be less than date expires and greater than or equal to the current date time in order to generate codes
-
              if(batch.DateActive < batch.DateExpires && batch.DateActive.Day >= DateTime.Now.Day)
              {
                             // Create CodeGenerator instance
@@ -60,15 +59,7 @@ namespace CodeJar.WebApp.Controllers
                             _config.GetSection("BinaryFile")["Binary"]
                         );
 
-                        // Get the CodeIDStart and CodeIDEnd values for the batch and store them as part of the batch
                         var sql = new SQL(_config.GetConnectionString("Storage"));
-                        var codeIDStartAndEnd = sql.GetCodeIDStartAndEnd(batch.BatchSize);
-
-                        // Start value
-                        batch.CodeIDStart = codeIDStartAndEnd[0];
-
-                        // End value
-                        batch.CodeIDEnd = codeIDStartAndEnd[1];
 
                         // Create batch
                         sql.CreateBatch(batch, codeGenerator);
@@ -79,7 +70,6 @@ namespace CodeJar.WebApp.Controllers
              {
                  return BadRequest();
              }
-         
         }
     }
 }
