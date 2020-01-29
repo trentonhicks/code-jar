@@ -73,7 +73,7 @@ namespace CodeJar.WebApp.Controllers
                         // Create batch
                         sql.CreateBatch(batch, codeGenerator);
 
-                        return Ok(batch.ID);
+                        return Ok(batch);
              }
              else
              {
