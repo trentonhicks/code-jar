@@ -17,31 +17,11 @@ namespace api_tester
                 PropertyNameCaseInsensitive = true,
             };
 
-            var batch = CreateBatchAsync(options).Result;
-            GetBatchAsync(batch.ID).Wait();
-        }
+            // Create new codeJarClient
+            var codeJarClient = new CodeJarClient(options);
 
-        static async Task GetBatchAsync(int batchID)
-        {
-            var http = new HttpClient();
-            var response = await http.GetStringAsync($"http://localhost:5000/batch/{batchID}?page=1");
-            Console.WriteLine(response);
-        }
-
-        static async Task<Batch> CreateBatchAsync(JsonSerializerOptions options)
-        {
-            var http = new HttpClient();
-            var payload = "{\"BatchName\": \"foo\",\"BatchSize\": 20, \"DateActive\": \"2020-01-29\", \"DateExpires\": \"2020-01-30\"}";
-            HttpContent foo =  new StringContent(payload, Encoding.UTF8, "application/json");
-
-            var response = await http.PostAsync("http://localhost:5000/batch", foo);
-
-            var content = await response.Content.ReadAsStringAsync();
-            var batch = JsonSerializer.Deserialize<Batch>(content, options);
-
-            Console.WriteLine(content);
-            return batch;
-
+            var batch = codeJarClient.CreateBatchAsync(options).Result;
+            codeJarClient.GetBatchAsync(batch.ID).Wait();
         }
     }
 }
