@@ -45,13 +45,14 @@ namespace CodeJar.WebApp
                 SET @codeIDStart = (SELECT ISNULL(MAX(CodeIDEnd), 0) FROM Batch) + 1
 
                 INSERT INTO Batch (BatchName, CodeIDStart, BatchSize, DateActive, DateExpires)
-                VALUES(@batchName, @codeIDStart, @batchSize, @dateActive, @dateExpires)";
+                VALUES(@batchName, @codeIDStart, @batchSize, @dateActive, @dateExpires)
+                SELECT SCOPE_IDENTITY()";
 
                 command.Parameters.AddWithValue("@batchName", batch.BatchName);
                 command.Parameters.AddWithValue("@batchSize", batch.BatchSize);
                 command.Parameters.AddWithValue("@dateActive", batch.DateActive);
                 command.Parameters.AddWithValue("@dateExpires", batch.DateExpires);
-                command.ExecuteNonQuery();
+                batch.ID = Convert.ToInt32(command.ExecuteScalar());
 
                 // Insert codes into the batch
                 codeGenerator.CreateDigitalCode(batch.BatchSize, batch.DateActive, batch.DateExpires, command);
