@@ -6,4 +6,8 @@
     <RootNamespace>api_tester</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="system.net.http" Version="4.3.4" />
+  </ItemGroup>
+
 </Project>
