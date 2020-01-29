@@ -2,6 +2,8 @@
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace api_tester
 {
@@ -9,9 +11,14 @@ namespace api_tester
     {
         static void Main(string[] args)
         {
-           var id = CreateBatchAsync().Result;
-           GetBatchAsync(id).Wait();
+            // JsonSerializer Options
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+            };
 
+            var batch = CreateBatchAsync(options).Result;
+            GetBatchAsync(batch.ID).Wait();
         }
 
         static async Task GetBatchAsync(int batchID)
@@ -21,17 +28,19 @@ namespace api_tester
             Console.WriteLine(response);
         }
 
-        static async Task<int> CreateBatchAsync()
+        static async Task<Batch> CreateBatchAsync(JsonSerializerOptions options)
         {
             var http = new HttpClient();
-            var payload = "{\"BatchName\": \"foo\",\"BatchSize\": 20, \"DateActive\": \"2020-01-28\", \"DateExpires\": \"2020-01-29\"}";
+            var payload = "{\"BatchName\": \"foo\",\"BatchSize\": 20, \"DateActive\": \"2020-01-29\", \"DateExpires\": \"2020-01-30\"}";
             HttpContent foo =  new StringContent(payload, Encoding.UTF8, "application/json");
 
             var response = await http.PostAsync("http://localhost:5000/batch", foo);
 
-            var content = Convert.ToInt32(await response.Content.ReadAsStringAsync());
+            var content = await response.Content.ReadAsStringAsync();
+            var batch = JsonSerializer.Deserialize<Batch>(content, options);
+
             Console.WriteLine(content);
-            return content;
+            return batch;
 
         }
     }
