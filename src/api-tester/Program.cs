@@ -20,8 +20,16 @@ namespace api_tester
             // Create new codeJarClient
             var codeJarClient = new CodeJarClient(options);
 
-            var batch = codeJarClient.CreateBatchAsync(options).Result;
-            codeJarClient.GetBatchAsync(batch.ID).Wait();
+            if(codeJarClient.CreateBatchAsync().Result != null)
+            {
+                Console.WriteLine("Batch created");
+            }
+            else
+            {
+                Console.WriteLine("Batch wasn't created");
+            }
+
+            // codeJarClient.GetBatchAsync(batch.ID).Wait();
         }
     }
 }
