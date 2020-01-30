@@ -22,25 +22,14 @@ namespace CodeJar.WebApp.Controllers
             _config = config;
         }
 
-        /*[HttpPost]
-        public void Post([FromBody] int numberOfCodes)
-        {
-            var connectionString = _config.GetConnectionString("Storage");
-
-            var filePath = _config.GetSection("BinaryFile")["Binary"];
-
-            var cGenerate = new CodeGenerator(connectionString, filePath);
-
-            //Creates n number of codes and stores them in DB
-            cGenerate.CreateDigitalCode(numberOfCodes);
-        }*/
-
         [HttpGet]
         public Code Get([FromQuery] string stringValue)
         {
             var connectionString = _config.GetConnectionString("Storage");
             var alphabet = _config.GetSection("Base26")["alphabet"];
-            var sql = new SQL(connectionString);
+            var filepath = _config.GetSection("BinaryFile")["Binary"];
+
+            var sql = new SQL(connectionString, filepath);
 
             // Return state as a string
             return sql.GetCode(stringValue, alphabet);
@@ -48,19 +37,19 @@ namespace CodeJar.WebApp.Controllers
 
         //Set code status to inactive
         [HttpDelete]
-        public void Delete([FromBody]string [] code)
+        public void Delete([FromBody]string[] code)
         {
 
             var connectionString = _config.GetConnectionString("Storage");
             var alphabet = _config.GetSection("Base26")["alphabet"];
+            var filepath = _config.GetSection("BinaryFile")["Binary"];
 
-            var sql = new SQL(connectionString);
+            var sql = new SQL(connectionString, filepath);
 
-            for(var i = 1; i <= code.Length; i++)
+            for (var i = 1; i <= code.Length; i++)
             {
-                sql.InactiveStatus(code[i - 1], alphabet);
+                sql.DeactivateCode(code[i - 1], alphabet);
             }
-            
         }
     }
 }

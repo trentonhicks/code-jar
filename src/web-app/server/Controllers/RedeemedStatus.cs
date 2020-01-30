@@ -28,12 +28,13 @@ namespace CodeJar.WebApp.Controllers
             var connectionString = _config.GetConnectionString("Storage");
 
             var alphabet = _config.GetSection("Base26")["alphabet"];
+            var filepath = _config.GetSection("BinaryFile")["Binary"];
 
-            var sql = new SQL(connectionString);
-            
+            var sql = new SQL(connectionString, filepath);
+
             var response = sql.CheckIfCodeCanBeRedeemed(code, alphabet);
 
-            if(response)
+            if (response)
             {
                 return Ok();
             }

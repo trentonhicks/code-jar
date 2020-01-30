@@ -8,37 +8,41 @@ using System.IO;
 
 namespace CodeJar.WebApp
 {
+
     public class SQL
     {
-        public SQL(string connectionString)
+        public SQL(string connectionString, string filePath)
         {
             Connection = new SqlConnection(connectionString);
+            FilePath = filePath;
         }
 
         // SQL connection string
         public SqlConnection Connection { get; set; }
+        public string FilePath { get; set; }
+
 
         /// <summary>
         /// Stores codes in the database
         /// </summary>
         /// <param name="code"></param>
         /// <param name="offset"></param>
-       
 
-        public void CreateBatch(Batch batch, CodeGenerator codeGenerator)
+
+        public void CreateBatch(Batch batch)
         {
             SqlTransaction transaction;
             Connection.Open();
-            
+
             // Begin transaction
             transaction = Connection.BeginTransaction();
-            
+
             // Create command and assiociate it with the transaction
             var command = Connection.CreateCommand();
             command.Transaction = transaction;
 
             try
-            { 
+            {
                 // Create batch            
                 command.CommandText = @"
                 DECLARE @codeIDStart int
@@ -55,12 +59,12 @@ namespace CodeJar.WebApp
                 batch.ID = Convert.ToInt32(command.ExecuteScalar());
 
                 // Insert codes into the batch
-                codeGenerator.CreateDigitalCode(batch.BatchSize, batch.DateActive, batch.DateExpires, command);
+                CreateDigitalCode(batch.BatchSize, batch.DateActive, command);
 
                 // Commit transaction upon success
                 transaction.Commit();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 transaction.Rollback();
             }
@@ -73,15 +77,15 @@ namespace CodeJar.WebApp
             var batches = new List<Batch>();
 
             Connection.Open();
-            
-            using(var command = Connection.CreateCommand())
+
+            using (var command = Connection.CreateCommand())
             {
                 command.CommandText = @"SELECT * FROM Batch";
 
                 // Get all the batches
-                using(var reader = command.ExecuteReader())
+                using (var reader = command.ExecuteReader())
                 {
-                    while(reader.Read())
+                    while (reader.Read())
                     {
                         var batch = new Batch
                         {
@@ -105,11 +109,50 @@ namespace CodeJar.WebApp
             return batches;
         }
 
+        public void CreateDigitalCode(int batchSize, DateTime dateActive, SqlCommand command)
+        {
+            // Loop through number of codes to generate
+            using (BinaryReader reader = new BinaryReader(File.Open(FilePath, FileMode.Open)))
+            {
+                // Get the next offset position
+                var firstAndLastOffset = UpdateOffset(command, batchSize);
+                if (firstAndLastOffset[0] % 4 != 0)
+                {
+                    throw new ArgumentException("Offset must be divisible by 4");
+                }
+
+                // Loop to the last offset position
+                for (var i = firstAndLastOffset[0]; i < firstAndLastOffset[1]; i += 4)
+                {
+                    // Set reader to offset position
+                    reader.BaseStream.Position = i;
+                    var seedvalue = reader.ReadInt32();
+
+                    // Insert code
+                    command.Parameters.Clear();
+                    command.CommandText = $@"INSERT INTO Codes (SeedValue, State) VALUES (@Seedvalue, @StateGenerated)";
+
+                    // Insert values
+                    command.Parameters.AddWithValue("@Seedvalue", seedvalue);
+                    command.Parameters.AddWithValue("@StateGenerated", States.Generated);
+                    command.ExecuteNonQuery();
+
+                    // Update code to active state if dateActive is today
+                    if (dateActive.Day == DateTime.Now.Day)
+                    {
+                        command.CommandText = "UPDATE Codes SET State = @StateActive WHERE SeedValue = @Seedvalue";
+                        command.Parameters.AddWithValue("@StateActive", States.Active);
+                        command.ExecuteNonQuery();
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Gets the next seed value that will be used to generate codes
         /// </summary>
         /// <returns></returns>
-        public long[] GetOffset(SqlCommand command, int batchSize)
+        public long[] UpdateOffset(SqlCommand command, int batchSize)
         {
             var firstAndLastOffset = new long[2];
             var offsetIncrement = batchSize * 4;
@@ -135,14 +178,15 @@ namespace CodeJar.WebApp
 
             Connection.Open();
 
-            using(var command = Connection.CreateCommand())
+            using (var command = Connection.CreateCommand())
             {
                 command.CommandText = @"SELECT * FROM Codes WHERE SeedValue = @seedValue";
                 command.Parameters.AddWithValue("@seedValue", seedValue);
 
-                using(var reader = command.ExecuteReader())
+                using (var reader = command.ExecuteReader())
                 {
-                    while(reader.Read()) {
+                    while (reader.Read())
+                    {
                         var seed = (int)reader["SeedValue"];
                         code.State = States.ConvertToString((byte)reader["State"]);
                         code.StringValue = CodeConverter.ConvertToCode(seed, alphabet);
@@ -166,9 +210,9 @@ namespace CodeJar.WebApp
 
             Connection.Open();
 
-           var p = Pagination.PaginationPageNumber(pageNumber, pageSize);
+            var p = Pagination.PaginationPageNumber(pageNumber, pageSize);
 
-            using(var command = Connection.CreateCommand())
+            using (var command = Connection.CreateCommand())
             {
 
                 command.CommandText = @"DECLARE @codeIDStart int
@@ -179,16 +223,16 @@ namespace CodeJar.WebApp
                                         SELECT * FROM Codes WHERE ID BETWEEN @codeIDStart AND @codeIDEnd
                                         ORDER BY ID OFFSET @page ROWS FETCH NEXT @pageSize ROWS ONLY";
 
-                command.Parameters.AddWithValue("@page", p);                                         
-                command.Parameters.AddWithValue("@pageSize", pageSize);                                         
+                command.Parameters.AddWithValue("@page", p);
+                command.Parameters.AddWithValue("@pageSize", pageSize);
                 command.Parameters.AddWithValue("@batchID", batchID);
 
-                using(var reader = command.ExecuteReader())
+                using (var reader = command.ExecuteReader())
                 {
-                    while(reader.Read())
+                    while (reader.Read())
                     {
 
-                          // Store code in a variable
+                        // Store code in a variable
                         var code = new Code();
 
                         //Stores SeedValue outside of code object
@@ -196,7 +240,7 @@ namespace CodeJar.WebApp
 
                         code.State = States.ConvertToString((byte)reader["State"]);
                         code.StringValue = CodeConverter.ConvertToCode(seed, alphabet);
-                        
+
                         // Add code to the list
                         codes.Add(code);
                     }
@@ -209,47 +253,43 @@ namespace CodeJar.WebApp
             return codes;
         }
 
-         public int PageCount(int id)
-         {
-              var pages = 0;
+        public int PageCount(int id)
+        {
+            var pages = 0;
 
-              var pagesRemainder = 0;
+            var pagesRemainder = 0;
 
             Connection.Open();
 
-             using (var command = Connection.CreateCommand())
-             {
-                 command.CommandText = "SELECT BatchSize FROM Batch WHERE ID = @id";
+            using (var command = Connection.CreateCommand())
+            {
+                command.CommandText = "SELECT BatchSize FROM Batch WHERE ID = @id";
 
-                 command.Parameters.AddWithValue("@id", id);
+                command.Parameters.AddWithValue("@id", id);
 
-
-                  using(var reader = command.ExecuteReader())
-                  {
-                     
-
-                      while(reader.Read())
-                      {
-                        
-                        var numberOfCodes = (int)reader["BatchSize"] ;
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var numberOfCodes = (int)reader["BatchSize"];
 
                         pages = numberOfCodes / 10;
 
                         pagesRemainder = numberOfCodes % 10;
 
-                        if(pagesRemainder > 0)
+                        if (pagesRemainder > 0)
                         {
                             pages++;
                         }
-                      }
-                  }
-             }
+                    }
+                }
+            }
 
-             Connection.Close();
+            Connection.Close();
 
-             return pages;
-         }
-        public void InactiveStatus(string code, string alphabet)
+            return pages;
+        }
+        public void DeactivateCode(string code, string alphabet)
         {
             var seedvalue = CodeConverter.ConvertFromCode(code, alphabet);
 
@@ -263,18 +303,17 @@ namespace CodeJar.WebApp
                 command.Parameters.AddWithValue("@inactive", States.Inactive);
                 command.Parameters.AddWithValue("@active", States.Active);
                 command.Parameters.AddWithValue("@seedvalue", seedvalue);
-
-
                 command.ExecuteNonQuery();
             }
+
             Connection.Close();
         }
-        
+
         public void DeactivateBatch(Batch batch)
         {
             Connection.Open();
 
-            using(var command = Connection.CreateCommand())
+            using (var command = Connection.CreateCommand())
             {
                 command.CommandText = @"UPDATE Codes SET [State] = @inactive
                                         WHERE ID BETWEEN @codeIDStart AND @codeIDEnd AND [State] = @active";
@@ -311,37 +350,11 @@ namespace CodeJar.WebApp
 
             Connection.Close();
 
-            if(recordsAffected > 0)
+            if (recordsAffected > 0)
             {
                 return true;
             }
-
             return false;
-        }
-
-        public int[] GetCodeIDStartAndEnd(int batchSize)
-        {
-            var codeIDStart = 1;
-
-            // Get the last code generated and add one (this is the next code that will be generated)
-            Connection.Open();
-
-            using(var command = Connection.CreateCommand())
-            {
-                command.CommandText = @"SELECT TOP 1 ID FROM Codes ORDER BY ID DESC";
-                
-                using(var reader = command.ExecuteReader())
-                {
-                    while(reader.Read())
-                    {
-                        codeIDStart = (int)reader["ID"] + 1;
-                    }
-                }
-            }
-
-            Connection.Close();
-
-            return new int[2] {codeIDStart, codeIDStart + batchSize - 1};
         }
     }
 }
