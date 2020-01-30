@@ -20,9 +20,25 @@ namespace api_tester
             // Create new codeJarClient
             var codeJarClient = new CodeJarClient(options);
 
-            if(codeJarClient.CreateBatchAsync().Result != null)
+            var batchCreated = codeJarClient.CreateBatchAsync().Result;
+
+
+            if(batchCreated != null)
             {
-                Console.WriteLine("Batch created");
+                Console.WriteLine($"Batch ID {batchCreated.ID} created");
+
+                var sql = new SQL();
+                var result = sql.GetNumberOfCodes(batchCreated);
+
+                if(result > 0)
+                {
+                    // run pagination method
+                Console.WriteLine($"Batch has {batchCreated.BatchSize} codes");
+                }
+                else
+                {
+                    Console.WriteLine("No codes");                    
+                }
             }
             else
             {

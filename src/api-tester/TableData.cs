@@ -5,11 +5,8 @@ using System.Data;
 
 namespace api_tester
 {
-
-    
     public class TableData
     {
-
         public TableData(List<Code> codes, int pages) 
         {
             Codes = codes;
@@ -19,5 +16,4 @@ namespace api_tester
 
         public int Pages {get; set;}
     }
-    
 }

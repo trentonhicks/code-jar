@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CodeJar.WebApp
+namespace api_tester
 {
 
     public static class States

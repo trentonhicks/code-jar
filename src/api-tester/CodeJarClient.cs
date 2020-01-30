@@ -4,6 +4,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Data.SqlClient;
+using System.Collections.Generic;
+
+
 
 namespace api_tester
 {
@@ -15,15 +19,23 @@ namespace api_tester
         }
         public JsonSerializerOptions JsonOptions {get; set;}
         public HttpClient Client = new HttpClient();
-        public async Task GetBatchAsync(int batchID)
+        public async Task<TableData> GetBatchAsync(int batchID)
         {
             var response = await Client.GetStringAsync($"http://localhost:5000/batch/{batchID}?page=1");
-            Console.WriteLine(response);
+            var td = JsonSerializer.Deserialize<TableData>(response, JsonOptions);
+            return td;
         }
+        
+        /// <summary>
+        /// Creates a batch using the /batch endpoint.
+        /// </summary>
+        /// <returns>
+        /// Returns the batch that was created or null if the API failed.
+        /// </returns>
         public async Task<Batch> CreateBatchAsync()
         {
             var payload = "{\"BatchName\": \"foo\",\"BatchSize\": 20, \"DateActive\": \"2020-01-29\", \"DateExpires\": \"2020-01-30\"}";
-            HttpContent postBody =  new StringContent(payload, Encoding.UTF8, "application/json");
+            HttpContent postBody = new StringContent(payload, Encoding.UTF8, "application/json");
 
             var response = await Client.PostAsync("http://localhost:5000/batch", postBody);
             var responseContent = await response.Content.ReadAsStringAsync();
@@ -45,5 +57,23 @@ namespace api_tester
 
             return null;
         }
+
+        /// <summary>
+        /// Checks if codes can be redeemed and if the API follows the state machine.
+        /// </summary>
+        /*public async Task<bool> RedeemCodeAsync(Batch batch)
+        {
+            var activeCode;
+            var generatedCode;
+            var inactiveCode;
+            var redeemedCode;
+            
+            var postBody = new StringContent("", Encoding.UTF8, "application/json");
+            Client.PostAsync("http://localhost:5000/redeem-code", );
+        }*/
+
+
+
+
     }
 }
