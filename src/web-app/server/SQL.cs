@@ -8,15 +8,19 @@ using System.IO;
 
 namespace CodeJar.WebApp
 {
+
     public class SQL
     {
-        public SQL(string connectionString)
+        public SQL(string connectionString, string filePath)
         {
             Connection = new SqlConnection(connectionString);
+            FilePath = filePath;
         }
 
         // SQL connection string
         public SqlConnection Connection { get; set; }
+        public string FilePath { get; set; }
+
 
         /// <summary>
         /// Stores codes in the database
@@ -25,7 +29,7 @@ namespace CodeJar.WebApp
         /// <param name="offset"></param>
 
 
-        public void CreateBatch(Batch batch, CodeGenerator codeGenerator)
+        public void CreateBatch(Batch batch)
         {
             SqlTransaction transaction;
             Connection.Open();
@@ -55,7 +59,7 @@ namespace CodeJar.WebApp
                 batch.ID = Convert.ToInt32(command.ExecuteScalar());
 
                 // Insert codes into the batch
-                codeGenerator.CreateDigitalCode(batch.BatchSize, batch.DateActive, batch.DateExpires, command);
+                CreateDigitalCode(batch.BatchSize, batch.DateActive, command);
 
                 // Commit transaction upon success
                 transaction.Commit();
@@ -103,6 +107,45 @@ namespace CodeJar.WebApp
             Connection.Close();
 
             return batches;
+        }
+
+        public void CreateDigitalCode(int batchSize, DateTime dateActive, SqlCommand command)
+        {
+            // Loop through number of codes to generate
+            using (BinaryReader reader = new BinaryReader(File.Open(FilePath, FileMode.Open)))
+            {
+                // Get the next offset position
+                var firstAndLastOffset = UpdateOffset(command, batchSize);
+                if (firstAndLastOffset[0] % 4 != 0)
+                {
+                    throw new ArgumentException("Offset must be divisible by 4");
+                }
+
+                // Loop to the last offset position
+                for (var i = firstAndLastOffset[0]; i < firstAndLastOffset[1]; i += 4)
+                {
+                    // Set reader to offset position
+                    reader.BaseStream.Position = i;
+                    var seedvalue = reader.ReadInt32();
+
+                    // Insert code
+                    command.Parameters.Clear();
+                    command.CommandText = $@"INSERT INTO Codes (SeedValue, State) VALUES (@Seedvalue, @StateGenerated)";
+
+                    // Insert values
+                    command.Parameters.AddWithValue("@Seedvalue", seedvalue);
+                    command.Parameters.AddWithValue("@StateGenerated", States.Generated);
+                    command.ExecuteNonQuery();
+
+                    // Update code to active state if dateActive is today
+                    if (dateActive.Day == DateTime.Now.Day)
+                    {
+                        command.CommandText = "UPDATE Codes SET State = @StateActive WHERE SeedValue = @Seedvalue";
+                        command.Parameters.AddWithValue("@StateActive", States.Active);
+                        command.ExecuteNonQuery();
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -262,7 +305,7 @@ namespace CodeJar.WebApp
                 command.Parameters.AddWithValue("@seedvalue", seedvalue);
                 command.ExecuteNonQuery();
             }
-            
+
             Connection.Close();
         }
 

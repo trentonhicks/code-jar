@@ -24,15 +24,15 @@ namespace CodeJar.WebApp.Controllers
         [HttpGet("batch")]
         public List<Batch> Get()
         {
-            var sql = new SQL(_config.GetConnectionString("Storage"));
+            var sql = new SQL(_config.GetConnectionString("Storage"), _config.GetSection("BinaryFile")["Binary"]);
             return sql.GetBatches();
         }
 
         [HttpGet("batch/{id}")]
-        public TableData GetCodes(int id, [FromQuery] int page, [FromQuery] string stringValue, [FromQuery] string state)
+        public TableData GetBatch(int id, [FromQuery] int page)
         {
             var alphabet = _config.GetSection("Base26")["alphabet"];
-            var sql = new SQL(_config.GetConnectionString("Storage"));
+            var sql = new SQL(_config.GetConnectionString("Storage"), _config.GetSection("BinaryFile")["Binary"]);
             var pageSize = Convert.ToInt32(_config.GetSection("Pagination")["PageNumber"]);
             var codes = sql.GetCodes(id, page, alphabet, pageSize);
             var pages = sql.PageCount(id);
@@ -43,33 +43,27 @@ namespace CodeJar.WebApp.Controllers
         [HttpDelete("batch")]
         public void DeactivateBatch([FromBody] Batch batch)
         {
-            var sql = new SQL(_config.GetConnectionString("Storage"));
+            var sql = new SQL(_config.GetConnectionString("Storage"), _config.GetSection("BinaryFile")["Binary"]);
             sql.DeactivateBatch(batch);
         }
 
         [HttpPost("batch")]
-        public IActionResult Post(Batch batch, DateTime dateActive, DateTime dateExpires)
+        public IActionResult Post(Batch batch)
         {
-             // Date active must be less than date expires and greater than or equal to the current date time in order to generate codes
-             if(batch.DateActive < batch.DateExpires && batch.DateActive.Day >= DateTime.Now.Day)
-             {
-                            // Create CodeGenerator instance
-                        var codeGenerator = new CodeGenerator(
-                            _config.GetConnectionString("Storage"),
-                            _config.GetSection("BinaryFile")["Binary"]
-                        );
+            // Date active must be less than date expires and greater than or equal to the current date time in order to generate codes
+            if (batch.DateActive < batch.DateExpires && batch.DateActive.Day >= DateTime.Now.Day)
+            {
+                var sql = new SQL(_config.GetConnectionString("Storage"), _config.GetSection("BinaryFile")["Binary"]);
 
-                        var sql = new SQL(_config.GetConnectionString("Storage"));
+                // Create batch
+                sql.CreateBatch(batch);
 
-                        // Create batch
-                        sql.CreateBatch(batch, codeGenerator);
-
-                        return Ok(batch);
-             }
-             else
-             {
-                 return BadRequest();
-             }
+                return Ok(batch);
+            }
+            else
+            {
+                return BadRequest();
+            }
         }
     }
 }
