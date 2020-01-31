@@ -21,7 +21,7 @@ namespace api_tester
                 PropertyNameCaseInsensitive = true,
             };
             var codeJarClient = new CodeJarClient(options);
-            var batch = await codeJarClient.CreateBatchAsync();
+            var batch = await codeJarClient.CreateBatchAsync(20);
             
             Connection.Open();
 
