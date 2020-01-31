@@ -21,7 +21,7 @@ namespace api_tester
             var codeJarClient = new CodeJarClient(options);
 
             // Create batch with API
-            var batchCreated = codeJarClient.CreateBatchAsync().Result;
+            var batchCreated = codeJarClient.CreateBatchAsync(20).Result;
 
             // Check if batch was created
             if(batchCreated != null)
@@ -37,7 +37,6 @@ namespace api_tester
                     Console.WriteLine($"Batch has {batchCreated.BatchSize} codes.");
 
                     // Check if the API returns the correct number of pages for a batch
-                    
                     var pageNumberIsCorrect = PageComparison(batchCreated).Result;
 
                     if(pageNumberIsCorrect)
@@ -58,8 +57,6 @@ namespace api_tester
             // codeJarClient.GetBatchAsync(batch.ID).Wait();
         }
 
-
-
         public static int PageCalculator(Batch batch)
         {
             var pages = 0;
@@ -75,7 +72,6 @@ namespace api_tester
             }
 
             return pages;
-
         }
 
         public static async Task<bool> PageComparison(Batch batch)
@@ -98,8 +94,6 @@ namespace api_tester
                 return true;
             }
             return false;
-
-
         }
         
     }

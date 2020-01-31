@@ -18,22 +18,21 @@ namespace api_tester
             JsonOptions = options;
         }
 
-
         public JsonSerializerOptions JsonOptions {get; set;}
-
-
         public HttpClient Client = new HttpClient();
 
-
+        /// <summary>
+        /// Gets the first page of a batch
+        /// </summary>
+        /// <returns>
+        /// Returns an array of codes and the number of pages of a batch
+        /// </returns>
         public async Task<TableData> GetBatchAsync(int batchID)
         {
             var response = await Client.GetStringAsync($"http://localhost:5000/batch/{batchID}?page=1");
             var td = JsonSerializer.Deserialize<TableData>(response, JsonOptions);
             return td;
         }
-
-
-
         
         /// <summary>
         /// Creates a batch using the /batch endpoint.
@@ -41,12 +40,9 @@ namespace api_tester
         /// <returns>
         /// Returns the batch that was created or null if the API failed.
         /// </returns>
-
-
-
-        public async Task<Batch> CreateBatchAsync()
+        public async Task<Batch> CreateBatchAsync(int numberOfCodes)
         {
-            var payload = "{\"BatchName\": \"foo\",\"BatchSize\": 20, \"DateActive\": \"2020-01-30\", \"DateExpires\": \"2020-01-31\"}";
+            var payload = "{\"BatchName\": \"foo\",\"BatchSize\":"+ numberOfCodes +", \"DateActive\": \"2020-01-30\", \"DateExpires\": \"2020-01-31\"}";
             HttpContent postBody = new StringContent(payload, Encoding.UTF8, "application/json");
 
             var response = await Client.PostAsync("http://localhost:5000/batch", postBody);
@@ -66,32 +62,13 @@ namespace api_tester
                         return batch;
                     }
             }
-
             return null;
         }
-
-
-
-
-        /// <summary>
-        /// Checks if codes can be redeemed and if the API follows the state machine.
-        /// </summary>
-        /*public async Task<bool> RedeemCodeAsync(Batch batch)
+        public void CheckIfOffsetUpdates()
         {
-            var activeCode;
-            var generatedCode;
-            var inactiveCode;
-            var redeemedCode;
-            
-            var postBody = new StringContent("", Encoding.UTF8, "application/json");
-            Client.PostAsync("http://localhost:5000/redeem-code", );
-        }*/
-
-
-        
-
-         
-
-
+            // Get the current offset
+            // Generate a batch of 20 codes
+            // Check if the offset was updated to the correct value
+        }
     }
 }
