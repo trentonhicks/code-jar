@@ -22,10 +22,10 @@ namespace CodeJar.WebApp.Controllers
         }
 
         [HttpGet("batch")]
-        public List<Batch> Get()
+        public IActionResult Get()
         {
             var sql = new SQL(_config.GetConnectionString("Storage"), _config.GetSection("BinaryFile")["Binary"]);
-            return sql.GetBatches();
+            return Ok(sql.GetBatches());
         }
 
         [HttpGet("batch/{id}")]

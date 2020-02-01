@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Collections.Generic;
 
 namespace api_tester
 {
@@ -11,23 +12,18 @@ namespace api_tester
     {
         static void Main(string[] args)
         {
+            JsonSerializerOptions options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
             // Create new codeJarClient
             var codeJarClient = new CodeJarClient();
 
-            // Create new batch instance
-            var batch = new Batch
-            {
-                BatchName = "Batch",
-                BatchSize = 10,
-                DateActive = new DateTime(year: 2020, month: 2, day: 1),
-                DateExpires = new DateTime(year: 2020, month: 2, day: 15)
-            };
-
-            // Create batch with API
-            var response = codeJarClient.CreateBatchAsync(batch).Result;
-            var content = response.Content.ReadAsStringAsync();
-
-            Console.ReadLine();
+            // Get list of batches
+            var response = codeJarClient.GetBatchListAsync().Result;
+            var content = response.Content.ReadAsStringAsync().Result;
+            var batches = JsonSerializer.Deserialize<List<Batch>>(content, options);
         }
     }
 }

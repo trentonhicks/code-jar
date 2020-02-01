@@ -15,6 +15,11 @@ namespace api_tester
     {
         public HttpClient Client = new HttpClient();
 
+        public async Task<HttpResponseMessage> GetBatchListAsync()
+        {
+            return await Client.GetAsync("http://localhost:5000/batch/");
+        }
+
         /// <summary>
         /// Gets the first page of a batch
         /// </summary>
@@ -35,10 +40,10 @@ namespace api_tester
             // Create content object
             HttpContent content = new StringContent(
                 content: "{" +
-                    "\"BatchName\": \""+ batch.BatchName +"\"," +
-                    "\"BatchSize\":"+ batch.BatchSize +"," +
-                    "\"DateActive\": \""+ dateActive +"\"," + 
-                    "\"DateExpires\": \""+ dateExpires +"\"" +
+                    $"\"BatchName\": \"{batch.BatchName}\"," +
+                    $"\"BatchSize\": {batch.BatchSize}," +
+                    $"\"DateActive\": \"{dateActive}\"," + 
+                    $"\"DateExpires\": \"{dateExpires}\"" +
                 "}",
                 encoding: Encoding.UTF8,
                 mediaType: "application/json"
