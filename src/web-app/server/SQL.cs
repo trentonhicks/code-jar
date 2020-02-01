@@ -322,7 +322,6 @@ namespace CodeJar.WebApp
                 command.Parameters.AddWithValue("@active", States.Active);
                 command.Parameters.AddWithValue("@codeIDStart", batch.CodeIDStart);
                 command.Parameters.AddWithValue("@codeIDEnd", batch.CodeIDEnd);
-
                 command.ExecuteNonQuery();
             }
 

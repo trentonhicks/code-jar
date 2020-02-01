@@ -51,7 +51,7 @@ namespace CodeJar.WebApp.Controllers
         public IActionResult Post(Batch batch)
         {
             // Date active must be less than date expires and greater than or equal to the current date time in order to generate codes
-            if (batch.DateActive < batch.DateExpires && batch.DateActive.Day >= DateTime.Now.Day)
+            if (batch.DateActive < batch.DateExpires && batch.DateActive.Date >= DateTime.Now.Date)
             {
                 var sql = new SQL(_config.GetConnectionString("Storage"), _config.GetSection("BinaryFile")["Binary"]);
 

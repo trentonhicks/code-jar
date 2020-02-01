@@ -13,62 +13,40 @@ namespace api_tester
 {
     public class CodeJarClient
     {
-        public CodeJarClient(JsonSerializerOptions options)
-        {
-            JsonOptions = options;
-        }
-
-        public JsonSerializerOptions JsonOptions {get; set;}
         public HttpClient Client = new HttpClient();
 
         /// <summary>
         /// Gets the first page of a batch
         /// </summary>
-        /// <returns>
-        /// Returns an array of codes and the number of pages of a batch
-        /// </returns>
-        public async Task<TableData> GetBatchAsync(int batchID)
+        public async Task<HttpResponseMessage> GetBatchAsync(int id, int page)
         {
-            var response = await Client.GetStringAsync($"http://localhost:5000/batch/{batchID}?page=1");
-            var td = JsonSerializer.Deserialize<TableData>(response, JsonOptions);
-            return td;
+            return await Client.GetAsync($"http://localhost:5000/batch/{id}?page={page}");
         }
         
         /// <summary>
-        /// Creates a batch using the /batch endpoint.
+        /// Creates a batch using the /batch route.
         /// </summary>
-        /// <returns>
-        /// Returns the batch that was created or null if the API failed.
-        /// </returns>
-        public async Task<Batch> CreateBatchAsync(int numberOfCodes)
+        public async Task<HttpResponseMessage> CreateBatchAsync(Batch batch)
         {
-            var payload = "{\"BatchName\": \"foo\",\"BatchSize\":"+ numberOfCodes +", \"DateActive\": \"2020-01-30\", \"DateExpires\": \"2020-01-31\"}";
-            HttpContent postBody = new StringContent(payload, Encoding.UTF8, "application/json");
+            // Format dates
+            var dateActive = FormatDate.YearMonthDay(batch.DateActive);
+            var dateExpires = FormatDate.YearMonthDay(batch.DateExpires);
 
-            var response = await Client.PostAsync("http://localhost:5000/batch", postBody);
-            var responseContent = await response.Content.ReadAsStringAsync();
-            var batch = JsonSerializer.Deserialize<Batch>(responseContent, JsonOptions);
-
-            if (response.IsSuccessStatusCode && batch.DateActive.Date >= DateTime.Now.Date && batch.DateExpires > batch.DateActive)
-            {
-                // Compare the post body with the batch stored in the database
-                var postedBatch = JsonSerializer.Deserialize<Batch>(payload);
-
-                if (batch.BatchName == postedBatch.BatchName
-                    && batch.BatchSize == postedBatch.BatchSize
-                    && batch.DateActive == postedBatch.DateActive
-                    && batch.DateExpires == postedBatch.DateExpires)
-                    {
-                        return batch;
-                    }
-            }
-            return null;
+            // Create content object
+            HttpContent content = new StringContent(
+                content: "{" +
+                    "\"BatchName\": \""+ batch.BatchName +"\"," +
+                    "\"BatchSize\":"+ batch.BatchSize +"," +
+                    "\"DateActive\": \""+ dateActive +"\"," + 
+                    "\"DateExpires\": \""+ dateExpires +"\"" +
+                "}",
+                encoding: Encoding.UTF8,
+                mediaType: "application/json"
+           );
+            
+            // Return response
+            return await Client.PostAsync("http://localhost:5000/batch", content);
         }
-        public void CheckIfOffsetUpdates()
-        {
-            // Get the current offset
-            // Generate a batch of 20 codes
-            // Check if the offset was updated to the correct value
-        }
+
     }
 }
