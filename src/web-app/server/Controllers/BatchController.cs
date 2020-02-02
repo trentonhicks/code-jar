@@ -29,7 +29,7 @@ namespace CodeJar.WebApp.Controllers
         }
 
         [HttpGet("batch/{id}")]
-        public TableData GetBatch(int id, [FromQuery] int page)
+        public IActionResult GetBatch(int id, [FromQuery] int page)
         {
             var alphabet = _config.GetSection("Base26")["alphabet"];
             var sql = new SQL(_config.GetConnectionString("Storage"), _config.GetSection("BinaryFile")["Binary"]);
@@ -37,7 +37,7 @@ namespace CodeJar.WebApp.Controllers
             var codes = sql.GetCodes(id, page, alphabet, pageSize);
             var pages = sql.PageCount(id);
 
-            return new TableData(codes, pages);
+            return Ok(new TableData(codes, pages));
         }
 
         [HttpDelete("batch")]

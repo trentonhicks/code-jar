@@ -20,10 +20,24 @@ namespace api_tester
             // Create new codeJarClient
             var codeJarClient = new CodeJarClient();
 
-            // Get list of batches
-            var response = codeJarClient.GetBatchListAsync().Result;
-            var content = response.Content.ReadAsStringAsync().Result;
-            var batches = JsonSerializer.Deserialize<List<Batch>>(content, options);
+            var batch = new Batch()
+            {
+                BatchName = "Batch",
+                BatchSize = 10,
+                DateActive = new DateTime(year: 2020, month: 2, day: 1),
+                DateExpires = new DateTime(year: 2020, month: 2, day: 15)
+            };
+            var batchResponse = codeJarClient.CreateBatchAsync(batch).Result;
+            var batchContent = batchResponse.Content.ReadAsStringAsync().Result;
+            var createdBatch = JsonSerializer.Deserialize<Batch>(batchContent, options);
+
+            var test = new CodeJarTests();
+
+             // Checking if Codes Generated State is correct.
+            if (test.IsCodeStateCorrect(createdBatch).Result)
+            {
+                Console.WriteLine("State when generated is correct.");
+            }
         }
     }
 }

@@ -15,17 +15,20 @@ namespace api_tester
     {
         public HttpClient Client = new HttpClient();
 
+        /// <summary>
+        /// Gets a list of all batches from the API
+        /// </summary>
         public async Task<HttpResponseMessage> GetBatchListAsync()
         {
-            return await Client.GetAsync("http://localhost:5000/batch/");
+            return await Client.GetAsync(requestUri: "http://localhost:5000/batch/");
         }
 
         /// <summary>
-        /// Gets the first page of a batch
+        /// Gets a specified page of a batch from the API
         /// </summary>
         public async Task<HttpResponseMessage> GetBatchAsync(int id, int page)
         {
-            return await Client.GetAsync($"http://localhost:5000/batch/{id}?page={page}");
+            return await Client.GetAsync(requestUri: $"http://localhost:5000/batch/{id}?page={page}");
         }
         
         /// <summary>
