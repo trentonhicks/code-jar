@@ -30,9 +30,16 @@ namespace CodeJar.WebApp.Controllers
             var filepath = _config.GetSection("BinaryFile")["Binary"];
 
             var sql = new SQL(connectionString, filepath);
+            var code = sql.GetCode(stringValue, alphabet);
 
-            // Return state as a string
-            return Ok(sql.GetCode(stringValue, alphabet));
+            if(code.StringValue == stringValue)
+            {
+                return Ok(code);
+            }
+            else
+            {
+                return NotFound();
+            }
         }
 
         //Set code status to inactive
