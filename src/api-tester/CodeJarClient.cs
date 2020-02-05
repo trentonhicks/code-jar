@@ -78,5 +78,25 @@ namespace api_tester
             var response = await Client.SendAsync(request);
             return response;
         }
+
+        public async Task<HttpResponseMessage> DeactivateCodeAsync(string codeStringValue)
+        {
+            JsonSerializerOptions options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            string[] arr = new string[] { codeStringValue };
+            var payload = JsonSerializer.Serialize(arr, options);
+
+            var request = new HttpRequestMessage()
+            {
+                Method = HttpMethod.Delete,
+                RequestUri = new Uri("http://localhost:5000/codes"),
+                Content = new StringContent(payload, Encoding.UTF8, "application/json")
+            };
+
+            var response = await Client.SendAsync(request);
+            return response;
+        }
     }
 }
