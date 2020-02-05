@@ -23,7 +23,7 @@ namespace CodeJar.WebApp.Controllers
         }
 
         [HttpGet]
-        public Code Get([FromQuery] string stringValue)
+        public IActionResult Get([FromQuery] string stringValue)
         {
             var connectionString = _config.GetConnectionString("Storage");
             var alphabet = _config.GetSection("Base26")["alphabet"];
@@ -32,18 +32,16 @@ namespace CodeJar.WebApp.Controllers
             var sql = new SQL(connectionString, filepath);
 
             // Return state as a string
-            return sql.GetCode(stringValue, alphabet);
+            return Ok(sql.GetCode(stringValue, alphabet));
         }
 
         //Set code status to inactive
         [HttpDelete]
         public void Delete([FromBody]string[] code)
         {
-
             var connectionString = _config.GetConnectionString("Storage");
             var alphabet = _config.GetSection("Base26")["alphabet"];
             var filepath = _config.GetSection("BinaryFile")["Binary"];
-
             var sql = new SQL(connectionString, filepath);
 
             for (var i = 1; i <= code.Length; i++)

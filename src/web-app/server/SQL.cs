@@ -328,32 +328,33 @@ namespace CodeJar.WebApp
             Connection.Close();
         }
 
-        public bool CheckIfCodeCanBeRedeemed(string code, string alphabet)
+        public int CheckIfCodeCanBeRedeemed(string code, string alphabet)
         {
             var seedvalue = CodeConverter.ConvertFromCode(code, alphabet);
-            int recordsAffected = 0;
+            int codeID = 0;
 
             Connection.Open();
 
             using (var command = Connection.CreateCommand())
             {
                 command.CommandText = @"UPDATE Codes SET [State] = @redeemed
+                                        OUTPUT INSERTED.ID
                                         WHERE SeedValue = @seedvalue AND [State] = @active";
 
                 command.Parameters.AddWithValue("@redeemed", States.Redeemed);
                 command.Parameters.AddWithValue("@active", States.Active);
                 command.Parameters.AddWithValue("@seedvalue", seedvalue);
 
-                recordsAffected = command.ExecuteNonQuery();
+                codeID = (int)command.ExecuteScalar();
             }
 
             Connection.Close();
 
-            if (recordsAffected > 0)
+            if (codeID != 0)
             {
-                return true;
+                return codeID;
             }
-            return false;
+            return -1;
         }
     }
 }
