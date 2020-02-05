@@ -47,6 +47,14 @@ namespace api_tester
             {
                 Console.WriteLine("Pagination works");
             }
+
+            //Testing if there are dupicate batches
+            if(test.TestingForDuplicateBatch(createdBatch).Result)
+            {
+                Console.WriteLine("Doesn't create multiple batches");
+            }
+
+
         }
     }
 }
