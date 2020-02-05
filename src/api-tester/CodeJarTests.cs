@@ -41,7 +41,7 @@ namespace api_tester
 
             return false;
         }
-
+        //Calculation for pagination
           public int PageCalculator(Batch batch)
         {
             var pages = 0;
@@ -78,6 +78,44 @@ namespace api_tester
                 return true;
             }
             return false;
+        }
+
+        //Testing for duplicate batches.
+         public async Task<Batch> CreateBatch(Batch batch)
+        {
+            var newBatch = await _codeJarClient.CreateBatchAsync(batch);
+            var deserialzedBatch = JsonSerializer.Deserialize<Batch>(await newBatch.Content.ReadAsStringAsync(), _jsonOptions);
+            return deserialzedBatch;
+        }
+
+        public async Task<bool> TestingForDuplicateBatch(Batch batch)
+        {
+
+            var newBatch1 = await CreateBatch(batch);
+            var newBatch2 = await CreateBatch(batch);
+            var newBatch3 = await CreateBatch(batch);
+
+            var batchList = await _codeJarClient.GetBatchListAsync();
+
+            var desBatch = JsonSerializer.Deserialize<List<Batch>>(await batchList.Content.ReadAsStringAsync(), _jsonOptions);
+
+            var c = 0;
+            for (int i = 0; i < desBatch.Count; i++)
+            {
+                c = 0;
+                for(int j = 0; j < desBatch.Count; j++)
+                {
+                    if(desBatch[i] == desBatch[j])
+                    {
+                        c++;
+                    }
+                    if(c > 2)
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
        
     }
