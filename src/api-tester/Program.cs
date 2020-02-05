@@ -38,6 +38,12 @@ namespace api_tester
             {
                 Console.WriteLine("State when generated is correct.");
             }
+
+            //Checking if pagination works
+            if(test.PageComparison(createdBatch).Result)
+            {
+                Console.WriteLine("Pagination works");
+            }
         }
     }
 }
