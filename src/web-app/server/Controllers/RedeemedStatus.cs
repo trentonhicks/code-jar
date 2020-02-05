@@ -32,11 +32,11 @@ namespace CodeJar.WebApp.Controllers
 
             var sql = new SQL(connectionString, filepath);
 
-            var response = sql.CheckIfCodeCanBeRedeemed(code, alphabet);
+            var codeID = sql.CheckIfCodeCanBeRedeemed(code, alphabet);
 
-            if (response)
+            if (codeID != -1)
             {
-                return Ok();
+                return Ok(codeID);
             }
             return BadRequest();
         }
