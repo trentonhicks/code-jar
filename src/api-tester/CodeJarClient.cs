@@ -79,6 +79,9 @@ namespace api_tester
             return response;
         }
 
+        /// <summary>
+        /// Deactivates a code using the provided codeStringValue argument.
+        /// </summary>
         public async Task<HttpResponseMessage> DeactivateCodeAsync(string codeStringValue)
         {
             JsonSerializerOptions options = new JsonSerializerOptions
@@ -96,6 +99,25 @@ namespace api_tester
             };
 
             var response = await Client.SendAsync(request);
+            return response;
+        }
+
+        public async Task<HttpResponseMessage> RedeemCodeAsync(string codeStringValue)
+        {
+            JsonSerializerOptions options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            var content = JsonSerializer.Serialize(codeStringValue, options);
+            var response = await Client.PostAsync(
+                requestUri: "http://localhost:5000/redeem-code",
+                content:
+                    new StringContent (
+                        content: content,
+                        encoding: Encoding.UTF8,
+                        mediaType: "application/json"
+                    )
+            );
             return response;
         }
     }
