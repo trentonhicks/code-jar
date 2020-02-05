@@ -54,6 +54,12 @@ namespace api_tester
                 Console.WriteLine("Doesn't create multiple batches");
             }
 
+            //Testing if the offset updates correctly.
+            if(test.TestingForOffset(createdBatch).Result)
+            {
+                Console.WriteLine("Offset updates correctly");
+            }
+
 
         }
     }

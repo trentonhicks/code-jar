@@ -119,6 +119,46 @@ namespace api_tester
             }
             return true;
         }
+
+        //Testing if the offset updates correctly
+        public async Task<bool> TestingForOffset(Batch batch)
+        {
+            var batchList = await _codeJarClient.GetBatchListAsync();
+
+            var response = await _codeJarClient.GetBatchAsync(batch.ID, 1);
+
+            var tableData = JsonSerializer.Deserialize<TableData>(await response.Content.ReadAsStringAsync(), _jsonOptions);
+
+            var allCodes = tableData.Codes;
+
+            var desBatch = JsonSerializer.Deserialize<List<Batch>>(await batchList.Content.ReadAsStringAsync(), _jsonOptions);
+            
+
+
+            var c = 0;
+            for(int i = 0; i < desBatch.Count; i++)
+            {
+                for(int j = 0; j < allCodes.Count; j++)
+                {
+                    c = 0;
+                    for(int k = 0; k < allCodes.Count; k++)
+                    {
+                        if(allCodes[j] == allCodes[k])
+                        {
+                            c++;
+                        }
+                        if(c > 2)
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+           
+            return true;
+
+        }
        
     }
 }
