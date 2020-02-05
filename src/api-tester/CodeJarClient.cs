@@ -56,5 +56,27 @@ namespace api_tester
             return await Client.PostAsync("http://localhost:5000/batch", content);
         }
 
+        public async Task<HttpResponseMessage> DeleteBatchAsync(Batch batch)
+        {
+            var dateActive = FormatDate.YearMonthDay(batch.DateActive);
+            var dateExpires = FormatDate.YearMonthDay(batch.DateExpires);
+
+            var payload = "{" +
+            $"\"BatchName\": \"{batch.BatchName}\"," +
+            $"\"BatchSize\": {batch.BatchSize}," +
+            $"\"DateActive\": \"{dateActive}\"," +
+            $"\"DateExpires\": \"{dateExpires}\"" +
+            "}";
+
+            var request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Delete,
+                RequestUri = new Uri("http://localhost:5000/batch"),
+                Content = new StringContent(payload, Encoding.UTF8, "application/json")
+            };
+            
+            var response = await Client.SendAsync(request);
+            return response;
+        }
     }
 }

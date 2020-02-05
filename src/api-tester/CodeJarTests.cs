@@ -28,6 +28,7 @@ namespace api_tester
             {
                 if(code.State == "Active")
                 {
+                    Console.WriteLine("Batch state is Active");
                     return true;
                 }
             }
@@ -35,6 +36,7 @@ namespace api_tester
             {
                 if(code.State == "Generated")
                 {
+                    Console.WriteLine("Batch state is Generated");
                     return true;
                 }
             }

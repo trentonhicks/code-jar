@@ -31,6 +31,9 @@ namespace api_tester
             var batchContent = batchResponse.Content.ReadAsStringAsync().Result;
             var createdBatch = JsonSerializer.Deserialize<Batch>(batchContent, options);
 
+            var deleteBatch = codeJarClient.DeleteBatchAsync(batch).Result;
+
+
             var test = new CodeJarTests();
 
              // Checking if Codes Generated State is correct.
