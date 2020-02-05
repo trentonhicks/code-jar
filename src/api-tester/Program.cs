@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace api_tester
 {
@@ -19,6 +20,8 @@ namespace api_tester
 
             // Create new codeJarClient
             var codeJarClient = new CodeJarClient();
+            var test = new CodeJarTests();
+
             var today = DateTime.Now;
             var batch = new Batch()
             {
@@ -31,12 +34,7 @@ namespace api_tester
             var batchContent = batchResponse.Content.ReadAsStringAsync().Result;
             var createdBatch = JsonSerializer.Deserialize<Batch>(batchContent, options);
 
-            var deleteBatch = codeJarClient.DeleteBatchAsync(batch).Result;
-
-
-            var test = new CodeJarTests();
-
-             // Checking if Codes Generated State is correct.
+            // Checking if Codes Generated State is correct.
             if (test.IsCodeStateCorrect(createdBatch).Result)
             {
                 Console.WriteLine("State when generated is correct.");
@@ -45,15 +43,16 @@ namespace api_tester
             //Checking if pagination works
             if(test.PageComparison(createdBatch).Result)
             {
-                Console.WriteLine("Pagination works");
+                Console.WriteLine("Pagination works.");
             }
 
             //Testing if there are dupicate batches
             if(test.TestingForDuplicateBatch(createdBatch).Result)
             {
-                Console.WriteLine("Doesn't create multiple batches");
+                Console.WriteLine("No duplicate batches.");
             }
 
+<<<<<<< HEAD
             //Testing if the offset updates correctly.
             if(test.TestingForOffset(createdBatch).Result)
             {
@@ -61,6 +60,8 @@ namespace api_tester
             }
 
 
+=======
+>>>>>>> 91232a2ed814245a2f99a2df25819900b94aafa0
         }
     }
 }
