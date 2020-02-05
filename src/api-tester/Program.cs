@@ -19,13 +19,13 @@ namespace api_tester
 
             // Create new codeJarClient
             var codeJarClient = new CodeJarClient();
-
+            var today = DateTime.Now;
             var batch = new Batch()
             {
                 BatchName = "Batch",
                 BatchSize = 10,
-                DateActive = new DateTime(year: 2020, month: 2, day: 1),
-                DateExpires = new DateTime(year: 2020, month: 2, day: 15)
+                DateActive = today,
+                DateExpires = today.AddDays(30)
             };
             var batchResponse = codeJarClient.CreateBatchAsync(batch).Result;
             var batchContent = batchResponse.Content.ReadAsStringAsync().Result;
