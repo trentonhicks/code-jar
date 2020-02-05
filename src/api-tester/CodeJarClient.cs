@@ -14,6 +14,9 @@ namespace api_tester
     public class CodeJarClient
     {
         public HttpClient Client = new HttpClient();
+        private JsonSerializerOptions _jsonOptions = new JsonSerializerOptions {
+            PropertyNameCaseInsensitive = true,
+        };
 
         /// <summary>
         /// Gets a list of all batches from the API
@@ -84,12 +87,8 @@ namespace api_tester
         /// </summary>
         public async Task<HttpResponseMessage> DeactivateCodeAsync(string codeStringValue)
         {
-            JsonSerializerOptions options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            };
             string[] arr = new string[] { codeStringValue };
-            var payload = JsonSerializer.Serialize(arr, options);
+            var payload = JsonSerializer.Serialize(arr, _jsonOptions);
 
             var request = new HttpRequestMessage()
             {
@@ -104,11 +103,7 @@ namespace api_tester
 
         public async Task<HttpResponseMessage> RedeemCodeAsync(string codeStringValue)
         {
-            JsonSerializerOptions options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            };
-            var content = JsonSerializer.Serialize(codeStringValue, options);
+            var content = JsonSerializer.Serialize(codeStringValue, _jsonOptions);
             var response = await Client.PostAsync(
                 requestUri: "http://localhost:5000/redeem-code",
                 content:
@@ -119,6 +114,14 @@ namespace api_tester
                     )
             );
             return response;
+        }
+
+        /// <summary>
+        /// Returns a code if it was found, otherwise returns a 404 status code
+        /// </summary>
+        public async Task<HttpResponseMessage> SearchCodeAsync(string codeStringValue)
+        {
+            return await Client.GetAsync(requestUri: $"http://localhost:5000/codes?stringValue={codeStringValue}");
         }
     }
 }

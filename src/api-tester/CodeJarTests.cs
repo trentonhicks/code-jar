@@ -63,13 +63,8 @@ namespace api_tester
 
       
         //Comparing the local pages calculated and the pages calculated from the API.
-
         public async Task<bool> PageComparison(Batch batch)
         {
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-            };
             var client = new CodeJarClient();
             var response = await _codeJarClient.GetBatchAsync(batch.ID, 1);
             var tableData = JsonSerializer.Deserialize<TableData>(await response.Content.ReadAsStringAsync(), _jsonOptions);
