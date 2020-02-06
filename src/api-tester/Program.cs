@@ -52,16 +52,11 @@ namespace api_tester
                 Console.WriteLine("No duplicate batches.");
             }
 
-<<<<<<< HEAD
             //Testing if the offset updates correctly.
             if(test.TestingForOffset(createdBatch).Result)
             {
                 Console.WriteLine("Offset updates correctly");
             }
-
-
-=======
->>>>>>> 91232a2ed814245a2f99a2df25819900b94aafa0
         }
     }
 }
