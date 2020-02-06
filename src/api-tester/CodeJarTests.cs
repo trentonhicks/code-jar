@@ -114,6 +114,8 @@ namespace api_tester
             return true;
         }
 
+       
+
         //Testing if the offset updates correctly
         public async Task<bool> TestingForOffset(Batch batch)
         {
@@ -148,6 +150,27 @@ namespace api_tester
             }
             return true;
         }
+
+         public async Task<bool> TestForSearch(Batch batch)
+        {
+            //get batch
+            var response = await _codeJarClient.GetBatchAsync(batch.ID, 1);
+            //get 1 code from batch
+            var code = JsonSerializer.Deserialize<TableData>(await response.Content.ReadAsStringAsync(), _jsonOptions).Codes[0];
+            //get the string value
+            var stringValue = await _codeJarClient.SearchCodeAsync(code.StringValue);
+            //deserialize the string to code
+            var desStringValue = JsonSerializer.Deserialize<Code>(await stringValue.Content.ReadAsStringAsync(), _jsonOptions);
+            //check if the code searched is equal to the codes
+            if(desStringValue == code)
+            {
+                return true;
+            }
+            return false;
+
+        }
+
+       
 
         public async Task<bool> DeactivateCode(Batch batch)
         {

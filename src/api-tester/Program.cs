@@ -59,15 +59,20 @@ namespace api_tester
             {
                 Console.WriteLine("Offset updates correctly");
             }
-
+            //testing if you can deactivate a code
             if (test.DeactivateCode(createdBatch).Result)
             {
                 Console.WriteLine("Code deactive works");
             }
-
+            //testing if you can deactivate a batch
             if (test.DeactivateBatch(createdBatch).Result)
             {
                 Console.WriteLine("Batch deactive works");
+            }
+            //testing if you can search
+            if(test.TestForSearch(createdBatch).Result)
+            {
+                Console.WriteLine("search works.");
             }
         }
     }
