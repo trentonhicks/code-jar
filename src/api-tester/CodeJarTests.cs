@@ -17,7 +17,6 @@ namespace api_tester
         };
 
         //Testing for the correct state when a code is created.
-
         public async Task<bool> IsCodeStateCorrect(Batch batch)
         {
             var getCodes = await _codeJarClient.GetBatchAsync(batch.ID, 1);
@@ -61,7 +60,6 @@ namespace api_tester
 
             return pages;
         }
-
 
         //Comparing the local pages calculated and the pages calculated from the API.
         public async Task<bool> PageComparison(Batch batch)
@@ -186,7 +184,56 @@ namespace api_tester
                 Console.WriteLine("Already Inactive");
                 return false;
             }
-            return false;
+            return true;
+        }
+
+        public async Task<bool> DeactivateBatch(Batch batch)
+        {
+            string failed = "Batch deactivation failed";
+
+            var response = await _codeJarClient.GetBatchAsync(batch.ID, 1);
+
+            var stringValue = new TableData().Codes.Count;
+
+            for (int i = -1; i < stringValue; i++)
+            {
+                var code = JsonSerializer.Deserialize<TableData>(await response.Content.ReadAsStringAsync(), _jsonOptions).Codes[stringValue];
+
+                if (code.State == "Active")
+                {
+                    await _codeJarClient.DeactivateCodeAsync(code.StringValue);
+
+                    if (stringValue == batch.BatchSize - 1)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        stringValue++;
+                    }
+                }
+                else if (code.State == "Generated")
+                {
+                    Console.WriteLine(failed);
+                    return false;
+                }
+                else if (code.State == "Expired")
+                {
+                    Console.WriteLine(failed);
+                    return false;
+                }
+                else if (code.State == "Redeemed")
+                {
+                    Console.WriteLine(failed);
+                    return false;
+                }
+                else if (code.State == "Inactive")
+                {
+                    Console.WriteLine("Already Inactive");
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

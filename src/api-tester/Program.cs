@@ -41,7 +41,7 @@ namespace api_tester
                 Console.WriteLine("State when generated is correct.");
             }
 
-            // //Checking if pagination works
+            // // //Checking if pagination works
             if (test.PageComparison(createdBatch).Result)
             {
                 Console.WriteLine("Pagination works.");
@@ -63,6 +63,11 @@ namespace api_tester
             if (test.DeactivateCode(createdBatch).Result)
             {
                 Console.WriteLine("Code deactive works");
+            }
+
+            if (test.DeactivateBatch(createdBatch).Result)
+            {
+                Console.WriteLine("Batch deactive works");
             }
         }
     }
