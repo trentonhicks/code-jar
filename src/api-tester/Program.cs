@@ -30,6 +30,7 @@ namespace api_tester
                 DateActive = today,
                 DateExpires = today.AddDays(30)
             };
+
             var batchResponse = codeJarClient.CreateBatchAsync(batch).Result;
             var batchContent = batchResponse.Content.ReadAsStringAsync().Result;
             var createdBatch = JsonSerializer.Deserialize<Batch>(batchContent, options);
@@ -40,22 +41,28 @@ namespace api_tester
                 Console.WriteLine("State when generated is correct.");
             }
 
-            //Checking if pagination works
-            if(test.PageComparison(createdBatch).Result)
+            // //Checking if pagination works
+            if (test.PageComparison(createdBatch).Result)
             {
                 Console.WriteLine("Pagination works.");
             }
 
             //Testing if there are dupicate batches
-            if(test.TestingForDuplicateBatch(createdBatch).Result)
+            if (test.TestingForDuplicateBatch(createdBatch).Result)
             {
                 Console.WriteLine("No duplicate batches.");
             }
 
             //Testing if the offset updates correctly.
-            if(test.TestingForOffset(createdBatch).Result)
+
+            if (test.TestingForOffset(createdBatch).Result)
             {
                 Console.WriteLine("Offset updates correctly");
+            }
+
+            if (test.DeactivateCode(createdBatch).Result)
+            {
+                Console.WriteLine("Code deactive works");
             }
         }
     }

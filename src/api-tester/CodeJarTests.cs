@@ -11,22 +11,23 @@ namespace api_tester
     public class CodeJarTests
     {
         private CodeJarClient _codeJarClient = new CodeJarClient();
-        private JsonSerializerOptions _jsonOptions = new JsonSerializerOptions {
+        private JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
+        {
             PropertyNameCaseInsensitive = true,
         };
 
         //Testing for the correct state when a code is created.
 
-        public async Task<bool> IsCodeStateCorrect (Batch batch)
+        public async Task<bool> IsCodeStateCorrect(Batch batch)
         {
             var getCodes = await _codeJarClient.GetBatchAsync(batch.ID, 1);
 
             var response = await _codeJarClient.GetBatchAsync(batch.ID, 1);
             var code = JsonSerializer.Deserialize<TableData>(await response.Content.ReadAsStringAsync(), _jsonOptions).Codes[0];
 
-            if(batch.DateActive <= DateTime.Now)
+            if (batch.DateActive <= DateTime.Now)
             {
-                if(code.State == "Active")
+                if (code.State == "Active")
                 {
                     Console.WriteLine("Batch state is Active");
                     return true;
@@ -34,7 +35,7 @@ namespace api_tester
             }
             else
             {
-                if(code.State == "Generated")
+                if (code.State == "Generated")
                 {
                     Console.WriteLine("Batch state is Generated");
                     return true;
@@ -44,7 +45,7 @@ namespace api_tester
             return false;
         }
         //Calculation for pagination
-          public int PageCalculator(Batch batch)
+        public int PageCalculator(Batch batch)
         {
             var pages = 0;
             var pageRemainder = 0;
@@ -53,7 +54,7 @@ namespace api_tester
             pages = numberOfCodes / 10;
             pageRemainder = numberOfCodes % 10;
 
-            if(pageRemainder > 0)
+            if (pageRemainder > 0)
             {
                 pages++;
             }
@@ -61,7 +62,7 @@ namespace api_tester
             return pages;
         }
 
-      
+
         //Comparing the local pages calculated and the pages calculated from the API.
         public async Task<bool> PageComparison(Batch batch)
         {
@@ -70,7 +71,7 @@ namespace api_tester
             var tableData = JsonSerializer.Deserialize<TableData>(await response.Content.ReadAsStringAsync(), _jsonOptions);
             var apiPages = tableData.Pages;
             var localPages = PageCalculator(batch);
-            if(localPages == apiPages)
+            if (localPages == apiPages)
             {
                 return true;
             }
@@ -78,7 +79,7 @@ namespace api_tester
         }
 
         //Testing for duplicate batches.
-         public async Task<Batch> CreateBatch(Batch batch)
+        public async Task<Batch> CreateBatch(Batch batch)
         {
             var newBatch = await _codeJarClient.CreateBatchAsync(batch);
             var deserialzedBatch = JsonSerializer.Deserialize<Batch>(await newBatch.Content.ReadAsStringAsync(), _jsonOptions);
@@ -100,13 +101,13 @@ namespace api_tester
             for (int i = 0; i < desBatch.Count; i++)
             {
                 c = 0;
-                for(int j = 0; j < desBatch.Count; j++)
+                for (int j = 0; j < desBatch.Count; j++)
                 {
-                    if(desBatch[i] == desBatch[j])
+                    if (desBatch[i] == desBatch[j])
                     {
                         c++;
                     }
-                    if(c > 2)
+                    if (c > 2)
                     {
                         return false;
                     }
@@ -127,33 +128,65 @@ namespace api_tester
             var allCodes = tableData.Codes;
 
             var desBatch = JsonSerializer.Deserialize<List<Batch>>(await batchList.Content.ReadAsStringAsync(), _jsonOptions);
-            
-
 
             var c = 0;
-            for(int i = 0; i < desBatch.Count; i++)
+            for (int i = 0; i < desBatch.Count; i++)
             {
-                for(int j = 0; j < allCodes.Count; j++)
+                for (int j = 0; j < allCodes.Count; j++)
                 {
                     c = 0;
-                    for(int k = 0; k < allCodes.Count; k++)
+                    for (int k = 0; k < allCodes.Count; k++)
                     {
-                        if(allCodes[j] == allCodes[k])
+                        if (allCodes[j] == allCodes[k])
                         {
                             c++;
                         }
-                        if(c > 2)
+                        if (c > 2)
                         {
                             return false;
                         }
                     }
                 }
             }
-
-           
             return true;
-
         }
-       
+
+        public async Task<bool> DeactivateCode(Batch batch)
+        {
+            var response = await _codeJarClient.GetBatchAsync(batch.ID, 1);
+
+            var code = JsonSerializer.Deserialize<TableData>(await response.Content.ReadAsStringAsync(), _jsonOptions).Codes[0];
+
+            string failed = "Single code deactivation failed";
+
+            if (code.State == "Active")
+            {
+                var deactivateCode = await _codeJarClient.DeactivateCodeAsync(code.StringValue);
+
+                Console.WriteLine("A single code was deactivated");
+                return true;
+            }
+            else if (code.State == "Generated")
+            {
+                Console.WriteLine(failed);
+                return false;
+            }
+            else if (code.State == "Expired")
+            {
+                Console.WriteLine(failed);
+                return false;
+            }
+            else if (code.State == "Redeemed")
+            {
+                Console.WriteLine(failed);
+                return false;
+            }
+            else if (code.State == "Inactive")
+            {
+                Console.WriteLine("Already Inactive");
+                return false;
+            }
+            return false;
+        }
     }
 }
