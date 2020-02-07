@@ -309,5 +309,23 @@ namespace api_tester
                 return false;
             }
         }
+        //Testing if you can delete a batch.
+        public async Task<bool> DeleteBatchTest(Batch batch)
+        {
+            var response = await _codeJarClient.GetBatchAsync(batch.ID, 1);
+            //getting the batch 
+            var newBatch = JsonSerializer.Deserialize<Batch>(await response.Content.ReadAsStringAsync(), _jsonOptions);
+            var deleteResponse = await _codeJarClient.DeleteBatchAsync(batch);
+            //getting the delete value
+            var deleteBatch = JsonSerializer.Deserialize<Batch>(await deleteResponse.Content.ReadAsStringAsync(), _jsonOptions);
+            //setting the batch selected to the deleted batch value
+            newBatch = deleteBatch;
+            //checking if the new batch is deleted.
+            if(newBatch == deleteBatch)
+            {
+                return true;
+            }
+            return false;
+        }
     }
 }

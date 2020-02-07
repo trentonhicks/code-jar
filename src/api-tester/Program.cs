@@ -98,6 +98,12 @@ namespace api_tester
             {
                 Console.WriteLine("Redeem-Redeemed-Code test SUCCESSFUL");
             }
+
+            //test if you can delete a batch
+            if(test.DeleteBatchTest(createdBatch).Result)
+            {
+                Console.WriteLine("Can delete a batch");
+            }
         }
     }
 }
