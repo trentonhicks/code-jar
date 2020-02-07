@@ -35,10 +35,15 @@ namespace api_tester
             var batchContent = batchResponse.Content.ReadAsStringAsync().Result;
             var createdBatch = JsonSerializer.Deserialize<Batch>(batchContent, options);
 
-            //seperate batch for DeactivateBatch
+            //seperate batch for RedeemCode
             var batchResponse2 = codeJarClient.CreateBatchAsync(batch).Result;
             var batchContent2 = batchResponse2.Content.ReadAsStringAsync().Result;
             var secondBatch = JsonSerializer.Deserialize<Batch>(batchContent2, options);
+
+            //seperate batch for DeactivateBatch
+            var batchResponse3 = codeJarClient.CreateBatchAsync(batch).Result;
+            var batchContent3 = batchResponse3.Content.ReadAsStringAsync().Result;
+            var thirdBatch = JsonSerializer.Deserialize<Batch>(batchContent3, options);
 
             // Checking if Codes Generated State is correct.
             if (test.IsCodeStateCorrect(createdBatch).Result)
@@ -69,18 +74,24 @@ namespace api_tester
             {
                 Console.WriteLine("Code deactive works");
             }
-            
+
             //testing if you can deactivate a batch
-            if (test.DeactivateBatch(secondBatch).Result)
+            if (test.DeactivateBatch(thirdBatch).Result)
             {
                 Console.WriteLine("Batch deactive works");
             }
-          
+
             //testing if you can search
             if (test.TestForSearch(createdBatch).Result)
             {
                 Console.WriteLine("search works.");
             }
+            
+            //testing to redeem a single code
+            if (test.RedeemCodeTest(secondBatch).Result)
+            {
+                Console.WriteLine("RedeemCode works correctly");
+            }
         }
-    }       
+    }
 }

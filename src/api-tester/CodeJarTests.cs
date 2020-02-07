@@ -252,5 +252,43 @@ namespace api_tester
             }
             return true;
         }
+
+        public async Task<bool> RedeemCodeTest(Batch batch)
+        {
+            var failed = "Single code deactivation failed";
+
+            var response = await _codeJarClient.GetBatchAsync(batch.ID, 1);
+
+            var code = JsonSerializer.Deserialize<TableData>(await response.Content.ReadAsStringAsync(), _jsonOptions).Codes[0];
+
+            if (code.State == "Active")
+            {
+                var redeemCode = await _codeJarClient.RedeemCodeAsync(code.StringValue);
+
+                Console.WriteLine("A single code was Redeemed");
+                return true;
+            }
+            else if (code.State == "Redeemed")
+            {
+                Console.WriteLine("Already Redeemed");
+                return false;
+            }
+            else if (code.State == "Generated")
+            {
+                Console.WriteLine(failed);
+                return false;
+            }
+            else if (code.State == "Expired")
+            {
+                Console.WriteLine(failed);
+                return false;
+            }
+            else if (code.State == "Inactive")
+            {
+                Console.WriteLine(failed);
+                return false;
+            }
+            return false;
+        }
     }
 }
