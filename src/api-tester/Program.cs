@@ -35,13 +35,18 @@ namespace api_tester
             var batchContent = batchResponse.Content.ReadAsStringAsync().Result;
             var createdBatch = JsonSerializer.Deserialize<Batch>(batchContent, options);
 
+            //seperate batch for DeactivateBatch
+            var batchResponse2 = codeJarClient.CreateBatchAsync(batch).Result;
+            var batchContent2 = batchResponse2.Content.ReadAsStringAsync().Result;
+            var secondBatch = JsonSerializer.Deserialize<Batch>(batchContent2, options);
+
             // Checking if Codes Generated State is correct.
             if (test.IsCodeStateCorrect(createdBatch).Result)
             {
                 Console.WriteLine("State when generated is correct.");
             }
 
-            // // //Checking if pagination works
+            //Checking if pagination works
             if (test.PageComparison(createdBatch).Result)
             {
                 Console.WriteLine("Pagination works.");
@@ -54,26 +59,28 @@ namespace api_tester
             }
 
             //Testing if the offset updates correctly.
-
             if (test.TestingForOffset(createdBatch).Result)
             {
                 Console.WriteLine("Offset updates correctly");
             }
+
             //testing if you can deactivate a code
             if (test.DeactivateCode(createdBatch).Result)
             {
                 Console.WriteLine("Code deactive works");
             }
+            
             //testing if you can deactivate a batch
-            if (test.DeactivateBatch(createdBatch).Result)
+            if (test.DeactivateBatch(secondBatch).Result)
             {
                 Console.WriteLine("Batch deactive works");
             }
+          
             //testing if you can search
-            if(test.TestForSearch(createdBatch).Result)
+            if (test.TestForSearch(createdBatch).Result)
             {
                 Console.WriteLine("search works.");
             }
         }
-    }
+    }       
 }

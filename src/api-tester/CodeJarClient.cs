@@ -34,7 +34,7 @@ namespace api_tester
         {
             return await Client.GetAsync(requestUri: $"http://localhost:5000/batch/{id}?page={page}");
         }
-        
+
         /// <summary>
         /// Creates a batch using the /batch route.
         /// </summary>
@@ -49,13 +49,13 @@ namespace api_tester
                 content: "{" +
                     $"\"BatchName\": \"{batch.BatchName}\"," +
                     $"\"BatchSize\": {batch.BatchSize}," +
-                    $"\"DateActive\": \"{dateActive}\"," + 
+                    $"\"DateActive\": \"{dateActive}\"," +
                     $"\"DateExpires\": \"{dateExpires}\"" +
                 "}",
                 encoding: Encoding.UTF8,
                 mediaType: "application/json"
            );
-            
+
             // Return response
             return await Client.PostAsync("http://localhost:5000/batch", content);
         }
@@ -78,11 +78,11 @@ namespace api_tester
                 RequestUri = new Uri("http://localhost:5000/batch"),
                 Content = new StringContent(payload, Encoding.UTF8, "application/json")
             };
-            
+
             var response = await Client.SendAsync(request);
             return response;
         }
-                /// <summary>
+        /// <summary>
         /// Deactivates a code using the provided codeStringValue argument.
         /// </summary>
         public async Task<HttpResponseMessage> DeactivateCodeAsync(string codeStringValue)
@@ -107,7 +107,7 @@ namespace api_tester
             var response = await Client.PostAsync(
                 requestUri: "http://localhost:5000/redeem-code",
                 content:
-                    new StringContent (
+                    new StringContent(
                         content: content,
                         encoding: Encoding.UTF8,
                         mediaType: "application/json"

@@ -19,7 +19,6 @@ namespace api_tester
         //Testing for the correct state when a code is created.
         public async Task<bool> IsCodeStateCorrect(Batch batch)
         {
-            var getCodes = await _codeJarClient.GetBatchAsync(batch.ID, 1);
 
             var response = await _codeJarClient.GetBatchAsync(batch.ID, 1);
             var code = JsonSerializer.Deserialize<TableData>(await response.Content.ReadAsStringAsync(), _jsonOptions).Codes[0];
@@ -114,8 +113,6 @@ namespace api_tester
             return true;
         }
 
-       
-
         //Testing if the offset updates correctly
         public async Task<bool> TestingForOffset(Batch batch)
         {
@@ -151,26 +148,23 @@ namespace api_tester
             return true;
         }
 
-         public async Task<bool> TestForSearch(Batch batch)
+        public async Task<bool> TestForSearch(Batch batch)
         {
             //get batch
             var response = await _codeJarClient.GetBatchAsync(batch.ID, 1);
-            //get 1 code from batch
+            //gets first code from batch 
             var code = JsonSerializer.Deserialize<TableData>(await response.Content.ReadAsStringAsync(), _jsonOptions).Codes[0];
             //get the string value
             var stringValue = await _codeJarClient.SearchCodeAsync(code.StringValue);
             //deserialize the string to code
-            var desStringValue = JsonSerializer.Deserialize<Code>(await stringValue.Content.ReadAsStringAsync(), _jsonOptions);
-            //check if the code searched is equal to the codes
-            if(desStringValue == code)
-            {
-                return true;
-            }
-            return false;
+            var desStringValue = JsonSerializer.Deserialize<Code>(await stringValue.Content.ReadAsStringAsync(), _jsonOptions).StringValue;
 
+            var compareCode = JsonSerializer.Deserialize<Code>(await stringValue.Content.ReadAsStringAsync(), _jsonOptions).StringValue;
+
+            var test = string.Equals(desStringValue, compareCode);
+
+            return test;
         }
-
-       
 
         public async Task<bool> DeactivateCode(Batch batch)
         {
