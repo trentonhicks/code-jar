@@ -15,33 +15,13 @@ namespace api_tester
         {
             PropertyNameCaseInsensitive = true,
         };
-
-        //Testing for the correct state when a code is created.
-        public async Task<bool> IsCodeStateCorrect(Batch batch)
+        public async Task<Batch> CreateBatch(Batch batch)
         {
-
-            var response = await _codeJarClient.GetBatchAsync(batch.ID, 1);
-            var code = JsonSerializer.Deserialize<TableData>(await response.Content.ReadAsStringAsync(), _jsonOptions).Codes[0];
-
-            if (batch.DateActive <= DateTime.Now)
-            {
-                if (code.State == "Active")
-                {
-                    Console.WriteLine("Batch state is Active");
-                    return true;
-                }
-            }
-            else
-            {
-                if (code.State == "Generated")
-                {
-                    Console.WriteLine("Batch state is Generated");
-                    return true;
-                }
-            }
-
-            return false;
+            var newBatch = await _codeJarClient.CreateBatchAsync(batch);
+            var deserialzedBatch = JsonSerializer.Deserialize<Batch>(await newBatch.Content.ReadAsStringAsync(), _jsonOptions);
+            return deserialzedBatch;
         }
+
         //Calculation for pagination
         public int PageCalculator(Batch batch)
         {
@@ -61,7 +41,7 @@ namespace api_tester
         }
 
         //Comparing the local pages calculated and the pages calculated from the API.
-        public async Task<bool> PageComparison(Batch batch)
+        public async Task<bool> PaginationTest(Batch batch)
         {
             var client = new CodeJarClient();
             var response = await _codeJarClient.GetBatchAsync(batch.ID, 1);
@@ -72,18 +52,12 @@ namespace api_tester
             {
                 return true;
             }
+            Console.WriteLine("\n-PageComparison test FAILED!!!");
             return false;
         }
 
         //Testing for duplicate batches.
-        public async Task<Batch> CreateBatch(Batch batch)
-        {
-            var newBatch = await _codeJarClient.CreateBatchAsync(batch);
-            var deserialzedBatch = JsonSerializer.Deserialize<Batch>(await newBatch.Content.ReadAsStringAsync(), _jsonOptions);
-            return deserialzedBatch;
-        }
-
-        public async Task<bool> TestingForDuplicateBatch(Batch batch)
+        public async Task<bool> DuplicateBatchesTest(Batch batch)
         {
 
             var newBatch1 = await CreateBatch(batch);
@@ -110,11 +84,12 @@ namespace api_tester
                     }
                 }
             }
+            Console.WriteLine("\n-No Duplicate Batches");
             return true;
         }
 
         //Testing if the offset updates correctly
-        public async Task<bool> TestingForOffset(Batch batch)
+        public async Task<bool> OffsetTest(Batch batch)
         {
             var batchList = await _codeJarClient.GetBatchListAsync();
 
@@ -148,7 +123,7 @@ namespace api_tester
             return true;
         }
 
-        public async Task<bool> TestForSearch(Batch batch)
+        public async Task<bool> SearchForCodeTest(Batch batch)
         {
             //get batch
             var response = await _codeJarClient.GetBatchAsync(batch.ID, 1);
@@ -166,47 +141,72 @@ namespace api_tester
             return test;
         }
 
-        public async Task<bool> DeactivateCode(Batch batch)
+        //Testing for the correct state when a code is created.
+        public async Task<bool> CodeStateTest(Batch batch)
+        {
+
+            var response = await _codeJarClient.GetBatchAsync(batch.ID, 1);
+            var code = JsonSerializer.Deserialize<TableData>(await response.Content.ReadAsStringAsync(), _jsonOptions).Codes[0];
+
+            if (batch.DateActive <= DateTime.Now)
+            {
+                if (code.State == "Active")
+                {
+                    Console.WriteLine("\n-Batch state is Active");
+                    return true;
+                }
+            }
+            else
+            {
+                if (code.State == "Generated")
+                {
+                    Console.WriteLine("\n-Batch state is Generated");
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        public async Task<bool> DeactivateCodeTest(Batch batch)
         {
             var response = await _codeJarClient.GetBatchAsync(batch.ID, 1);
 
             var code = JsonSerializer.Deserialize<TableData>(await response.Content.ReadAsStringAsync(), _jsonOptions).Codes[0];
 
-            string failed = "Single code deactivation failed";
+            string failedMsg = "DeactivateCode test FAILED!!!";
 
             if (code.State == "Active")
             {
-                var deactivateCode = await _codeJarClient.DeactivateCodeAsync(code.StringValue);
+                await _codeJarClient.DeactivateCodeAsync(code.StringValue);
 
-                Console.WriteLine("A single code was deactivated");
+                Console.WriteLine("\n-A single code was deactivated");
                 return true;
             }
             else if (code.State == "Generated")
             {
-                Console.WriteLine(failed);
+                Console.WriteLine(failedMsg);
                 return false;
             }
             else if (code.State == "Expired")
             {
-                Console.WriteLine(failed);
+                Console.WriteLine(failedMsg);
                 return false;
             }
             else if (code.State == "Redeemed")
             {
-                Console.WriteLine(failed);
+                Console.WriteLine(failedMsg);
                 return false;
             }
             else if (code.State == "Inactive")
             {
-                Console.WriteLine("Already Inactive");
+                Console.WriteLine($"\n-Code already Inactive.{failedMsg}");
                 return false;
             }
             return true;
         }
-
-        public async Task<bool> DeactivateBatch(Batch batch)
+        public async Task<bool> DeactivateBatchTest(Batch batch)
         {
-            string failed = "Batch deactivation failed";
+            string failedMsg = "\nBatch deactivation test FAILED!!!";
 
             var response = await _codeJarClient.GetBatchAsync(batch.ID, 1);
 
@@ -222,6 +222,7 @@ namespace api_tester
 
                     if (stringValue == batch.BatchSize - 1)
                     {
+                        System.Console.WriteLine("\n-Batch was Deactivated");
                         return true;
                     }
                     else
@@ -231,31 +232,30 @@ namespace api_tester
                 }
                 else if (code.State == "Generated")
                 {
-                    Console.WriteLine(failed);
+                    Console.WriteLine(failedMsg);
                     return false;
                 }
                 else if (code.State == "Expired")
                 {
-                    Console.WriteLine(failed);
+                    Console.WriteLine(failedMsg);
                     return false;
                 }
                 else if (code.State == "Redeemed")
                 {
-                    Console.WriteLine(failed);
+                    Console.WriteLine(failedMsg);
                     return false;
                 }
                 else if (code.State == "Inactive")
                 {
-                    Console.WriteLine("Already Inactive");
+                    Console.WriteLine($"\n-Already Inactive. {failedMsg}");
                     return false;
                 }
             }
             return true;
         }
-
         public async Task<bool> RedeemCodeTest(Batch batch)
         {
-            var failed = "Single code deactivation failed";
+            var failedMsg = "\nRedeem Code test FAILED!!!";
 
             var response = await _codeJarClient.GetBatchAsync(batch.ID, 1);
 
@@ -263,32 +263,51 @@ namespace api_tester
 
             if (code.State == "Active")
             {
-                var redeemCode = await _codeJarClient.RedeemCodeAsync(code.StringValue);
+                await _codeJarClient.RedeemCodeAsync(code.StringValue);
 
-                Console.WriteLine("A single code was Redeemed");
+                Console.WriteLine("\n-A single code was Redeemed.");
                 return true;
             }
             else if (code.State == "Redeemed")
             {
-                Console.WriteLine("Already Redeemed");
+                Console.WriteLine($"\n-Code was already Redeemed. {failedMsg}");
                 return false;
             }
             else if (code.State == "Generated")
             {
-                Console.WriteLine(failed);
+                Console.WriteLine(failedMsg);
                 return false;
             }
             else if (code.State == "Expired")
             {
-                Console.WriteLine(failed);
+                Console.WriteLine(failedMsg);
                 return false;
             }
             else if (code.State == "Inactive")
             {
-                Console.WriteLine(failed);
+                Console.WriteLine(failedMsg);
                 return false;
             }
             return false;
+        }
+        public async Task<bool> RedeemRedeemedCodeTest(Batch batch)
+        {
+            var response = await _codeJarClient.GetBatchAsync(batch.ID, 1);
+
+            var code = JsonSerializer.Deserialize<TableData>(await response.Content.ReadAsStringAsync(), _jsonOptions).Codes[0];
+
+            await _codeJarClient.RedeemCodeAsync(code.StringValue);
+
+            if (code.State == "Redeemed")
+            {
+                Console.WriteLine("\n-Code has already been Redeemed.");
+                return true;
+            }
+            else
+            {
+                Console.WriteLine("Redeem-Redeemed-Code test FAILED!!!");
+                return false;
+            }
         }
     }
 }
