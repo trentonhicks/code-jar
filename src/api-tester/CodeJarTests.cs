@@ -15,8 +15,33 @@ namespace api_tester
         {
             PropertyNameCaseInsensitive = true,
         };
-        public async Task<Batch> CreateBatch(Batch batch)
+        public async Task<Batch> CreateActiveBatch(Batch batch)
         {
+            var today = DateTime.Now;
+            batch = new Batch()
+            {
+                BatchName = "Batch",
+                BatchSize = 3,
+                DateActive = today,
+                DateExpires = today.AddDays(30)
+            };
+
+            var newBatch = await _codeJarClient.CreateBatchAsync(batch);
+            var deserialzedBatch = JsonSerializer.Deserialize<Batch>(await newBatch.Content.ReadAsStringAsync(), _jsonOptions);
+            return deserialzedBatch;
+        }
+
+        public async Task<Batch> CreateGeneratedBatch(Batch batch)
+        {
+            var today = DateTime.Now;
+            batch = new Batch()
+            {
+                BatchName = "Generated Batch",
+                BatchSize = 1,
+                DateActive = today.AddDays(100),
+                DateExpires = today.AddDays(150)
+            };
+
             var newBatch = await _codeJarClient.CreateBatchAsync(batch);
             var deserialzedBatch = JsonSerializer.Deserialize<Batch>(await newBatch.Content.ReadAsStringAsync(), _jsonOptions);
             return deserialzedBatch;
@@ -60,9 +85,9 @@ namespace api_tester
         public async Task<bool> DuplicateBatchesTest(Batch batch)
         {
 
-            var newBatch1 = await CreateBatch(batch);
-            var newBatch2 = await CreateBatch(batch);
-            var newBatch3 = await CreateBatch(batch);
+            var newBatch1 = await CreateActiveBatch(batch);
+            var newBatch2 = await CreateActiveBatch(batch);
+            var newBatch3 = await CreateActiveBatch(batch);
 
             var batchList = await _codeJarClient.GetBatchListAsync();
 
@@ -122,7 +147,6 @@ namespace api_tester
             }
             return true;
         }
-
         public async Task<bool> SearchForCodeTest(Batch batch)
         {
             //get batch
@@ -288,44 +312,69 @@ namespace api_tester
                 Console.WriteLine(failedMsg);
                 return false;
             }
-            return false;
-        }
-        public async Task<bool> RedeemRedeemedCodeTest(Batch batch)
-        {
-            var response = await _codeJarClient.GetBatchAsync(batch.ID, 1);
-
-            var code = JsonSerializer.Deserialize<TableData>(await response.Content.ReadAsStringAsync(), _jsonOptions).Codes[0];
-
-            await _codeJarClient.RedeemCodeAsync(code.StringValue);
-
-            if (code.State == "Redeemed")
-            {
-                Console.WriteLine("\n-Code has already been Redeemed.");
-                return true;
-            }
             else
             {
-                Console.WriteLine("Redeem-Redeemed-Code test FAILED!!!");
                 return false;
             }
         }
-        //Testing if you can delete a batch.
-        public async Task<bool> DeleteBatchTest(Batch batch)
+        public async Task<bool> CodeStateChangeTest(Batch generatedBatch, Batch batch)
         {
-            var response = await _codeJarClient.GetBatchAsync(batch.ID, 1);
-            //getting the batch 
-            var newBatch = JsonSerializer.Deserialize<Batch>(await response.Content.ReadAsStringAsync(), _jsonOptions);
-            var deleteResponse = await _codeJarClient.DeleteBatchAsync(batch);
-            //getting the delete value
-            var deleteBatch = JsonSerializer.Deserialize<Batch>(await deleteResponse.Content.ReadAsStringAsync(), _jsonOptions);
-            //setting the batch selected to the deleted batch value
-            newBatch = deleteBatch;
-            //checking if the new batch is deleted.
-            if(newBatch == deleteBatch)
+            var genResponse = await _codeJarClient.GetBatchAsync(generatedBatch.ID, 1);
+            var actResponse = await _codeJarClient.GetBatchAsync(batch.ID, 1);
+
+            var genTableData = JsonSerializer.Deserialize<TableData>(await genResponse.Content.ReadAsStringAsync(), _jsonOptions);
+            var actTableData = JsonSerializer.Deserialize<TableData>(await actResponse.Content.ReadAsStringAsync(), _jsonOptions);
+
+            //code 1 is Generated. 
+            var genBatchCode = genTableData.Codes[0];
+
+            //Test if a Generated code can be  Redeemed/Deactivated
+            var redeem = await _codeJarClient.RedeemCodeAsync(genBatchCode.StringValue);
+            if (!(redeem.IsSuccessStatusCode))
             {
-                return true;
+                Console.WriteLine("\n-Test Successful. Failed to Redeem a Generated code.");
             }
-            return false;
+
+            var deactivate = await _codeJarClient.DeactivateCodeAsync(genBatchCode.StringValue);
+            if (deactivate.IsSuccessStatusCode)
+            {
+                Console.WriteLine("-Test Successful. Failed to Deactivate a Generated code.");
+            }
+
+            //Set to Redeemed state. Active>Redeemed
+            var activeCodeOne = actTableData.Codes[0];
+            await _codeJarClient.RedeemCodeAsync(activeCodeOne.StringValue);
+
+            //Try to redeem redeemed code
+            var redeem2 = await _codeJarClient.RedeemCodeAsync(activeCodeOne.StringValue);
+            if (!(redeem2.IsSuccessStatusCode))
+            {
+                Console.WriteLine("-Test Successful. Failed to Redeem a Redeemed code.");
+            }
+
+            var deactivate2 = await _codeJarClient.DeactivateCodeAsync(activeCodeOne.StringValue);
+            if (deactivate2.IsSuccessStatusCode)
+            {
+                Console.WriteLine("-Test Successful. Failed to Deactivate a Redeemed code.");
+            }
+
+            //Set code to Inactive
+            var activeCodeTwo = actTableData.Codes[1];
+            await _codeJarClient.DeactivateCodeAsync(activeCodeTwo.StringValue);
+
+            //Try to Redeem Inactive code
+            var redeem3 = await _codeJarClient.RedeemCodeAsync(activeCodeTwo.StringValue);
+            if (!(redeem2.IsSuccessStatusCode))
+            {
+                Console.WriteLine("-Test Successful. Failed to Redeem an Inactive code.");
+            }
+            //Try to Deactivate Inactive code
+            var deactivate3 = await _codeJarClient.DeactivateCodeAsync(activeCodeTwo.StringValue);
+            if (deactivate3.IsSuccessStatusCode)
+            {
+                Console.WriteLine("-Test Successful. Failed to Deactivate an Inactive code.");
+            }
+            return true;
         }
     }
 }
