@@ -15,18 +15,22 @@ namespace CodeJar.WebApp.Controllers
     {
         private readonly ILogger<PromoCodesController> _logger;
         private readonly IConfiguration _config;
+        private readonly IBatchRepository _batchRepository;
 
-        public BatchController(ILogger<PromoCodesController> logger, IConfiguration config)
+        public BatchController(
+            ILogger<PromoCodesController> logger,
+            IConfiguration config,
+            IBatchRepository batchRepository)
         {
             _logger = logger;
             _config = config;
+            _batchRepository = batchRepository;
         }
 
         [HttpGet("batch")]
-        public IActionResult Get()
+        public async Task<IActionResult> Get()
         {
-            var sql = new SQL(_config.GetConnectionString("Storage"), _config.GetSection("BinaryFile")["Binary"]);
-            return Ok(sql.GetBatches());
+            return Ok(await _batchRepository.GetBatchesAsync());
         }
 
         [HttpGet("batch/{id}")]

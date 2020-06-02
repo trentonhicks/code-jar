@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+using CodeJar.Domain;
+using CodeJar.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -38,6 +41,9 @@ namespace CodeJar.WebApp
             });
 
             services.AddControllers();
+            
+            services.AddScoped<IBatchRepository, AdoBatchRepository>();
+            services.AddScoped<SqlConnection>(_ => new SqlConnection(Configuration.GetConnectionString("Storage")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

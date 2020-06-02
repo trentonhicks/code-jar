@@ -1,13 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UserSecretsId>2b5f934e-cc1a-4e7c-8e2b-b223ee4bde37</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="System.Data.SqlClient" Version="4.7.0"/>
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.0.1"/>
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.0.1"/>
-    <PackageReference Include="Microsoft.VisualStudio.LiveShare" Version="*"/>
+    <PackageReference Include="System.Data.SqlClient" Version="4.7.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.0.1" />
+    <PackageReference Include="Microsoft.VisualStudio.LiveShare" Version="*" />
     <ProjectReference Include="..\domain\domain.csproj" />
     <ProjectReference Include="..\infrastructure\infrastructure.csproj" />
-</ItemGroup>
+  </ItemGroup>
 </Project>

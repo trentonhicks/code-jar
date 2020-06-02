@@ -71,44 +71,6 @@ namespace CodeJar.WebApp
             Connection.Close();
         }
 
-        public List<Batch> GetBatches()
-        {
-            // Create variable to store batches
-            var batches = new List<Batch>();
-
-            Connection.Open();
-
-            using (var command = Connection.CreateCommand())
-            {
-                command.CommandText = @"SELECT * FROM Batch";
-
-                // Get all the batches
-                using (var reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        var batch = new Batch
-                        {
-                            ID = (int)reader["ID"],
-                            BatchName = (string)reader["BatchName"],
-                            CodeIDStart = (int)reader["CodeIDStart"],
-                            CodeIDEnd = (int)reader["CodeIDEnd"],
-                            BatchSize = (int)reader["BatchSize"],
-                            DateActive = (DateTime)reader["DateActive"],
-                            DateExpires = (DateTime)reader["DateExpires"],
-                        };
-
-                        // Add each batch to the list of batches
-                        batches.Add(batch);
-                    }
-                }
-            }
-
-            Connection.Close();
-
-            return batches;
-        }
-
         public void CreateDigitalCode(int batchSize, DateTime dateActive, SqlCommand command)
         {
             // Loop through number of codes to generate
