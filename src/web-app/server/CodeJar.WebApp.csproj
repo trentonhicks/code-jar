@@ -7,5 +7,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.0.1"/>
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.0.1"/>
     <PackageReference Include="Microsoft.VisualStudio.LiveShare" Version="*"/>
-  </ItemGroup>
+    <ProjectReference Include="..\domain\domain.csproj" />
+    <ProjectReference Include="..\infrastructure\infrastructure.csproj" />
+</ItemGroup>
 </Project>

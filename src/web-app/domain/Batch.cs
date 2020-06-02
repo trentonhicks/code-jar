@@ -1,6 +1,6 @@
 using System;
 
-namespace CodeJar.WebApp
+namespace CodeJar.Domain
 {
     public class Batch
     {

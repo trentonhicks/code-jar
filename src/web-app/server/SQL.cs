@@ -4,7 +4,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Text;
 using System.IO;
-
+using CodeJar.Domain;
 
 namespace CodeJar.WebApp
 {

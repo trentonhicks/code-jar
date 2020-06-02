@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 
 
-namespace CodeJar.WebApp
+namespace CodeJar.Domain
 {
     public class Code
     {
