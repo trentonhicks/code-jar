@@ -104,5 +104,32 @@ namespace CodeJar.Infrastructure
 
             return batches;
         }
+
+        public async Task UpdateBatchAsync(Batch batch)
+        {
+             await _connection.OpenAsync();
+
+            var command = _connection.CreateCommand();
+
+            command.CommandText = @"UPDATE Batch
+            SET BatchName = @batchName
+            , BatchSize = @batchSize
+            , DateActive = @dateActive
+            , DateExpires = @dateExpires
+            , State = @state
+            
+            WHERE ID = @id";
+
+            command.Parameters.AddWithValue("@batchName", batch.BatchName);
+            command.Parameters.AddWithValue("@batchSize", batch.BatchSize);
+            command.Parameters.AddWithValue("@dateActive", batch.DateActive);
+            command.Parameters.AddWithValue("@dateExpires", batch.DateExpires);
+            command.Parameters.AddWithValue("@state", BatchStates.ConvertToByte(batch.State));
+            command.Parameters.AddWithValue("@id", batch.ID);
+
+            await command.ExecuteNonQueryAsync();
+
+            await _connection.CloseAsync();
+        }
     }
 }

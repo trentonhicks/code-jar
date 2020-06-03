@@ -75,6 +75,10 @@ namespace CodeJar.WebApp.Controllers
 
                 await _codeRepository.AddCodesAsync(newBatch);
 
+                batch.State = BatchStates.Generated;
+
+                await _batchRepository.UpdateBatchAsync(batch);
+
                 // var connectionString = _config.GetConnectionString("AzureServiceBus");
 
                 // _queueClient = new QueueClient(connectionString, QueueName);
