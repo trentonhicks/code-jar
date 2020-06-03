@@ -15,19 +15,15 @@ namespace CodeJar.WebApp
         public SQL(string connectionString, string filePath)
         {
             Connection = new SqlConnection(connectionString);
-            FilePath = filePath;
         }
 
         // SQL connection string
         public SqlConnection Connection { get; set; }
-        public string FilePath { get; set; }
 
         /// <summary>
         /// Gets the next seed value that will be used to generate codes
         /// </summary>
         /// <returns></returns>
-      
-
         public Code GetCode(string stringValue, string alphabet)
         {
             var seedValue = CodeConverter.ConvertFromCode(stringValue, alphabet);

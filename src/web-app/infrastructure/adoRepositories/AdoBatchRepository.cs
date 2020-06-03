@@ -21,11 +21,8 @@ namespace CodeJar.Infrastructure
 
             var command = _connection.CreateCommand();
                 command.CommandText = @"
-                DECLARE @offsetStart int
-                SET @offsetStart = (SELECT ISNULL(MAX(OffsetEnd) + 1, 0) FROM Batch)
-
-                INSERT INTO Batch (BatchName, OffsetStart, BatchSize, DateActive, DateExpires, State)
-                VALUES(@batchName, @offsetStart, @batchSize, @dateActive, @dateExpires, @state)
+                INSERT INTO Batch (BatchName, BatchSize, DateActive, DateExpires, State)
+                VALUES(@batchName, @batchSize, @dateActive, @dateExpires, @state)
                 SELECT SCOPE_IDENTITY()";
 
                 command.Parameters.AddWithValue("@batchName", batch.BatchName);
@@ -55,8 +52,6 @@ namespace CodeJar.Infrastructure
                         batch.ID = id;
                         batch.BatchName = (string)reader["BatchName"];
                         batch.BatchSize = (int)reader["BatchSize"];
-                        batch.OffsetStart = (int)reader["OffsetStart"];
-                        batch.OffsetEnd = (int)reader["OffsetEnd"];
                         batch.DateActive = (DateTime)reader["DateActive"];
                         batch.DateExpires = (DateTime)reader["DateExpires"];
                         batch.State = BatchStates.ConvertToString((byte)reader["State"]);

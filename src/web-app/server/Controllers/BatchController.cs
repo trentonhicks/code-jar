@@ -86,6 +86,8 @@ namespace CodeJar.WebApp.Controllers
 
                 batch.State = BatchStates.Generated;
 
+                await _batchRepository.UpdateBatchAsync(batch);
+
                 await _queueClient.CloseAsync();
 
                 return Ok(batch);

@@ -40,41 +40,14 @@ namespace CodeJar.ServiceBusAzure
             var codeRepository = new AdoCodeRepository(new SqlConnection(_configuration.GetConnectionString("Storage")));
 
             var batch = JsonConvert.DeserializeObject<Batch>(data);
-            var codes = GenerateCodes(batch, _configuration.GetSection("BinaryFile")["Binary"], _configuration.GetSection("Base26")["alphabet"]);
+            
+            var reader = new FileSystemSeedValueReader(_configuration.GetSection("BinaryFile")["Binary"], new SqlConnection(_configuration.GetConnectionString("Storage")));
+
+            var codes = batch.GenerateCodes(reader, DateTime.Now, _configuration.GetSection("Base26")["alphabet"]);
 
             await codeRepository.AddCodesAsync(codes);
 
             await Task.Delay(5000);
-        }
-
-        private IEnumerable<Code> GenerateCodes(Batch batch, string path, string alphabet)
-        {
-            using (BinaryReader reader = new BinaryReader(File.Open(path, FileMode.Open)))
-            {
-                // Get the next offset position
-                if (batch.OffsetStart % 4 != 0)
-                    throw new ArgumentException("Offset must be divisible by 4");
-
-                // Loop to the last offset position
-                for (var i = batch.OffsetStart; i < batch.OffsetEnd; i += 4)
-                {
-                    // Set reader to offset position
-                    reader.BaseStream.Position = i;
-                    var seedValue = reader.ReadInt32();
-
-                    var codeState = batch.DateActive.Day == DateTime.Now.Day ? CodeStates.Active : CodeStates.Generated;
-
-                    var code = new Code
-                    {
-                        BatchId = batch.ID,
-                        SeedValue = seedValue,
-                        State = codeState,
-                        StringValue = CodeConverter.ConvertToCode(seedValue, alphabet)
-                    };
-
-                    yield return code;
-                }
-            }
         }
 
         protected void ProcessError(Exception e)
