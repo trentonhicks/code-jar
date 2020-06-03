@@ -14,6 +14,29 @@ namespace CodeJar.Infrastructure
         {
             _connection = connection;
         }
+
+        public async Task CreateBatchAsync(Batch batch)
+        {
+            await _connection.OpenAsync();
+
+            var command = _connection.CreateCommand();
+                command.CommandText = @"
+                DECLARE @offsetStart int
+                SET @offsetStart = (SELECT ISNULL(MAX(OffsetEnd), 0) FROM Batch) + 1
+
+                INSERT INTO Batch (BatchName, OffsetStart, BatchSize, DateActive, DateExpires)
+                VALUES(@batchName, @offsetStart, @batchSize, @dateActive, @dateExpires)
+                SELECT SCOPE_IDENTITY()";
+
+                command.Parameters.AddWithValue("@batchName", batch.BatchName);
+                command.Parameters.AddWithValue("@batchSize", batch.BatchSize);
+                command.Parameters.AddWithValue("@dateActive", batch.DateActive);
+                command.Parameters.AddWithValue("@dateExpires", batch.DateExpires);
+                batch.ID = Convert.ToInt32(await command.ExecuteScalarAsync());
+
+            await _connection.CloseAsync();
+        }
+
         public async Task<List<Batch>> GetBatchesAsync()
         {
             // Create variable to store batches
@@ -34,8 +57,6 @@ namespace CodeJar.Infrastructure
                         {
                             ID = (int)reader["ID"],
                             BatchName = (string)reader["BatchName"],
-                            CodeIDStart = (int)reader["CodeIDStart"],
-                            CodeIDEnd = (int)reader["CodeIDEnd"],
                             BatchSize = (int)reader["BatchSize"],
                             DateActive = (DateTime)reader["DateActive"],
                             DateExpires = (DateTime)reader["DateExpires"],

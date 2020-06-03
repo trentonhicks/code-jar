@@ -7,5 +7,6 @@ namespace CodeJar.Domain
     public interface IBatchRepository
     {
         Task<List<Batch>> GetBatchesAsync();
+        Task CreateBatchAsync(Batch batch);
     }
 }

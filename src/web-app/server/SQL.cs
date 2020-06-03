@@ -21,56 +21,6 @@ namespace CodeJar.WebApp
         public SqlConnection Connection { get; set; }
         public string FilePath { get; set; }
 
-
-        /// <summary>
-        /// Stores codes in the database
-        /// </summary>
-        /// <param name="code"></param>
-        /// <param name="offset"></param>
-
-
-        public void CreateBatch(Batch batch)
-        {
-            SqlTransaction transaction;
-            Connection.Open();
-
-            // Begin transaction
-            transaction = Connection.BeginTransaction();
-
-            // Create command and assiociate it with the transaction
-            var command = Connection.CreateCommand();
-            command.Transaction = transaction;
-
-            try
-            {
-                // Create batch            
-                command.CommandText = @"
-                DECLARE @codeIDStart int
-                SET @codeIDStart = (SELECT ISNULL(MAX(CodeIDEnd), 0) FROM Batch) + 1
-
-                INSERT INTO Batch (BatchName, CodeIDStart, BatchSize, DateActive, DateExpires)
-                VALUES(@batchName, @codeIDStart, @batchSize, @dateActive, @dateExpires)
-                SELECT SCOPE_IDENTITY()";
-
-                command.Parameters.AddWithValue("@batchName", batch.BatchName);
-                command.Parameters.AddWithValue("@batchSize", batch.BatchSize);
-                command.Parameters.AddWithValue("@dateActive", batch.DateActive);
-                command.Parameters.AddWithValue("@dateExpires", batch.DateExpires);
-                batch.ID = Convert.ToInt32(command.ExecuteScalar());
-
-                // Insert codes into the batch
-                CreateDigitalCode(batch.BatchSize, batch.DateActive, command);
-
-                // Commit transaction upon success
-                transaction.Commit();
-            }
-            catch (Exception ex)
-            {
-                transaction.Rollback();
-            }
-            Connection.Close();
-        }
-
         public void CreateDigitalCode(int batchSize, DateTime dateActive, SqlCommand command)
         {
             // Loop through number of codes to generate
@@ -282,8 +232,6 @@ namespace CodeJar.WebApp
 
                 command.Parameters.AddWithValue("@inactive", States.Inactive);
                 command.Parameters.AddWithValue("@active", States.Active);
-                command.Parameters.AddWithValue("@codeIDStart", batch.CodeIDStart);
-                command.Parameters.AddWithValue("@codeIDEnd", batch.CodeIDEnd);
                 command.ExecuteNonQuery();
             }
 
