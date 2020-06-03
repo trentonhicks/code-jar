@@ -16,6 +16,7 @@ namespace CodeJar.Infrastructure
             FilePath = "C:\\Binary.bin";
             _connection = connection;
         }
+
         public async Task AddCodesAsync(Batch batch)
         {
             await _connection.OpenAsync();

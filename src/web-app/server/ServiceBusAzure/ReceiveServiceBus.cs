@@ -9,31 +9,26 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-
+using System.Data.SqlClient;
+using CodeJar.Infrastructure;
 
 namespace CodeJar.ServiceBusAzure
 {
     public class ReceiveServiceBus : IHostedService
     {
         private IQueueClient _queueClient;
-        const string QueueName = "notifications";
+        const string QueueName = "codejar";
+        const string ConnectionString = "Endpoint=sb://codefliptodo.servicebus.windows.net/;SharedAccessKeyName=web-app;SharedAccessKey=x9SEbxQ1AlykQv+ygjDh7hlVup1ZAOZkRTrhkuDHgJA=";
+        
         private readonly ILogger _logger;
         private readonly ILoggerFactory _loggerFactory;
         private readonly IConfiguration _configuration;
-        private readonly ICodeRepository _code;
 
-        public ReceiveServiceBus(ILoggerFactory loggerFactory, IConfiguration configuration, ICodeRepository code)
+        public ReceiveServiceBus(ILoggerFactory loggerFactory, IConfiguration configuration)
         {
             _logger = loggerFactory.CreateLogger<ReceiveServiceBus>();
             _loggerFactory = loggerFactory;
             _configuration = configuration;
-            _code = code;
-        }
-        public async Task RecieveMessage()
-        {
-            _queueClient = new QueueClient(_configuration.GetConnectionString("AzureServiceBus"), QueueName);
-
-            await _queueClient.CloseAsync();
         }
 
         public async Task ProcessMessagesAsync(Message message, CancellationToken token)
@@ -42,9 +37,9 @@ namespace CodeJar.ServiceBusAzure
 
             var batch = JsonConvert.DeserializeObject<Batch>(data);
 
-            //Run the mehtod that generates codes based on the size of the batch.
+            var codeRepository = new AdoCodeRepository(new SqlConnection(_configuration.GetConnectionString("Storage")));
 
-            await _code.AddCodesAsync(batch);
+            await codeRepository.AddCodesAsync(batch);
 
             await Task.Delay(5000);
         }
@@ -56,7 +51,7 @@ namespace CodeJar.ServiceBusAzure
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _queueClient = new QueueClient(_configuration.GetConnectionString("AzureServiceBus"), QueueName);
+            _queueClient = new QueueClient(ConnectionString, QueueName);
 
             _logger.LogDebug($"BusListenerService starting; registering message handler.");
 

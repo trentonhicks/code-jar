@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CodeJar.Domain;
 using CodeJar.Infrastructure;
+using CodeJar.ServiceBusAzure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -42,9 +43,11 @@ namespace CodeJar.WebApp
 
             services.AddControllers();
             
+            
             services.AddScoped<IBatchRepository, AdoBatchRepository>();
             services.AddScoped<ICodeRepository, AdoCodeRepository>();
             services.AddScoped<SqlConnection>(_ => new SqlConnection(Configuration.GetConnectionString("Storage")));
+            services.AddHostedService<ReceiveServiceBus>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

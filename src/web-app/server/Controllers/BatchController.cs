@@ -17,7 +17,7 @@ namespace CodeJar.WebApp.Controllers
     [ApiController]
     public class BatchController : ControllerBase
     {
-        const string QueueName = "notifications";
+        const string QueueName = "codejar";
         private QueueClient _queueClient;
         private readonly ILogger<PromoCodesController> _logger;
         private readonly IConfiguration _config;
@@ -73,22 +73,20 @@ namespace CodeJar.WebApp.Controllers
 
                 var newBatch = await _batchRepository.GetBatchAsync(batch.ID);
 
-                await _codeRepository.AddCodesAsync(newBatch);
+                await _batchRepository.UpdateBatchAsync(batch);
+
+                var connectionString = "Endpoint=sb://codefliptodo.servicebus.windows.net/;SharedAccessKeyName=web-app;SharedAccessKey=x9SEbxQ1AlykQv+ygjDh7hlVup1ZAOZkRTrhkuDHgJA=";
+
+                _queueClient = new QueueClient(connectionString, QueueName);
+                
+                string messageBody = JsonConvert.SerializeObject(newBatch);
+                var message = new Message(Encoding.UTF8.GetBytes(messageBody));
+
+                await _queueClient.SendAsync(message);
 
                 batch.State = BatchStates.Generated;
 
-                await _batchRepository.UpdateBatchAsync(batch);
-
-                // var connectionString = _config.GetConnectionString("AzureServiceBus");
-
-                // _queueClient = new QueueClient(connectionString, QueueName);
-                
-                // string messageBody = JsonConvert.SerializeObject(newBatch);
-                // var message = new Message(Encoding.UTF8.GetBytes(messageBody));
-
-                // await _queueClient.SendAsync(message);
-
-                // await _queueClient.CloseAsync();
+                await _queueClient.CloseAsync();
 
                 return Ok(batch);
             }
