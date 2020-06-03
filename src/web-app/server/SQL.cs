@@ -72,12 +72,8 @@ namespace CodeJar.WebApp
             using (var command = Connection.CreateCommand())
             {
 
-                command.CommandText = @"DECLARE @codeIDStart int
-                                        DECLARE @codeIDEnd int
-                                        SET @codeIDStart = (SELECT CodeIDStart FROM Batch WHERE ID = @batchID)
-                                        SET @codeIDEnd = (SELECT CodeIDEnd FROM Batch WHERE ID = @batchID)
-
-                                        SELECT * FROM Codes WHERE ID BETWEEN @codeIDStart AND @codeIDEnd
+                command.CommandText = @"
+                                        SELECT * FROM Codes WHERE BatchID = @batchID
                                         ORDER BY ID OFFSET @page ROWS FETCH NEXT @pageSize ROWS ONLY";
 
                 command.Parameters.AddWithValue("@page", p);
