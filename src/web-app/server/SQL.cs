@@ -5,6 +5,7 @@ using System.Data.SqlClient;
 using System.Text;
 using System.IO;
 using CodeJar.Domain;
+using CodeJar.Infrastructure;
 
 namespace CodeJar.WebApp
 {
@@ -21,67 +22,11 @@ namespace CodeJar.WebApp
         public SqlConnection Connection { get; set; }
         public string FilePath { get; set; }
 
-        public void CreateDigitalCode(int batchSize, DateTime dateActive, SqlCommand command)
-        {
-            // Loop through number of codes to generate
-            using (BinaryReader reader = new BinaryReader(File.Open(FilePath, FileMode.Open)))
-            {
-                // Get the next offset position
-                var firstAndLastOffset = UpdateOffset(command, batchSize);
-                if (firstAndLastOffset[0] % 4 != 0)
-                {
-                    throw new ArgumentException("Offset must be divisible by 4");
-                }
-
-                // Loop to the last offset position
-                for (var i = firstAndLastOffset[0]; i < firstAndLastOffset[1]; i += 4)
-                {
-                    // Set reader to offset position
-                    reader.BaseStream.Position = i;
-                    var seedvalue = reader.ReadInt32();
-
-                    // Insert code
-                    command.Parameters.Clear();
-                    command.CommandText = $@"INSERT INTO Codes (SeedValue, State) VALUES (@Seedvalue, @StateGenerated)";
-
-                    // Insert values
-                    command.Parameters.AddWithValue("@Seedvalue", seedvalue);
-                    command.Parameters.AddWithValue("@StateGenerated", States.Generated);
-                    command.ExecuteNonQuery();
-
-                    // Update code to active state if dateActive is today
-                    if (dateActive.Day == DateTime.Now.Day)
-                    {
-                        command.CommandText = "UPDATE Codes SET State = @StateActive WHERE SeedValue = @Seedvalue";
-                        command.Parameters.AddWithValue("@StateActive", States.Active);
-                        command.ExecuteNonQuery();
-                    }
-                }
-            }
-        }
-
         /// <summary>
         /// Gets the next seed value that will be used to generate codes
         /// </summary>
         /// <returns></returns>
-        public long[] UpdateOffset(SqlCommand command, int batchSize)
-        {
-            var firstAndLastOffset = new long[2];
-            var offsetIncrement = batchSize * 4;
-
-            command.CommandText = @"UPDATE Offset
-                                   SET OffsetValue = OffsetValue + @offsetIncrement
-                                   OUTPUT INSERTED.OffsetValue
-                                   WHERE ID = 1";
-            command.Parameters.AddWithValue("@offsetIncrement", offsetIncrement);
-            var updatedOffset = (long)command.ExecuteScalar();
-
-            // Set starting and ending offset positions
-            firstAndLastOffset[0] = updatedOffset - offsetIncrement;
-            firstAndLastOffset[1] = updatedOffset;
-
-            return firstAndLastOffset;
-        }
+      
 
         public Code GetCode(string stringValue, string alphabet)
         {

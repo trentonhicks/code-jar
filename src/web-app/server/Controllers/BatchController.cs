@@ -7,24 +7,32 @@ using CodeJar.Domain;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Azure.ServiceBus;
+using System.Text;
+using Newtonsoft.Json;
 
 namespace CodeJar.WebApp.Controllers
 {
     [ApiController]
     public class BatchController : ControllerBase
     {
+        const string QueueName = "notifications";
+        private QueueClient _queueClient;
         private readonly ILogger<PromoCodesController> _logger;
         private readonly IConfiguration _config;
         private readonly IBatchRepository _batchRepository;
+        private readonly ICodeRepository _codeRepository;
 
         public BatchController(
             ILogger<PromoCodesController> logger,
             IConfiguration config,
-            IBatchRepository batchRepository)
+            IBatchRepository batchRepository,
+            ICodeRepository codeRepository)
         {
             _logger = logger;
             _config = config;
             _batchRepository = batchRepository;
+            _codeRepository = codeRepository;
         }
 
         [HttpGet("batch")]
@@ -60,6 +68,21 @@ namespace CodeJar.WebApp.Controllers
             {
                 // Create batch
                 await _batchRepository.CreateBatchAsync(batch);
+
+                var newBatch = await _batchRepository.GetBatchAsync(batch.ID);
+
+                await _codeRepository.AddCodesAsync(newBatch);
+
+                // var connectionString = _config.GetConnectionString("AzureServiceBus");
+
+                // _queueClient = new QueueClient(connectionString, QueueName);
+                
+                // string messageBody = JsonConvert.SerializeObject(newBatch);
+                // var message = new Message(Encoding.UTF8.GetBytes(messageBody));
+
+                // await _queueClient.SendAsync(message);
+
+                // await _queueClient.CloseAsync();
 
                 return Ok(batch);
             }

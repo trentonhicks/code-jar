@@ -43,6 +43,7 @@ namespace CodeJar.WebApp
             services.AddControllers();
             
             services.AddScoped<IBatchRepository, AdoBatchRepository>();
+            services.AddScoped<ICodeRepository, AdoCodeRepository>();
             services.AddScoped<SqlConnection>(_ => new SqlConnection(Configuration.GetConnectionString("Storage")));
         }
 

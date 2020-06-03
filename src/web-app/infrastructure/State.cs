@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CodeJar.WebApp
+namespace CodeJar.Infrastructure
 {
 
     public static class States

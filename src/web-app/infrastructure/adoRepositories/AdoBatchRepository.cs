@@ -22,7 +22,7 @@ namespace CodeJar.Infrastructure
             var command = _connection.CreateCommand();
                 command.CommandText = @"
                 DECLARE @offsetStart int
-                SET @offsetStart = (SELECT ISNULL(MAX(OffsetEnd), 0) FROM Batch) + 1
+                SET @offsetStart = (SELECT ISNULL(MAX(OffsetEnd) + 1, 0) FROM Batch)
 
                 INSERT INTO Batch (BatchName, OffsetStart, BatchSize, DateActive, DateExpires)
                 VALUES(@batchName, @offsetStart, @batchSize, @dateActive, @dateExpires)
@@ -35,6 +35,35 @@ namespace CodeJar.Infrastructure
                 batch.ID = Convert.ToInt32(await command.ExecuteScalarAsync());
 
             await _connection.CloseAsync();
+        }
+
+        public async Task<Batch> GetBatchAsync(int id)
+        {
+            var batch = new Batch();
+            
+            await _connection.OpenAsync();
+
+            var command = _connection.CreateCommand();
+                command.CommandText = @"SELECT * FROM Batch WHERE ID = @id";
+
+                command.Parameters.AddWithValue("@id", id);
+                using(var reader = await command.ExecuteReaderAsync())
+                {
+                    while(await reader.ReadAsync())
+                    {
+                        batch.ID = id;
+                        batch.BatchName = (string)reader["BatchName"];
+                        batch.BatchSize = (int)reader["BatchSize"];
+                        batch.OffsetStart = (int)reader["OffsetStart"];
+                        batch.OffsetEnd = (int)reader["OffsetEnd"];
+                        batch.DateActive = (DateTime)reader["DateActive"];
+                        batch.DateExpires = (DateTime)reader["DateExpires"];
+                    }
+                }
+
+            await _connection.CloseAsync();
+
+            return batch;
         }
 
         public async Task<List<Batch>> GetBatchesAsync()
