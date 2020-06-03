@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
 using System.Threading.Tasks;
@@ -10,53 +11,29 @@ namespace CodeJar.Infrastructure
     {
         private readonly SqlConnection _connection;
 
-        private string FilePath {get; set;}
         public AdoCodeRepository(SqlConnection connection)
         {
-            FilePath = "C:\\Binary.bin";
             _connection = connection;
         }
 
-        public async Task AddCodesAsync(Batch batch)
+        public async Task AddCodesAsync(IEnumerable<Code> codes)
         {
             await _connection.OpenAsync();
 
             using(var command = _connection.CreateCommand())
             {
-                using (BinaryReader reader = new BinaryReader(File.Open(FilePath, FileMode.Open)))
+                // Loop to the last offset position
+                foreach(var code in codes)
                 {
-                // Get the next offset position
-                
-                    if (batch.OffsetStart % 4 != 0)
-                    {
-                        throw new ArgumentException("Offset must be divisible by 4");
-                    }
+                    command.Parameters.Clear();
+                    command.CommandText = $@"INSERT INTO Codes (BatchID, SeedValue, State) VALUES (@batchID, @Seedvalue, @StateGenerated)";
 
-                    // Loop to the last offset position
-                    for (var i = batch.OffsetStart; i < batch.OffsetEnd; i += 4)
-                    {
-                        // Set reader to offset position
-                        reader.BaseStream.Position = i;
-                        var seedvalue = reader.ReadInt32();
+                    // Insert values
+                    command.Parameters.AddWithValue("@Seedvalue", code.SeedValue);
+                    command.Parameters.AddWithValue("@StateGenerated", code.State);
+                    command.Parameters.AddWithValue("@batchID", code.BatchId);
 
-                        // Insert code
-                        command.Parameters.Clear();
-                        command.CommandText = $@"INSERT INTO Codes (BatchID, SeedValue, State) VALUES (@batchID, @Seedvalue, @StateGenerated)";
-
-                        // Insert values
-                        command.Parameters.AddWithValue("@Seedvalue", seedvalue);
-                        command.Parameters.AddWithValue("@StateGenerated", CodeStates.Generated);
-                        command.Parameters.AddWithValue("@batchID", batch.ID);
-                        await command.ExecuteNonQueryAsync();
-
-                        // Update code to active state if dateActive is today
-                        if (batch.DateActive.Day == DateTime.Now.Day)
-                        {
-                            command.CommandText = "UPDATE Codes SET State = @StateActive WHERE SeedValue = @Seedvalue";
-                            command.Parameters.AddWithValue("@StateActive", CodeStates.Active);
-                            await command.ExecuteNonQueryAsync();
-                        }
-                    }
+                    await command.ExecuteNonQueryAsync();
                 }
             }
             

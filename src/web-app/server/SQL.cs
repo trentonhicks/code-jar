@@ -45,7 +45,7 @@ namespace CodeJar.WebApp
                     while (reader.Read())
                     {
                         var seed = (int)reader["SeedValue"];
-                        code.State = CodeStates.ConvertToString((byte)reader["State"]);
+                        code.State = (byte)reader["State"];
                         code.StringValue = CodeConverter.ConvertToCode(seed, alphabet);
                     }
                 }
@@ -71,7 +71,6 @@ namespace CodeJar.WebApp
 
             using (var command = Connection.CreateCommand())
             {
-
                 command.CommandText = @"
                                         SELECT * FROM Codes WHERE BatchID = @batchID
                                         ORDER BY ID OFFSET @page ROWS FETCH NEXT @pageSize ROWS ONLY";
@@ -91,7 +90,7 @@ namespace CodeJar.WebApp
                         //Stores SeedValue outside of code object
                         var seed = (int)reader["SeedValue"];
 
-                        code.State = CodeStates.ConvertToString((byte)reader["State"]);
+                        code.State = (byte)reader["State"];
                         code.StringValue = CodeConverter.ConvertToCode(seed, alphabet);
 
                         // Add code to the list
