@@ -44,7 +44,7 @@ namespace CodeJar.Infrastructure
 
                         // Insert values
                         command.Parameters.AddWithValue("@Seedvalue", seedvalue);
-                        command.Parameters.AddWithValue("@StateGenerated", States.Generated);
+                        command.Parameters.AddWithValue("@StateGenerated", CodeStates.Generated);
                         command.Parameters.AddWithValue("@batchID", batch.ID);
                         await command.ExecuteNonQueryAsync();
 
@@ -52,7 +52,7 @@ namespace CodeJar.Infrastructure
                         if (batch.DateActive.Day == DateTime.Now.Day)
                         {
                             command.CommandText = "UPDATE Codes SET State = @StateActive WHERE SeedValue = @Seedvalue";
-                            command.Parameters.AddWithValue("@StateActive", States.Active);
+                            command.Parameters.AddWithValue("@StateActive", CodeStates.Active);
                             await command.ExecuteNonQueryAsync();
                         }
                     }

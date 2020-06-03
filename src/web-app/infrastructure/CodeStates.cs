@@ -5,7 +5,7 @@ using System.Text;
 namespace CodeJar.Infrastructure
 {
 
-    public static class States
+    public static class CodeStates
     {
         public static byte Generated = 0;
         public static byte Active = 1;

@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Azure.ServiceBus;
 using System.Text;
 using Newtonsoft.Json;
+using CodeJar.Infrastructure;
 
 namespace CodeJar.WebApp.Controllers
 {
@@ -66,8 +67,9 @@ namespace CodeJar.WebApp.Controllers
             // Date active must be less than date expires and greater than or equal to the current date time in order to generate codes
             if (batch.DateActive < batch.DateExpires && batch.DateActive.Date >= DateTime.Now.Date)
             {
-                // Create batch
-                await _batchRepository.CreateBatchAsync(batch);
+                batch.State = BatchStates.Pending;
+
+                await _batchRepository.AddBatchAsync(batch);
 
                 var newBatch = await _batchRepository.GetBatchAsync(batch.ID);
 

@@ -45,7 +45,7 @@ namespace CodeJar.WebApp
                     while (reader.Read())
                     {
                         var seed = (int)reader["SeedValue"];
-                        code.State = States.ConvertToString((byte)reader["State"]);
+                        code.State = CodeStates.ConvertToString((byte)reader["State"]);
                         code.StringValue = CodeConverter.ConvertToCode(seed, alphabet);
                     }
                 }
@@ -95,7 +95,7 @@ namespace CodeJar.WebApp
                         //Stores SeedValue outside of code object
                         var seed = (int)reader["SeedValue"];
 
-                        code.State = States.ConvertToString((byte)reader["State"]);
+                        code.State = CodeStates.ConvertToString((byte)reader["State"]);
                         code.StringValue = CodeConverter.ConvertToCode(seed, alphabet);
 
                         // Add code to the list
@@ -157,8 +157,8 @@ namespace CodeJar.WebApp
                 command.CommandText = @"UPDATE Codes SET [State] = @inactive
                                         WHERE SeedValue = @seedvalue AND [State] = @active";
 
-                command.Parameters.AddWithValue("@inactive", States.Inactive);
-                command.Parameters.AddWithValue("@active", States.Active);
+                command.Parameters.AddWithValue("@inactive", CodeStates.Inactive);
+                command.Parameters.AddWithValue("@active", CodeStates.Active);
                 command.Parameters.AddWithValue("@seedvalue", seedvalue);
                 command.ExecuteNonQuery();
             }
@@ -175,8 +175,8 @@ namespace CodeJar.WebApp
                 command.CommandText = @"UPDATE Codes SET [State] = @inactive
                                         WHERE ID BETWEEN @codeIDStart AND @codeIDEnd AND [State] = @active";
 
-                command.Parameters.AddWithValue("@inactive", States.Inactive);
-                command.Parameters.AddWithValue("@active", States.Active);
+                command.Parameters.AddWithValue("@inactive", CodeStates.Inactive);
+                command.Parameters.AddWithValue("@active", CodeStates.Active);
                 command.ExecuteNonQuery();
             }
 
@@ -196,8 +196,8 @@ namespace CodeJar.WebApp
                                         OUTPUT INSERTED.ID
                                         WHERE SeedValue = @seedvalue AND [State] = @active";
 
-                command.Parameters.AddWithValue("@redeemed", States.Redeemed);
-                command.Parameters.AddWithValue("@active", States.Active);
+                command.Parameters.AddWithValue("@redeemed", CodeStates.Redeemed);
+                command.Parameters.AddWithValue("@active", CodeStates.Active);
                 command.Parameters.AddWithValue("@seedvalue", seedvalue);
 
                 codeID = (int)command.ExecuteScalar();

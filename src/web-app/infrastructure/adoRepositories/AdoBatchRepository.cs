@@ -15,7 +15,7 @@ namespace CodeJar.Infrastructure
             _connection = connection;
         }
 
-        public async Task CreateBatchAsync(Batch batch)
+        public async Task AddBatchAsync(Batch batch)
         {
             await _connection.OpenAsync();
 
@@ -24,14 +24,15 @@ namespace CodeJar.Infrastructure
                 DECLARE @offsetStart int
                 SET @offsetStart = (SELECT ISNULL(MAX(OffsetEnd) + 1, 0) FROM Batch)
 
-                INSERT INTO Batch (BatchName, OffsetStart, BatchSize, DateActive, DateExpires)
-                VALUES(@batchName, @offsetStart, @batchSize, @dateActive, @dateExpires)
+                INSERT INTO Batch (BatchName, OffsetStart, BatchSize, DateActive, DateExpires, State)
+                VALUES(@batchName, @offsetStart, @batchSize, @dateActive, @dateExpires, @state)
                 SELECT SCOPE_IDENTITY()";
 
                 command.Parameters.AddWithValue("@batchName", batch.BatchName);
                 command.Parameters.AddWithValue("@batchSize", batch.BatchSize);
                 command.Parameters.AddWithValue("@dateActive", batch.DateActive);
                 command.Parameters.AddWithValue("@dateExpires", batch.DateExpires);
+                command.Parameters.AddWithValue("@state", BatchStates.ConvertToByte(batch.State));
                 batch.ID = Convert.ToInt32(await command.ExecuteScalarAsync());
 
             await _connection.CloseAsync();
@@ -58,6 +59,7 @@ namespace CodeJar.Infrastructure
                         batch.OffsetEnd = (int)reader["OffsetEnd"];
                         batch.DateActive = (DateTime)reader["DateActive"];
                         batch.DateExpires = (DateTime)reader["DateExpires"];
+                        batch.State = BatchStates.ConvertToString((byte)reader["State"]);
                     }
                 }
 
@@ -89,6 +91,7 @@ namespace CodeJar.Infrastructure
                             BatchSize = (int)reader["BatchSize"],
                             DateActive = (DateTime)reader["DateActive"],
                             DateExpires = (DateTime)reader["DateExpires"],
+                            State = BatchStates.ConvertToString((byte)reader["State"])
                         };
 
                         // Add each batch to the list of batches

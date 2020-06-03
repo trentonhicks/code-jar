@@ -6,5 +6,6 @@ CREATE TABLE [dbo].[Batch](
 	[OffsetStart] int NOT NULL UNIQUE,
 	[OffsetEnd] AS [OffsetStart] + ([BatchSize] * 4) - 1,
     [BatchSize] int NOT NULL,
+    [State] tinyint NOT NULL,
 	[DateActive] DATETIME NOT NULL,
 	[DateExpires] DATETIME NOT NULL)

@@ -9,6 +9,7 @@ namespace CodeJar.Domain
         public int OffsetStart {get; set;}
         public int OffsetEnd {get; set;}
         public int BatchSize {get; set;}
+        public string State {get; set;}
         public DateTime DateActive {get; set;}
         public DateTime DateExpires {get; set;}
     }
