@@ -90,6 +90,11 @@ namespace CodeJar.Infrastructure
             return codes;
         }
 
+        public Task<List<Code>> GetCodesForExpirationAsync(DateTime date, string v)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<List<Code>> GetCodesForActivationAsync(DateTime forDate, string alphabet)
         {
             var codes = new List<Code>();

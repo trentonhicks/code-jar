@@ -52,10 +52,7 @@ namespace TodoWebAPI.CronJob
             await Task.CompletedTask;
         }
 
-        public virtual async Task DoWork(CancellationToken cancellationToken)
-        {
-            await Task.Delay(5000, cancellationToken);  // do the work
-        }
+        public abstract Task DoWork(CancellationToken cancellationToken);
 
         public virtual async Task StopAsync(CancellationToken cancellationToken)
         {

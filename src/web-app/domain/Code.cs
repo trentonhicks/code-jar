@@ -17,11 +17,29 @@ namespace CodeJar.Domain
 
         public void Activate(DateTime today)
         {
-            if(DateActive == today.Date)
+            if (State == CodeStates.Generated && DateActive >= today.Date && DateActive < DateExpires)
                 State = CodeStates.Active;
 
             else
                 throw new InvalidOperationException("can't change state to active when today's date is not the active date.");
         }
-    }
+
+        public void ExpireActive(DateTime today)
+        {
+            if (State == CodeStates.Active && DateExpires >= today.Date)
+                State = CodeStates.Expired;
+            
+            else
+                throw new InvalidOperationException("can't set expired when state is active.");
+        }
+
+        public void ExpireGenerated(DateTime today)
+        {
+            if(State == CodeStates.Generated && today.Date >= DateExpires)
+                State = CodeStates.Expired;
+                
+            else
+                throw new InvalidOperationException("can't set expired when state is generated.");
+        }
+    }    
 }
