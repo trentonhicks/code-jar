@@ -7,39 +7,21 @@ namespace CodeJar.Domain
 {
     public class Code
     {
+        public Code(CodeState state)
+        {
+            State = state;
+        }
+
         public int Id {get; set;}
         public int BatchId {get; set;}
         public string StringValue { get; set; }
         public int SeedValue {get; set;}
-        public byte State { get; set; }
+        public CodeState State { get; private set; }
         public DateTime DateActive {get; set;}
         public DateTime DateExpires {get; set;}
-
-        public void Activate(DateTime today)
-        {
-            if (State == CodeStates.Generated && DateActive >= today.Date && DateActive < DateExpires)
-                State = CodeStates.Active;
-
-            else
-                throw new InvalidOperationException("can't change state to active when today's date is not the active date.");
-        }
-
-        public void ExpireActive(DateTime today)
-        {
-            if (State == CodeStates.Active && DateExpires >= today.Date)
-                State = CodeStates.Expired;
-            
-            else
-                throw new InvalidOperationException("can't set expired when state is active.");
-        }
-
-        public void ExpireGenerated(DateTime today)
-        {
-            if(State == CodeStates.Generated && today.Date >= DateExpires)
-                State = CodeStates.Expired;
-                
-            else
-                throw new InvalidOperationException("can't set expired when state is generated.");
-        }
+        public void Activate() => State = State.Activate();
+        public void Expire() => State = State.Expire();
+        public void Redeem() => State = State.Redeem();
+        public void Deactivate() => State = State.Deactivate();
     }    
 }

@@ -50,7 +50,7 @@ namespace TodoWebAPI.CronJob
             var generatedCodes = await codeRepository.GetCodesForActivationAsync(DateTime.Now.Date, _configuration.GetSection("Base26")["alphabet"]);
 
             foreach(var code in generatedCodes)
-                code.Activate(DateTime.Now.Date);
+                code.Activate();
 
             await codeRepository.UpdateCodesAsync(generatedCodes);
 

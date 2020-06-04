@@ -18,13 +18,10 @@ namespace CodeJar.Domain
         {
             foreach(var seedValue in reader.ReadSeedValues(BatchSize))
             {
-                var codeState = DateActive.Day == now.Day ? CodeStates.Active : CodeStates.Generated;
-
-                var code = new Code
+                var code = new Code(new CodeGeneratedState())
                 {
                     BatchId = ID,
                     SeedValue = seedValue,
-                    State = codeState,
                     StringValue = CodeConverter.ConvertToCode(seedValue, alphabet)
                 };
 

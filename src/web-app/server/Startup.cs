@@ -61,13 +61,6 @@ namespace CodeJar.WebApp
                 c.TimeZoneInfo = TimeZoneInfo.Local;
                 c.CronExpression = @"* * * * *";
             });
-            
-            services.AddCronJob<CodeExpirationGeneratedCronJob>(c =>
-            {
-                c.TimeZoneInfo = TimeZoneInfo.Local;
-                c.CronExpression = @"* * * * *";
-            });
-            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

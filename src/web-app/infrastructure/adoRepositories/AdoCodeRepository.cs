@@ -30,7 +30,7 @@ namespace CodeJar.Infrastructure
 
                     // Insert values
                     command.Parameters.AddWithValue("@Seedvalue", code.SeedValue);
-                    command.Parameters.AddWithValue("@StateGenerated", code.State);
+                    command.Parameters.AddWithValue("@StateGenerated", CodeStateSerializer.SerializeState(code.State));
                     command.Parameters.AddWithValue("@batchID", code.BatchId);
 
                     await command.ExecuteNonQueryAsync();
@@ -64,14 +64,12 @@ namespace CodeJar.Infrastructure
                 {
                     while (await reader.ReadAsync())
                     {
-
-                        // Store code in a variable
-                        var code = new Code();
-
-                        //Stores SeedValue outside of code object
+                        var state = CodeStateSerializer.DeserializeState((byte) reader["State"]);
                         var seed = (int)reader["SeedValue"];
+
+                        var code = new Code(state);
+
                         code.Id = (int) reader["ID"];
-                        code.State = (byte)reader["State"];
                         code.SeedValue = seed;
                         code.StringValue = CodeConverter.ConvertToCode(seed, alphabet);
                         code.BatchId = (int) reader["BatchId"];
@@ -90,9 +88,43 @@ namespace CodeJar.Infrastructure
             return codes;
         }
 
-        public Task<List<Code>> GetCodesForExpirationAsync(DateTime date, string v)
+        public async Task<List<Code>> GetCodesForExpirationAsync(DateTime date, string alphabet)
         {
-            throw new NotImplementedException();
+             var codes = new List<Code>();
+
+            await _connection.OpenAsync();
+
+            using(var command = _connection.CreateCommand())
+            {
+                command.CommandText = @"SELECT Codes.ID, Codes.SeedValue, Codes.BatchID, Codes.State, Batch.DateActive, Batch.DateExpires FROM Codes
+                                        INNER JOIN Batch ON Batch.ID = Codes.BatchID
+                                        WHERE Codes.State = 0 OR Codes.State = 1 AND Batch.DateExpires >= @forDate";
+
+                command.Parameters.AddWithValue("@forDate", date.Date);
+
+                using(var reader = await command.ExecuteReaderAsync())
+                {
+                    while(await reader.ReadAsync())
+                    {
+                        var state = CodeStateSerializer.DeserializeState((byte) reader["State"]);
+                        var seed = (int)reader["SeedValue"];
+
+                        var code = new Code(state);
+                        code.Id = (int) reader["ID"];
+                        code.SeedValue = seed;
+                        code.StringValue = CodeConverter.ConvertToCode(seed, alphabet);
+                        code.BatchId = (int) reader["BatchId"];
+                        code.DateActive = (DateTime) reader["DateActive"];
+                        code.DateExpires = (DateTime) reader["DateExpires"];
+
+                        codes.Add(code);
+                    }
+                }
+            }
+
+            await _connection.CloseAsync();
+
+            return codes;
         }
 
         public async Task<List<Code>> GetCodesForActivationAsync(DateTime forDate, string alphabet)
@@ -113,11 +145,11 @@ namespace CodeJar.Infrastructure
                 {
                     while(await reader.ReadAsync())
                     {
-                        var code = new Code();
-
+                        var state = CodeStateSerializer.DeserializeState((byte) reader["State"]);
                         var seed = (int)reader["SeedValue"];
+
+                        var code = new Code(state);
                         code.Id = (int) reader["ID"];
-                        code.State = (byte)reader["State"];
                         code.SeedValue = seed;
                         code.StringValue = CodeConverter.ConvertToCode(seed, alphabet);
                         code.BatchId = (int) reader["BatchId"];
@@ -147,7 +179,7 @@ namespace CodeJar.Infrastructure
                     command.CommandText = $@"UPDATE Codes SET State = @state WHERE ID = @id";
 
                     // Insert values
-                    command.Parameters.AddWithValue("@state", code.State);
+                    command.Parameters.AddWithValue("@state", CodeStateSerializer.SerializeState(code.State));
                     command.Parameters.AddWithValue("@id", code.Id);
 
                     await command.ExecuteNonQueryAsync();

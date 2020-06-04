@@ -51,7 +51,7 @@ namespace CodeJar.WebApp.Controllers
             var pageSize = Convert.ToInt32(_config.GetSection("Pagination")["PageNumber"]);
             var codes = await _codeRepository.GetCodesAsync(id, page, alphabet, pageSize);
 
-            var vm = codes.Select( c => new CodeViewModel { Id = c.Id, State = CodeStates.ConvertToString(c.State), StringValue = c.StringValue });
+            var vm = codes.Select( c => new CodeViewModel { Id = c.Id, State = c.State.ToString(), StringValue = c.StringValue });
 
             var pages = sql.PageCount(id);
 

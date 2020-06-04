@@ -46,12 +46,12 @@ namespace TodoWebAPI.CronJob
             var connection = new SqlConnection(_configuration.GetConnectionString("Storage"));
 
             var codeRepository = new AdoCodeRepository(connection); 
-            var activeCodes = await codeRepository.GetCodesForExpirationAsync(DateTime.Now.Date, _configuration.GetSection("Base26")["alphabet"]);
+            var codes = await codeRepository.GetCodesForExpirationAsync(DateTime.Now.Date, _configuration.GetSection("Base26")["alphabet"]);
 
-            foreach(var code in activeCodes)
-                code.ExpireActive(DateTime.Now.Date);
+            foreach(var code in codes)
+                code.Expire();
 
-            await codeRepository.UpdateCodesAsync(activeCodes);
+            await codeRepository.UpdateCodesAsync(codes);
 
             _logger.LogInformation($"{DateTime.Now:hh:mm:ss} Expiration job completed.");
         }
