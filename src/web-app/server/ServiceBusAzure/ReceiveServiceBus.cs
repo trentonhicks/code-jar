@@ -46,8 +46,6 @@ namespace CodeJar.ServiceBusAzure
             var codes = batch.GenerateCodes(reader, DateTime.Now, _configuration.GetSection("Base26")["alphabet"]);
 
             await codeRepository.AddCodesAsync(codes);
-
-            await Task.Delay(5000);
         }
 
         protected void ProcessError(Exception e)

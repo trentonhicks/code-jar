@@ -5,7 +5,7 @@ using System.Data.SqlClient;
 using System.Text;
 using System.IO;
 
-namespace CodeJar.WebApp
+namespace CodeJar.Infrastructure
 {
     public static class Pagination
     {

@@ -56,51 +56,7 @@ namespace CodeJar.WebApp
         /// Returns a list of all the codes from the database
         /// </summary>
         /// <returns></returns>
-        public List<Code> GetCodes(int batchID, int pageNumber, string alphabet, int pageSize)
-        {
-            // Create list to store codes gathered from the database
-            var codes = new List<Code>();
-
-            Connection.Open();
-
-            var p = Pagination.PaginationPageNumber(pageNumber, pageSize);
-
-            using (var command = Connection.CreateCommand())
-            {
-                command.CommandText = @"
-                                        SELECT * FROM Codes WHERE BatchID = @batchID
-                                        ORDER BY ID OFFSET @page ROWS FETCH NEXT @pageSize ROWS ONLY";
-
-                command.Parameters.AddWithValue("@page", p);
-                command.Parameters.AddWithValue("@pageSize", pageSize);
-                command.Parameters.AddWithValue("@batchID", batchID);
-
-                using (var reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-
-                        // Store code in a variable
-                        var code = new Code();
-
-                        //Stores SeedValue outside of code object
-                        var seed = (int)reader["SeedValue"];
-
-                        code.State = (byte)reader["State"];
-                        code.StringValue = CodeConverter.ConvertToCode(seed, alphabet);
-
-                        // Add code to the list
-                        codes.Add(code);
-                    }
-                }
-            }
-
-            Connection.Close();
-
-            // Return the list of codes
-            return codes;
-        }
-
+       
         public int PageCount(int id)
         {
             var pages = 0;

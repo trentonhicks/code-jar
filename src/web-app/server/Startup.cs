@@ -14,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using TodoWebAPI.CronJob;
 
 namespace CodeJar.WebApp
 {
@@ -48,6 +49,12 @@ namespace CodeJar.WebApp
             services.AddScoped<ICodeRepository, AdoCodeRepository>();
             services.AddScoped<SqlConnection>(_ => new SqlConnection(Configuration.GetConnectionString("Storage")));
             services.AddHostedService<ReceiveServiceBus>();
+
+            services.AddCronJob<DateActiveJob>(c =>
+            {
+                c.TimeZoneInfo = TimeZoneInfo.Local;
+                c.CronExpression = @"* * * * *";
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

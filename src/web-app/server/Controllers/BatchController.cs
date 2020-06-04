@@ -11,6 +11,7 @@ using Microsoft.Azure.ServiceBus;
 using System.Text;
 using Newtonsoft.Json;
 using CodeJar.Infrastructure;
+using CodeJar.WebApp.ViewModels;
 
 namespace CodeJar.WebApp.Controllers
 {
@@ -43,15 +44,18 @@ namespace CodeJar.WebApp.Controllers
         }
 
         [HttpGet("batch/{id}")]
-        public IActionResult GetBatch(int id, [FromQuery] int page)
+        public async Task<IActionResult> GetBatch(int id, [FromQuery] int page)
         {
             var alphabet = _config.GetSection("Base26")["alphabet"];
             var sql = new SQL(_config.GetConnectionString("Storage"), _config.GetSection("BinaryFile")["Binary"]);
             var pageSize = Convert.ToInt32(_config.GetSection("Pagination")["PageNumber"]);
-            var codes = sql.GetCodes(id, page, alphabet, pageSize);
+            var codes = await _codeRepository.GetCodesAsync(id, page, alphabet, pageSize);
+
+            var vm = codes.Select( c => new CodeViewModel { Id = c.Id, State = CodeStates.ConvertToString(c.State), StringValue = c.StringValue });
+
             var pages = sql.PageCount(id);
 
-            return Ok(new TableData(codes, pages));
+            return Ok(new CodesViewModel(vm.ToList(), pages));
         }
 
         [HttpDelete("batch")]
