@@ -98,7 +98,7 @@ namespace CodeJar.Infrastructure
             {
                 command.CommandText = @"SELECT Codes.ID, Codes.SeedValue, Codes.BatchID, Codes.State, Batch.DateActive, Batch.DateExpires FROM Codes
                                         INNER JOIN Batch ON Batch.ID = Codes.BatchID
-                                        WHERE Codes.State = 0 OR Codes.State = 1 AND Batch.DateExpires >= @forDate";
+                                        WHERE Codes.State = 0 OR Codes.State = 1 AND Batch.DateExpires = @forDate";
 
                 command.Parameters.AddWithValue("@forDate", date.Date);
 
@@ -137,7 +137,7 @@ namespace CodeJar.Infrastructure
             {
                 command.CommandText = @"SELECT Codes.ID, Codes.SeedValue, Codes.BatchID, Codes.State, Batch.DateActive, Batch.DateExpires FROM Codes
                                         INNER JOIN Batch ON Batch.ID = Codes.BatchID
-                                        WHERE Codes.State = 0 AND DateActive = @forDate";
+                                        WHERE Codes.State = 0 AND Batch.DateActive = @forDate";
 
                 command.Parameters.AddWithValue("@forDate", forDate.Date);
 
@@ -187,6 +187,61 @@ namespace CodeJar.Infrastructure
             }
             
             await _connection.CloseAsync();
+        }
+        
+        public async Task UpdateCodeAsync(Code code)
+        {
+             await _connection.OpenAsync();
+
+            using(var command = _connection.CreateCommand())
+            {
+                    command.CommandText = $@"UPDATE Codes SET State = @state WHERE ID = @id";
+
+                    // Insert values
+                    command.Parameters.AddWithValue("@state", CodeStateSerializer.SerializeState(code.State));
+                    command.Parameters.AddWithValue("@id", code.Id);
+
+                    await command.ExecuteNonQueryAsync();
+            }
+            
+            await _connection.CloseAsync();
+        }
+
+        public async Task<Code> FindCodeBySeedValueAsync(string codeString, string alphabet)
+        {
+            Code code = null;
+
+            var seedvalue = CodeConverter.ConvertFromCode(codeString, alphabet);
+
+            await _connection.OpenAsync();
+
+            using(var command = _connection.CreateCommand())
+            {
+                command.CommandText = $@"SELECT Codes.*, Batch.DateActive, Batch.DateExpires FROM Codes
+                                         INNER JOIN Batch ON Batch.ID = Codes.BatchID
+                                         WHERE SeedValue = @seedvalue";
+
+                command.Parameters.AddWithValue("@seedvalue", seedvalue);
+                using(var reader = await command.ExecuteReaderAsync())
+                {
+                    if(await reader.ReadAsync())
+                    {
+                        var state = CodeStateSerializer.DeserializeState((byte) reader["State"]);
+
+                        code = new Code(state);
+                        code.SeedValue = seedvalue;
+                        code.StringValue = codeString;
+                        code.Id = (int)reader["ID"];
+                        code.BatchId = (int)reader["BatchID"];
+                        code.DateActive = (DateTime)reader["DateActive"];
+                        code.DateExpires = (DateTime)reader["DateExpires"];
+                    }
+                }
+            }
+
+            await _connection.CloseAsync();
+
+            return code;
         }
     }
 }

@@ -11,5 +11,8 @@ namespace CodeJar.Domain
         Task<List<Code>> GetCodesAsync(int batchID, int pageNumber, string alphabet, int pageSize);
         Task UpdateCodesAsync(List<Code> codes);
         Task<List<Code>> GetCodesForActivationAsync(DateTime forDate, string alphabet);
+        Task<List<Code>> GetCodesForExpirationAsync(DateTime forDate, string alphabet);
+        Task UpdateCodeAsync(Code code);
+        Task<Code> FindCodeBySeedValueAsync(string codeString, string alphabet);
     }
 }

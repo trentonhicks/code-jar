@@ -131,34 +131,5 @@ namespace CodeJar.WebApp
 
             Connection.Close();
         }
-
-        public int CheckIfCodeCanBeRedeemed(string code, string alphabet)
-        {
-            var seedvalue = CodeConverter.ConvertFromCode(code, alphabet);
-            int codeID = 0;
-
-            Connection.Open();
-
-            using (var command = Connection.CreateCommand())
-            {
-                command.CommandText = @"UPDATE Codes SET [State] = @redeemed
-                                        OUTPUT INSERTED.ID
-                                        WHERE SeedValue = @seedvalue AND [State] = @active";
-
-                command.Parameters.AddWithValue("@redeemed", CodeStateSerializer.Redeemed);
-                command.Parameters.AddWithValue("@active", CodeStateSerializer.Active);
-                command.Parameters.AddWithValue("@seedvalue", seedvalue);
-
-                codeID = (int)command.ExecuteScalar();
-            }
-
-            Connection.Close();
-
-            if (codeID != 0)
-            {
-                return codeID;
-            }
-            return -1;
-        }
     }
 }
