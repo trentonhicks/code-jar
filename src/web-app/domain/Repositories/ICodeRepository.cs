@@ -14,5 +14,6 @@ namespace CodeJar.Domain
         Task<List<Code>> GetCodesForExpirationAsync(DateTime forDate, string alphabet);
         Task UpdateCodeAsync(Code code);
         Task<Code> FindCodeBySeedValueAsync(string codeString, string alphabet);
+        Task<Code> GetCodeAsync(string stringValue, string alphabet);
     }
 }

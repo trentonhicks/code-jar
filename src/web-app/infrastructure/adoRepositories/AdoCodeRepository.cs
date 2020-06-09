@@ -243,5 +243,34 @@ namespace CodeJar.Infrastructure
 
             return code;
         }
+
+        public async Task<Code> GetCodeAsync(string stringValue, string alphabet)
+        {
+            Code code = null;
+            var seedValue = CodeConverter.ConvertFromCode(stringValue, alphabet);
+
+            await _connection.OpenAsync();
+
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = @"SELECT * FROM Codes WHERE SeedValue = @seedValue";
+                command.Parameters.AddWithValue("@seedValue", seedValue);
+
+                using (var reader = await command.ExecuteReaderAsync())
+                {
+                    if (await reader.ReadAsync())
+                    {
+                        var state = CodeStateSerializer.DeserializeState((byte) reader["State"]);
+                        code = new Code(state);
+                        var seed = (int)reader["SeedValue"];
+                        code.StringValue = CodeConverter.ConvertToCode(seed, alphabet);
+                    }
+                }
+            }
+
+            await _connection.CloseAsync();
+
+            return code;
+        }
     }
 }

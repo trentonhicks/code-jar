@@ -6,6 +6,7 @@ using System.Text;
 using System.IO;
 using CodeJar.Domain;
 using CodeJar.Infrastructure;
+using CodeJar.WebApp.ViewModels;
 
 namespace CodeJar.WebApp
 {
@@ -19,45 +20,6 @@ namespace CodeJar.WebApp
 
         // SQL connection string
         public SqlConnection Connection { get; set; }
-
-        /// <summary>
-        /// Gets the next seed value that will be used to generate codes
-        /// </summary>
-        /// <returns></returns>
-        public Code GetCode(string stringValue, string alphabet)
-        {
-            Code code = null;
-            var seedValue = CodeConverter.ConvertFromCode(stringValue, alphabet);
-
-            Connection.Open();
-
-            using (var command = Connection.CreateCommand())
-            {
-                command.CommandText = @"SELECT * FROM Codes WHERE SeedValue = @seedValue";
-                command.Parameters.AddWithValue("@seedValue", seedValue);
-
-                using (var reader = command.ExecuteReader())
-                {
-                    if (reader.Read())
-                    {
-                        var state = CodeStateSerializer.DeserializeState((byte) reader["State"]);
-
-                        code = new Code(state);
-                        var seed = (int)reader["SeedValue"];
-                        code.StringValue = CodeConverter.ConvertToCode(seed, alphabet);
-                    }
-                }
-            }
-
-            Connection.Close();
-
-            return code;
-        }
-
-        /// <summary>
-        /// Returns a list of all the codes from the database
-        /// </summary>
-        /// <returns></returns>
        
         public int PageCount(int id)
         {
