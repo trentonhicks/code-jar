@@ -10,5 +10,6 @@ namespace CodeJar.Domain
         Task AddBatchAsync(Batch batch);
         Task<Batch> GetBatchAsync(int id);
         Task UpdateBatchAsync(Batch batch);
+        Task DeactivateBatchAsync(Batch batch);
     }
 }

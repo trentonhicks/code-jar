@@ -59,10 +59,10 @@ namespace CodeJar.WebApp.Controllers
         }
 
         [HttpDelete("batch")]
-        public void DeactivateBatch([FromBody] Batch batch)
+        public async Task<IActionResult> DeactivateBatch([FromBody] Batch batch)
         {
-            var sql = new SQL(_config.GetConnectionString("Storage"), _config.GetSection("BinaryFile")["Binary"]);
-            sql.DeactivateBatch(batch);
+            await _batchRepository.DeactivateBatchAsync(batch);
+            return Ok();
         }
 
         [HttpPost("batch")]

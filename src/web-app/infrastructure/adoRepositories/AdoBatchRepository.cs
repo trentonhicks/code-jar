@@ -35,6 +35,23 @@ namespace CodeJar.Infrastructure
             await _connection.CloseAsync();
         }
 
+        public async Task DeactivateBatchAsync(Batch batch)
+        {
+             await _connection.OpenAsync();
+
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = @"UPDATE Codes SET [State] = @inactive
+                                        WHERE BatchID = @batchId";
+
+                command.Parameters.AddWithValue("@inactive", CodeStateSerializer.Inactive);
+                command.Parameters.AddWithValue("@batchId", batch.ID);
+                await command.ExecuteNonQueryAsync();
+            }
+
+            await _connection.CloseAsync();
+        }
+
         public async Task<Batch> GetBatchAsync(int id)
         {
             var batch = new Batch();

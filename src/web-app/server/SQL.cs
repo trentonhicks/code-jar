@@ -57,41 +57,5 @@ namespace CodeJar.WebApp
 
             return pages;
         }
-        public void DeactivateCode(string code, string alphabet)
-        {
-            var seedvalue = CodeConverter.ConvertFromCode(code, alphabet);
-
-            Connection.Open();
-
-            using (var command = Connection.CreateCommand())
-            {
-                command.CommandText = @"UPDATE Codes SET [State] = @inactive
-                                        WHERE SeedValue = @seedvalue AND [State] = @active";
-
-                command.Parameters.AddWithValue("@inactive", CodeStateSerializer.Inactive);
-                command.Parameters.AddWithValue("@active", CodeStateSerializer.Active);
-                command.Parameters.AddWithValue("@seedvalue", seedvalue);
-                command.ExecuteNonQuery();
-            }
-
-            Connection.Close();
-        }
-
-        public void DeactivateBatch(Batch batch)
-        {
-            Connection.Open();
-
-            using (var command = Connection.CreateCommand())
-            {
-                command.CommandText = @"UPDATE Codes SET [State] = @inactive
-                                        WHERE ID BETWEEN @codeIDStart AND @codeIDEnd AND [State] = @active";
-
-                command.Parameters.AddWithValue("@inactive", CodeStateSerializer.Inactive);
-                command.Parameters.AddWithValue("@active", CodeStateSerializer.Active);
-                command.ExecuteNonQuery();
-            }
-
-            Connection.Close();
-        }
     }
 }
