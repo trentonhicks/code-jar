@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
 using System.Threading.Tasks;
+using CodeJar.Domain;
 
-namespace CodeJar.Domain
+namespace CodeJar.Infrastructure
 {
     public class FileSystemSeedValueReader : ISeedValueReader
     {
@@ -17,32 +18,10 @@ namespace CodeJar.Domain
             _connection = connection;
         }
 
-        private (long, long) UpdateOffset(int count)
-        {
-            long start;
-            long end;
-            _connection.Open();
-            using(var command = _connection.CreateCommand())
-            {
-                command.CommandText = @"UPDATE Offset
-                                   SET OffsetValue = OffsetValue + @offsetIncrement
-                                   OUTPUT INSERTED.OffsetValue
-                                   WHERE ID = 1";
-
-                command.Parameters.AddWithValue("@offsetIncrement", count * 4);
-                
-                end = (long)command.ExecuteScalar();
-
-                start = end - count * 4;
-
-            }
-            _connection.Close();
-            return (start, end);
-        }
-
         public IEnumerable<int> ReadSeedValues(int count)
         {
-            var startAndEnd = UpdateOffset(count);
+            var offset = new Offset(_connection);
+            var startAndEnd = offset.UpdateOffset(count);
             var start = startAndEnd.Item1;
             var end = startAndEnd.Item2;
 
