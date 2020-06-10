@@ -1,43 +1,35 @@
 using System;
-using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
-using System.Text;
-using System.IO;
-using CodeJar.Domain;
-using CodeJar.Infrastructure;
-using CodeJar.WebApp.ViewModels;
+using System.Threading.Tasks;
 
-namespace CodeJar.WebApp
+namespace CodeJar.Infrastructure
 {
-
-    public class SQL
+    public class PaginationCount
     {
-        public SQL(string connectionString, string filePath)
+        private readonly SqlConnection _connection;
+
+        public PaginationCount(SqlConnection connection)
         {
-            Connection = new SqlConnection(connectionString);
+            _connection = connection;
         }
 
-        // SQL connection string
-        public SqlConnection Connection { get; set; }
-       
-        public int PageCount(int id)
+         public async Task<int> PageCount(int id)
         {
             var pages = 0;
 
             var pagesRemainder = 0;
 
-            Connection.Open();
+            await _connection.OpenAsync();
 
-            using (var command = Connection.CreateCommand())
+            using (var command = _connection.CreateCommand())
             {
                 command.CommandText = "SELECT BatchSize FROM Batch WHERE ID = @id";
 
                 command.Parameters.AddWithValue("@id", id);
 
-                using (var reader = command.ExecuteReader())
+                using (var reader = await command.ExecuteReaderAsync())
                 {
-                    while (reader.Read())
+                    while (await reader.ReadAsync())
                     {
                         var numberOfCodes = (int)reader["BatchSize"];
 
@@ -53,9 +45,10 @@ namespace CodeJar.WebApp
                 }
             }
 
-            Connection.Close();
+            await _connection.CloseAsync();
 
             return pages;
         }
     }
+   
 }

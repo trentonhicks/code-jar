@@ -47,7 +47,7 @@ namespace CodeJar.Infrastructure
 
             await _connection.OpenAsync();
 
-            var p = Pagination.PaginationPageNumber(pageNumber, pageSize);
+            var p = PageHelper.PaginationPageNumber(pageNumber, pageSize);
 
             using (var command = _connection.CreateCommand())
             {

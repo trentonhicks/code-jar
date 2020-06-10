@@ -12,6 +12,7 @@ using System.Text;
 using Newtonsoft.Json;
 using CodeJar.Infrastructure;
 using CodeJar.WebApp.ViewModels;
+using System.Data.SqlClient;
 
 namespace CodeJar.WebApp.Controllers
 {
@@ -24,17 +25,20 @@ namespace CodeJar.WebApp.Controllers
         private readonly IConfiguration _config;
         private readonly IBatchRepository _batchRepository;
         private readonly ICodeRepository _codeRepository;
+        private readonly SqlConnection _connection;
 
         public BatchController(
             ILogger<PromoCodesController> logger,
             IConfiguration config,
             IBatchRepository batchRepository,
-            ICodeRepository codeRepository)
+            ICodeRepository codeRepository,
+            SqlConnection connection)
         {
             _logger = logger;
             _config = config;
             _batchRepository = batchRepository;
             _codeRepository = codeRepository;
+            _connection = connection;
         }
 
         [HttpGet("batch")]
@@ -46,14 +50,14 @@ namespace CodeJar.WebApp.Controllers
         [HttpGet("batch/{id}")]
         public async Task<IActionResult> GetBatch(int id, [FromQuery] int page)
         {
+            var pagination = new PaginationCount(_connection);
             var alphabet = _config.GetSection("Base26")["alphabet"];
-            var sql = new SQL(_config.GetConnectionString("Storage"), _config.GetSection("BinaryFile")["Binary"]);
             var pageSize = Convert.ToInt32(_config.GetSection("Pagination")["PageNumber"]);
             var codes = await _codeRepository.GetCodesAsync(id, page, alphabet, pageSize);
 
             var vm = codes.Select( c => new CodeViewModel { Id = c.Id, State = c.State.ToString(), StringValue = c.StringValue });
 
-            var pages = sql.PageCount(id);
+            var pages = await pagination.PageCount(id);
 
             return Ok(new CodesViewModel(vm.ToList(), pages));
         }

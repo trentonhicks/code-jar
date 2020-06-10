@@ -7,7 +7,7 @@ using System.IO;
 
 namespace CodeJar.Infrastructure
 {
-    public static class Pagination
+    public static class PageHelper
     {
         public static int PaginationPageNumber(int pageNumber, int pageSize)
         {
