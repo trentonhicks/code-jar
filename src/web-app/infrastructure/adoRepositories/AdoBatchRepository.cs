@@ -42,7 +42,7 @@ namespace CodeJar.Infrastructure
             using (var command = _connection.CreateCommand())
             {
                 command.CommandText = @"UPDATE Codes SET [State] = @inactive
-                                        WHERE BatchID = @batchId";
+                                        WHERE BatchID = @batchId AND State = 1";
 
                 command.Parameters.AddWithValue("@inactive", CodeStateSerializer.Inactive);
                 command.Parameters.AddWithValue("@batchId", batch.ID);
