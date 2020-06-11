@@ -4,7 +4,8 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="System.Data.SqlClient" Version="4.7.0"/>
+    <PackageReference Include="Microsoft.Azure.Storage.Blob" Version="11.1.7" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.7.0" />
     <ProjectReference Include="..\domain\domain.csproj" />
   </ItemGroup>
 </Project>

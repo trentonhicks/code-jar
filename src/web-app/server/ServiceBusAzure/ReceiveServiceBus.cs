@@ -13,6 +13,7 @@ using System.Data.SqlClient;
 using CodeJar.Infrastructure;
 using System.Collections.Generic;
 using System.IO;
+using CodeFlip.CodeJar.Api;
 
 namespace CodeJar.ServiceBusAzure
 {
@@ -41,7 +42,7 @@ namespace CodeJar.ServiceBusAzure
 
             var batch = JsonConvert.DeserializeObject<Batch>(data);
             
-            var reader = new FileSystemSeedValueReader(_configuration.GetSection("BinaryFile")["Binary"], new SqlConnection(_configuration.GetConnectionString("Storage")));
+            var reader = new CloudReader(_configuration.GetSection("File")["SeedBlobUrl"], new SqlConnection(_configuration.GetConnectionString("Storage")));
 
             var codes = batch.GenerateCodes(reader, DateTime.Now, _configuration.GetSection("Base26")["alphabet"]);
 
