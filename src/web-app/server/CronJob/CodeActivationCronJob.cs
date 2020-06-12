@@ -44,15 +44,18 @@ namespace TodoWebAPI.CronJob
         {
             _logger.LogInformation($"{DateTime.Now:hh:mm:ss} Activation job is working.");
 
-            var connection = new SqlConnection(_configuration.GetConnectionString("Storage"));
+            using (var connection = new SqlConnection(_configuration.GetConnectionString("Storage")))
+            {
+                await connection.OpenAsync();
 
-            var codeRepository = new AdoCodeRepository(connection); 
-            var generatedCodes = await codeRepository.GetCodesForActivationAsync(DateTime.Now.Date, _configuration.GetSection("Base26")["alphabet"]);
+                var codeRepository = new SqlCodeRepository(connection); 
+                var generatedCodes = await codeRepository.GetCodesForActivationAsync(DateTime.Now.Date, _configuration.GetSection("Base26")["alphabet"]);
 
-            foreach(var code in generatedCodes)
-                code.Activate();
+                foreach(var code in generatedCodes)
+                    code.Activate();
 
-            await codeRepository.UpdateCodesAsync(generatedCodes);
+                await codeRepository.UpdateCodesAsync(generatedCodes);
+            }
 
             _logger.LogInformation($"{DateTime.Now:hh:mm:ss} Activation job completed.");
         }

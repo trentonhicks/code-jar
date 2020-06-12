@@ -13,7 +13,7 @@ namespace CodeJar.Domain
         }
 
         public int Id {get; set;}
-        public int BatchId {get; set;}
+        public Guid BatchId {get; set;}
         public string StringValue { get; set; }
         public int SeedValue {get; set;}
         public CodeState State { get; private set; }

@@ -13,14 +13,14 @@ using Newtonsoft.Json;
 using CodeJar.Infrastructure;
 using CodeJar.WebApp.ViewModels;
 using System.Data.SqlClient;
+using CodeJar.WebApp.Commands;
 
 namespace CodeJar.WebApp.Controllers
 {
     [ApiController]
     public class BatchController : ControllerBase
     {
-        const string QueueName = "codejar";
-        private QueueClient _queueClient;
+        private readonly IQueueClient _queueClient;
         private readonly ILogger<PromoCodesController> _logger;
         private readonly IConfiguration _config;
         private readonly IBatchRepository _batchRepository;
@@ -32,13 +32,15 @@ namespace CodeJar.WebApp.Controllers
             IConfiguration config,
             IBatchRepository batchRepository,
             ICodeRepository codeRepository,
-            SqlConnection connection)
+            SqlConnection connection,
+            IQueueClient queueClient)
         {
             _logger = logger;
             _config = config;
             _batchRepository = batchRepository;
             _codeRepository = codeRepository;
             _connection = connection;
+            _queueClient = queueClient;
         }
 
         [HttpGet("batch")]
@@ -70,35 +72,17 @@ namespace CodeJar.WebApp.Controllers
         }
 
         [HttpPost("batch")]
-        public async Task<IActionResult> Post(Batch batch)
+        public async Task<IActionResult> Post(CreateBatchCommand request)
         {
             // Date active must be less than date expires and greater than or equal to the current date time in order to generate codes
-            if (batch.DateActive < batch.DateExpires && batch.DateActive.Date >= DateTime.Now.Date)
+            if (request.DateActive < request.DateExpires && request.DateActive.Date >= DateTime.Now.Date)
             {
-                batch.State = BatchStates.Pending;
-
-                await _batchRepository.AddBatchAsync(batch);
-
-                var newBatch = await _batchRepository.GetBatchAsync(batch.ID);
-
-                await _batchRepository.UpdateBatchAsync(batch);
-
-                var connectionString = "Endpoint=sb://codefliptodo.servicebus.windows.net/;SharedAccessKeyName=web-app;SharedAccessKey=x9SEbxQ1AlykQv+ygjDh7hlVup1ZAOZkRTrhkuDHgJA=";
-
-                _queueClient = new QueueClient(connectionString, QueueName);
-                
-                string messageBody = JsonConvert.SerializeObject(newBatch);
+                string messageBody = JsonConvert.SerializeObject(request);
                 var message = new Message(Encoding.UTF8.GetBytes(messageBody));
 
                 await _queueClient.SendAsync(message);
-
-                batch.State = BatchStates.Generated;
-
-                await _batchRepository.UpdateBatchAsync(batch);
-
-                await _queueClient.CloseAsync();
-
-                return Ok(batch);
+                
+                return Ok(request);
             }
             else
             {

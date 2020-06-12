@@ -14,6 +14,8 @@ using CodeJar.Infrastructure;
 using System.Collections.Generic;
 using System.IO;
 using CodeFlip.CodeJar.Api;
+using CodeJar.WebApp.Commands;
+using CodeJar.Infrastructure.Guids;
 
 namespace CodeJar.ServiceBusAzure
 {
@@ -26,27 +28,49 @@ namespace CodeJar.ServiceBusAzure
         private readonly ILogger _logger;
         private readonly ILoggerFactory _loggerFactory;
         private readonly IConfiguration _configuration;
+        private readonly ISequentialGuidGenerator _idGenerator;
 
-        public ReceiveServiceBus(ILoggerFactory loggerFactory, IConfiguration configuration)
+        public ReceiveServiceBus(ILoggerFactory loggerFactory, IConfiguration configuration, ISequentialGuidGenerator idGenerator)
         {
             _logger = loggerFactory.CreateLogger<ReceiveServiceBus>();
             _loggerFactory = loggerFactory;
             _configuration = configuration;
+            _idGenerator = idGenerator;
         }
 
         public async Task ProcessMessagesAsync(Message message, CancellationToken token)
         {
-            var data = Encoding.UTF8.GetString(message.Body);
+            using (var connection = new SqlConnection(_configuration.GetConnectionString("Storage")))
+            {
+                await connection.OpenAsync();
 
-            var codeRepository = new AdoCodeRepository(new SqlConnection(_configuration.GetConnectionString("Storage")));
+                var batchRepository = new SqlBatchRepository(connection);
+                var codeRepository = new SqlCodeRepository(connection);
 
-            var batch = JsonConvert.DeserializeObject<Batch>(data);
+                var command = JsonConvert.DeserializeObject<CreateBatchCommand>(Encoding.UTF8.GetString(message.Body));
             
-            var reader = new CloudReader(_configuration.GetSection("File")["SeedBlobUrl"], new SqlConnection(_configuration.GetConnectionString("Storage")));
+                var reader = new CloudReader(_configuration.GetSection("File")["SeedBlobUrl"], connection);
 
-            var codes = batch.GenerateCodes(reader, DateTime.Now, _configuration.GetSection("Base26")["alphabet"]);
+                var batch = new Batch
+                {
+                    BatchName = command.BatchName,
+                    BatchSize = command.BatchSize,
+                    DateActive = command.DateActive,
+                    DateExpires = command.DateExpires,
+                    State = BatchStates.Pending,
+                    Id = _idGenerator.NextId()
+                };
 
-            await codeRepository.AddCodesAsync(codes);
+                await batchRepository.AddAsync(batch);
+
+                var codes = batch.GenerateCodes(reader, _configuration.GetSection("Base26")["alphabet"]);
+
+                await codeRepository.AddCodesAsync(codes);
+
+                batch.State = BatchStates.Generated;
+
+                await batchRepository.UpdateBatchAsync(batch);
+            }
         }
 
         protected void ProcessError(Exception e)

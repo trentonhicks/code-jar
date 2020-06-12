@@ -7,19 +7,17 @@ using CodeJar.Domain;
 
 namespace CodeJar.Infrastructure
 {
-    public class AdoCodeRepository : ICodeRepository
+    public class SqlCodeRepository : ICodeRepository
     {
         private readonly SqlConnection _connection;
 
-        public AdoCodeRepository(SqlConnection connection)
+        public SqlCodeRepository(SqlConnection connection)
         {
             _connection = connection;
         }
 
         public async Task AddCodesAsync(IEnumerable<Code> codes)
         {
-            await _connection.OpenAsync();
-
             using(var command = _connection.CreateCommand())
             {
                 // Loop to the last offset position
@@ -36,18 +34,16 @@ namespace CodeJar.Infrastructure
                     await command.ExecuteNonQueryAsync();
                 }
             }
-            
-            await _connection.CloseAsync();
         }
 
-        public async Task<List<Code>> GetCodesAsync(int batchID, int pageNumber, string alphabet, int pageSize)
+        public async Task<List<Code>> GetCodesAsync(Guid batchID, int pageNumber, string alphabet, int pageSize)
         {
            // Create list to store codes gathered from the database
             var codes = new List<Code>();
 
-            await _connection.OpenAsync();
-
             var p = PageHelper.PaginationPageNumber(pageNumber, pageSize);
+
+            await _connection.OpenAsync();
 
             using (var command = _connection.CreateCommand())
             {
@@ -69,10 +65,10 @@ namespace CodeJar.Infrastructure
 
                         var code = new Code(state);
 
-                        code.Id = (int) reader["ID"];
+                        code.Id = (Guid) reader["ID"];
                         code.SeedValue = seed;
                         code.StringValue = CodeConverter.ConvertToCode(seed, alphabet);
-                        code.BatchId = (int) reader["BatchId"];
+                        code.BatchId = (Guid) reader["BatchId"];
                         code.DateActive = (DateTime) reader["DateActive"];
                         code.DateExpires = (DateTime) reader["DateExpires"];
 
@@ -82,8 +78,6 @@ namespace CodeJar.Infrastructure
                 }
             }
 
-            await _connection.CloseAsync();
-
             // Return the list of codes
             return codes;
         }
@@ -92,13 +86,11 @@ namespace CodeJar.Infrastructure
         {
              var codes = new List<Code>();
 
-            await _connection.OpenAsync();
-
             using(var command = _connection.CreateCommand())
             {
                 command.CommandText = @"SELECT Codes.ID, Codes.SeedValue, Codes.BatchID, Codes.State, Batch.DateActive, Batch.DateExpires FROM Codes
                                         INNER JOIN Batch ON Batch.ID = Codes.BatchID
-                                        WHERE Codes.State = 0 OR Codes.State = 1 AND Batch.DateExpires = @forDate";
+                                        WHERE Codes.State = 0 OR Codes.State = 1 AND Batch.DateExpires <= @forDate";
 
                 command.Parameters.AddWithValue("@forDate", date.Date);
 
@@ -113,7 +105,7 @@ namespace CodeJar.Infrastructure
                         code.Id = (int) reader["ID"];
                         code.SeedValue = seed;
                         code.StringValue = CodeConverter.ConvertToCode(seed, alphabet);
-                        code.BatchId = (int) reader["BatchId"];
+                        code.BatchId = (Guid) reader["BatchId"];
                         code.DateActive = (DateTime) reader["DateActive"];
                         code.DateExpires = (DateTime) reader["DateExpires"];
 
@@ -122,8 +114,6 @@ namespace CodeJar.Infrastructure
                 }
             }
 
-            await _connection.CloseAsync();
-
             return codes;
         }
 
@@ -131,13 +121,11 @@ namespace CodeJar.Infrastructure
         {
             var codes = new List<Code>();
 
-            await _connection.OpenAsync();
-
             using(var command = _connection.CreateCommand())
             {
                 command.CommandText = @"SELECT Codes.ID, Codes.SeedValue, Codes.BatchID, Codes.State, Batch.DateActive, Batch.DateExpires FROM Codes
                                         INNER JOIN Batch ON Batch.ID = Codes.BatchID
-                                        WHERE Codes.State = 0 AND Batch.DateActive = @forDate";
+                                        WHERE Codes.State = 0 AND Batch.DateActive <= @forDate";
 
                 command.Parameters.AddWithValue("@forDate", forDate.Date);
 
@@ -152,7 +140,7 @@ namespace CodeJar.Infrastructure
                         code.Id = (int) reader["ID"];
                         code.SeedValue = seed;
                         code.StringValue = CodeConverter.ConvertToCode(seed, alphabet);
-                        code.BatchId = (int) reader["BatchId"];
+                        code.BatchId = (Guid) reader["BatchId"];
                         code.DateActive = (DateTime) reader["DateActive"];
                         code.DateExpires = (DateTime) reader["DateExpires"];
 
@@ -161,15 +149,11 @@ namespace CodeJar.Infrastructure
                 }
             }
 
-            await _connection.CloseAsync();
-
             return codes;
         }
 
         public async Task UpdateCodesAsync(List<Code> codes)
         {
-            await _connection.OpenAsync();
-
             using(var command = _connection.CreateCommand())
             {
                 // Loop to the last offset position
@@ -185,13 +169,11 @@ namespace CodeJar.Infrastructure
                     await command.ExecuteNonQueryAsync();
                 }
             }
-            
-            await _connection.CloseAsync();
         }
         
         public async Task UpdateCodeAsync(Code code)
         {
-             await _connection.OpenAsync();
+            await _connection.OpenAsync();
 
             using(var command = _connection.CreateCommand())
             {
@@ -203,8 +185,6 @@ namespace CodeJar.Infrastructure
 
                     await command.ExecuteNonQueryAsync();
             }
-            
-            await _connection.CloseAsync();
         }
 
         public async Task<Code> FindCodeBySeedValueAsync(string codeString, string alphabet)
@@ -232,14 +212,12 @@ namespace CodeJar.Infrastructure
                         code.SeedValue = seedvalue;
                         code.StringValue = codeString;
                         code.Id = (int)reader["ID"];
-                        code.BatchId = (int)reader["BatchID"];
+                        code.BatchId = (Guid)reader["BatchID"];
                         code.DateActive = (DateTime)reader["DateActive"];
                         code.DateExpires = (DateTime)reader["DateExpires"];
                     }
                 }
             }
-
-            await _connection.CloseAsync();
 
             return code;
         }
@@ -267,8 +245,6 @@ namespace CodeJar.Infrastructure
                     }
                 }
             }
-
-            await _connection.CloseAsync();
 
             return code;
         }

@@ -19,8 +19,6 @@ namespace CodeJar.Infrastructure
 
             var pagesRemainder = 0;
 
-            await _connection.OpenAsync();
-
             using (var command = _connection.CreateCommand())
             {
                 command.CommandText = "SELECT BatchSize FROM Batch WHERE ID = @id";
@@ -44,9 +42,6 @@ namespace CodeJar.Infrastructure
                     }
                 }
             }
-
-            await _connection.CloseAsync();
-
             return pages;
         }
     }

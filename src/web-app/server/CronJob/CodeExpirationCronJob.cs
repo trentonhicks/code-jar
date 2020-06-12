@@ -45,7 +45,9 @@ namespace TodoWebAPI.CronJob
 
             using(var connection = new SqlConnection(_configuration.GetConnectionString("Storage")))
             {
-                var codeRepository = new AdoCodeRepository(connection);
+                await connection.OpenAsync();
+
+                var codeRepository = new SqlCodeRepository(connection);
 
                 var codes = await codeRepository.GetCodesForExpirationAsync(DateTime.Now.Date, _configuration.GetSection("Base26")["alphabet"]);
 

@@ -15,7 +15,7 @@ namespace CodeJar.Infrastructure
         {
             long start;
             long end;
-            _connection.Open();
+
             using(var command = _connection.CreateCommand())
             {
                 command.CommandText = @"UPDATE Offset
@@ -30,7 +30,7 @@ namespace CodeJar.Infrastructure
                 start = end - count * 4;
 
             }
-            _connection.Close();
+
             return (start, end);
         }
     }
