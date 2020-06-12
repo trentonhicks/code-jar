@@ -3,67 +3,82 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using CodeJar.Domain;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Azure.ServiceBus;
+using System.Text;
+using Newtonsoft.Json;
+using CodeJar.Infrastructure;
+using CodeJar.WebApp.ViewModels;
+using System.Data.SqlClient;
+using CodeJar.WebApp.Commands;
 
 namespace CodeJar.WebApp.Controllers
 {
     [ApiController]
     public class BatchController : ControllerBase
     {
+        private readonly IQueueClient _queueClient;
+        private readonly PaginationCount _pagination;
         private readonly ILogger<PromoCodesController> _logger;
         private readonly IConfiguration _config;
+        private readonly IBatchRepository _batchRepository;
+        private readonly ICodeRepository _codeRepository;
 
-        public BatchController(ILogger<PromoCodesController> logger, IConfiguration config)
+        public BatchController(
+            ILogger<PromoCodesController> logger,
+            IConfiguration config,
+            IBatchRepository batchRepository,
+            ICodeRepository codeRepository,
+            IQueueClient queueClient,
+            PaginationCount paginationCount)
         {
             _logger = logger;
             _config = config;
+            _batchRepository = batchRepository;
+            _codeRepository = codeRepository;
+            _queueClient = queueClient;
+            _pagination = paginationCount;
         }
 
         [HttpGet("batch")]
-        public IActionResult Get()
+        public async Task<IActionResult> Get()
         {
-            var sql = new SQL(_config.GetConnectionString("Storage"), _config.GetSection("BinaryFile")["Binary"]);
-            return Ok(sql.GetBatches());
+            return Ok(await _batchRepository.GetBatchesAsync());
         }
 
         [HttpGet("batch/{id}")]
-        public IActionResult GetBatch(int id, [FromQuery] int page)
+        public async Task<IActionResult> GetBatch(Guid id, [FromQuery] int page)
         {
             var alphabet = _config.GetSection("Base26")["alphabet"];
-            var sql = new SQL(_config.GetConnectionString("Storage"), _config.GetSection("BinaryFile")["Binary"]);
             var pageSize = Convert.ToInt32(_config.GetSection("Pagination")["PageNumber"]);
-            var codes = sql.GetCodes(id, page, alphabet, pageSize);
-            var pages = sql.PageCount(id);
+            var codes = await _codeRepository.GetCodesAsync(id, page, pageSize);
 
-            return Ok(new TableData(codes, pages));
+            var vm = codes.Select( c => new CodeViewModel { Id = c.Id, State = c.State.ToString(), StringValue = CodeConverter.ConvertToCode(c.SeedValue, alphabet) });
+
+            var pages = await _pagination.PageCount(id);
+
+            return Ok(new CodesViewModel(vm.ToList(), pages));
         }
 
         [HttpDelete("batch")]
-        public void DeactivateBatch([FromBody] Batch batch)
+        public async Task<IActionResult> DeactivateBatch([FromBody] Batch batch)
         {
-            var sql = new SQL(_config.GetConnectionString("Storage"), _config.GetSection("BinaryFile")["Binary"]);
-            sql.DeactivateBatch(batch);
+            await _batchRepository.DeactivateBatchAsync(batch);
+            return Ok();
         }
 
         [HttpPost("batch")]
-        public IActionResult Post(Batch batch)
+        public async Task<IActionResult> Post(CreateBatchCommand request)
         {
-            // Date active must be less than date expires and greater than or equal to the current date time in order to generate codes
-            if (batch.DateActive < batch.DateExpires && batch.DateActive.Date >= DateTime.Now.Date)
-            {
-                var sql = new SQL(_config.GetConnectionString("Storage"), _config.GetSection("BinaryFile")["Binary"]);
+            string messageBody = JsonConvert.SerializeObject(request);
+            var message = new Message(Encoding.UTF8.GetBytes(messageBody));
 
-                // Create batch
-                sql.CreateBatch(batch);
-
-                return Ok(batch);
-            }
-            else
-            {
-                return BadRequest();
-            }
+            await _queueClient.SendAsync(message);
+            
+            return Ok(request);
         }
     }
 }

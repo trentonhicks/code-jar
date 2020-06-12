@@ -1,15 +1,22 @@
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+using CodeJar.Domain;
+using CodeJar.Infrastructure;
+using CodeJar.Infrastructure.Guids;
+using CodeJar.ServiceBusAzure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using TodoWebAPI.CronJob;
 
 namespace CodeJar.WebApp
 {
@@ -38,6 +45,28 @@ namespace CodeJar.WebApp
             });
 
             services.AddControllers();
+
+            services.AddSingleton<IQueueClient,QueueClient>(_ => new QueueClient("Endpoint=sb://codefliptodo.servicebus.windows.net/;SharedAccessKeyName=web-app;SharedAccessKey=x9SEbxQ1AlykQv+ygjDh7hlVup1ZAOZkRTrhkuDHgJA=", "codejar"));
+            services.AddSingleton<ISequentialGuidGenerator,SequentialGuidGenerator>();            
+            
+            services.AddScoped<SqlConnection>(_ => new SqlConnection(Configuration.GetConnectionString("Storage")));
+            services.AddScoped<IBatchRepository, SqlBatchRepository>();
+            services.AddScoped<ICodeRepository, SqlCodeRepository>();
+            services.AddScoped<PaginationCount>();
+
+            services.AddHostedService<ReceiveServiceBus>();
+
+            services.AddCronJob<CodeActivationCronJob>(c =>
+            {
+                c.TimeZoneInfo = TimeZoneInfo.Local;
+                c.CronExpression = @"* * * * *";
+            });
+
+            services.AddCronJob<CodeExpirationCronJob>(c =>
+            {
+                c.TimeZoneInfo = TimeZoneInfo.Local;
+                c.CronExpression = @"* * * * *";
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

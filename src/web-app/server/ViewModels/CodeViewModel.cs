@@ -1,14 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 
-namespace CodeJar.WebApp
+namespace CodeJar.WebApp.ViewModels
 {
-    public class Code
+    public class CodeViewModel
     {
+        public int Id { get; set; }
         public string StringValue { get; set; }
         public string State { get; set; }
-       
     }
 }
