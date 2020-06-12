@@ -18,165 +18,163 @@ namespace CodeJar.Infrastructure
 
         public async Task AddCodesAsync(IEnumerable<Code> codes)
         {
-            using(var command = _connection.CreateCommand())
+            try
             {
-                // Loop to the last offset position
-                foreach(var code in codes)
+                await _connection.OpenAsync();
+
+                using(var command = _connection.CreateCommand())
                 {
-                    command.Parameters.Clear();
-                    command.CommandText = $@"INSERT INTO Codes (BatchID, SeedValue, State) VALUES (@batchID, @Seedvalue, @StateGenerated)";
+                    command.CommandText = $@"INSERT INTO Codes (BatchID, SeedValue, State) VALUES (@batchID, @seedValue, 0)";
 
-                    // Insert values
-                    command.Parameters.AddWithValue("@Seedvalue", code.SeedValue);
-                    command.Parameters.AddWithValue("@StateGenerated", CodeStateSerializer.SerializeState(code.State));
-                    command.Parameters.AddWithValue("@batchID", code.BatchId);
+                    command.Parameters.AddWithValue("@seedValue", null);
+                    command.Parameters.AddWithValue("@stateGenerated", null);
+                    command.Parameters.AddWithValue("@batchID", null);
 
-                    await command.ExecuteNonQueryAsync();
-                }
-            }
-        }
-
-        public async Task<List<Code>> GetCodesAsync(Guid batchID, int pageNumber, string alphabet, int pageSize)
-        {
-           // Create list to store codes gathered from the database
-            var codes = new List<Code>();
-
-            var p = PageHelper.PaginationPageNumber(pageNumber, pageSize);
-
-            await _connection.OpenAsync();
-
-            using (var command = _connection.CreateCommand())
-            {
-                command.CommandText = @"SELECT Codes.ID, Codes.SeedValue, Codes.BatchID, Codes.State, Batch.DateActive, Batch.DateExpires FROM Codes
-                                        INNER JOIN Batch ON Batch.ID = Codes.BatchID
-                                        WHERE Codes.BatchId = @batchID
-                                        ORDER BY ID OFFSET @page ROWS FETCH NEXT @pageSize ROWS ONLY";
-
-                command.Parameters.AddWithValue("@page", p);
-                command.Parameters.AddWithValue("@pageSize", pageSize);
-                command.Parameters.AddWithValue("@batchID", batchID);
-
-                using (var reader = await command.ExecuteReaderAsync())
-                {
-                    while (await reader.ReadAsync())
+                    foreach(var code in codes)
                     {
-                        var state = CodeStateSerializer.DeserializeState((byte) reader["State"]);
-                        var seed = (int)reader["SeedValue"];
+                        command.Parameters["@seedValue"].Value = code.SeedValue;
+                        command.Parameters["@stateGenerated"].Value = CodeStateSerializer.SerializeState(code.State);
+                        command.Parameters["@batchID"].Value = code.BatchId;
 
-                        var code = new Code(state);
-
-                        code.Id = (Guid) reader["ID"];
-                        code.SeedValue = seed;
-                        code.StringValue = CodeConverter.ConvertToCode(seed, alphabet);
-                        code.BatchId = (Guid) reader["BatchId"];
-                        code.DateActive = (DateTime) reader["DateActive"];
-                        code.DateExpires = (DateTime) reader["DateExpires"];
-
-                        // Add code to the list
-                        codes.Add(code);
+                        await command.ExecuteNonQueryAsync();
                     }
                 }
             }
-
-            // Return the list of codes
-            return codes;
+            
+            finally
+            {
+                await _connection.CloseAsync();
+            }
         }
 
-        public async Task<List<Code>> GetCodesForExpirationAsync(DateTime date, string alphabet)
+        public async Task<Code> GetCodeAsync(int value)
         {
-             var codes = new List<Code>();
-
-            using(var command = _connection.CreateCommand())
+            try
             {
-                command.CommandText = @"SELECT Codes.ID, Codes.SeedValue, Codes.BatchID, Codes.State, Batch.DateActive, Batch.DateExpires FROM Codes
-                                        INNER JOIN Batch ON Batch.ID = Codes.BatchID
-                                        WHERE Codes.State = 0 OR Codes.State = 1 AND Batch.DateExpires <= @forDate";
+                await _connection.OpenAsync();
 
-                command.Parameters.AddWithValue("@forDate", date.Date);
-
-                using(var reader = await command.ExecuteReaderAsync())
+                using(var command = _connection.CreateCommand())
                 {
-                    while(await reader.ReadAsync())
+                    command.CommandText = @"SELECT Codes.ID, Codes.SeedValue, Codes.BatchID, Codes.State, Batch.DateActive, Batch.DateExpires FROM Codes
+                                            INNER JOIN Batch ON Batch.ID = Codes.BatchID
+                                            WHERE Codes.SeedValue = @seedValue";
+
+                    command.Parameters.AddWithValue("@seedValue", value);
+
+                    using(var reader = await command.ExecuteReaderAsync())
                     {
-                        var state = CodeStateSerializer.DeserializeState((byte) reader["State"]);
-                        var seed = (int)reader["SeedValue"];
+                        while(await reader.ReadAsync())
+                        {
+                            var state = CodeStateSerializer.DeserializeState((byte) reader["State"]);
+                            var code = new ExpireCode();
+                            code.Id = (int) reader["ID"];
+                            code.SeedValue = (int)reader["SeedValue"];
+                            code.BatchId = (Guid) reader["BatchId"];
+                            code.DateActive = (DateTime) reader["DateActive"];
+                            code.DateExpires = (DateTime) reader["DateExpires"];
 
-                        var code = new Code(state);
-                        code.Id = (int) reader["ID"];
-                        code.SeedValue = seed;
-                        code.StringValue = CodeConverter.ConvertToCode(seed, alphabet);
-                        code.BatchId = (Guid) reader["BatchId"];
-                        code.DateActive = (DateTime) reader["DateActive"];
-                        code.DateExpires = (DateTime) reader["DateExpires"];
-
-                        codes.Add(code);
+                            return code;
+                        }
                     }
                 }
-            }
 
-            return codes;
+                return new Code();
+            }
+            
+            finally
+            {
+                await _connection.CloseAsync();
+            }
+            
         }
 
-        public async Task<List<Code>> GetCodesForActivationAsync(DateTime forDate, string alphabet)
+        public async Task<List<Code>> GetCodesAsync(Guid batchID, int pageNumber, int pageSize)
         {
-            var codes = new List<Code>();
-
-            using(var command = _connection.CreateCommand())
+            try
             {
-                command.CommandText = @"SELECT Codes.ID, Codes.SeedValue, Codes.BatchID, Codes.State, Batch.DateActive, Batch.DateExpires FROM Codes
-                                        INNER JOIN Batch ON Batch.ID = Codes.BatchID
-                                        WHERE Codes.State = 0 AND Batch.DateActive <= @forDate";
+                await _connection.OpenAsync();
 
-                command.Parameters.AddWithValue("@forDate", forDate.Date);
+                // Create list to store codes gathered from the database
+                var codes = new List<Code>();
 
-                using(var reader = await command.ExecuteReaderAsync())
+                var p = PageHelper.PaginationPageNumber(pageNumber, pageSize);
+
+                using (var command = _connection.CreateCommand())
                 {
-                    while(await reader.ReadAsync())
+                    command.CommandText = @"SELECT Codes.ID, Codes.SeedValue, Codes.BatchID, Codes.State, Batch.DateActive, Batch.DateExpires FROM Codes
+                                            INNER JOIN Batch ON Batch.ID = Codes.BatchID
+                                            WHERE Codes.BatchId = @batchID
+                                            ORDER BY ID OFFSET @page ROWS FETCH NEXT @pageSize ROWS ONLY";
+
+                    command.Parameters.AddWithValue("@page", p);
+                    command.Parameters.AddWithValue("@pageSize", pageSize);
+                    command.Parameters.AddWithValue("@batchID", batchID);
+
+                    using (var reader = await command.ExecuteReaderAsync())
                     {
-                        var state = CodeStateSerializer.DeserializeState((byte) reader["State"]);
-                        var seed = (int)reader["SeedValue"];
+                        while (await reader.ReadAsync())
+                        {
+                            var code = new Code();
 
-                        var code = new Code(state);
-                        code.Id = (int) reader["ID"];
-                        code.SeedValue = seed;
-                        code.StringValue = CodeConverter.ConvertToCode(seed, alphabet);
-                        code.BatchId = (Guid) reader["BatchId"];
-                        code.DateActive = (DateTime) reader["DateActive"];
-                        code.DateExpires = (DateTime) reader["DateExpires"];
+                            code.Id = (int) reader["ID"];
+                            code.SeedValue = (int)reader["SeedValue"];
+                            code.BatchId = (Guid) reader["BatchId"];
+                            code.DateActive = (DateTime) reader["DateActive"];
+                            code.DateExpires = (DateTime) reader["DateExpires"];
+                            code.State = CodeStateSerializer.DeserializeState((byte) reader["State"]);
 
-                        codes.Add(code);
+                            // Add code to the list
+                            codes.Add(code);
+                        }
                     }
                 }
+
+                // Return the list of codes
+                return codes;
             }
 
-            return codes;
+            finally
+            {
+                await _connection.CloseAsync();
+            }
         }
 
         public async Task UpdateCodesAsync(List<Code> codes)
         {
-            using(var command = _connection.CreateCommand())
+            try
             {
-                // Loop to the last offset position
-                foreach(var code in codes)
+                await _connection.OpenAsync();
+                
+                using(var command = _connection.CreateCommand())
                 {
-                    command.Parameters.Clear();
-                    command.CommandText = $@"UPDATE Codes SET State = @state WHERE ID = @id";
+                    foreach(var code in codes)
+                    {
+                        command.Parameters.Clear();
+                        command.CommandText = $@"UPDATE Codes SET State = @state WHERE ID = @id";
 
-                    // Insert values
-                    command.Parameters.AddWithValue("@state", CodeStateSerializer.SerializeState(code.State));
-                    command.Parameters.AddWithValue("@id", code.Id);
+                        // Insert values
+                        command.Parameters.AddWithValue("@state", CodeStateSerializer.SerializeState(code.State));
+                        command.Parameters.AddWithValue("@id", code.Id);
 
-                    await command.ExecuteNonQueryAsync();
+                        await command.ExecuteNonQueryAsync();
+                    }
                 }
+            }
+
+            finally
+            {
+                await _connection.CloseAsync();
             }
         }
         
         public async Task UpdateCodeAsync(Code code)
         {
-            await _connection.OpenAsync();
-
-            using(var command = _connection.CreateCommand())
+            try
             {
+                await _connection.OpenAsync();
+                
+                using(var command = _connection.CreateCommand())
+                {
                     command.CommandText = $@"UPDATE Codes SET State = @state WHERE ID = @id";
 
                     // Insert values
@@ -184,69 +182,173 @@ namespace CodeJar.Infrastructure
                     command.Parameters.AddWithValue("@id", code.Id);
 
                     await command.ExecuteNonQueryAsync();
+                }
+            }
+
+            finally
+            {
+                await _connection.CloseAsync();
             }
         }
 
-        public async Task<Code> FindCodeBySeedValueAsync(string codeString, string alphabet)
+        public async Task<RedeemCode> GetCodeForRedemptionAsync(int value)
         {
-            Code code = null;
-
-            var seedvalue = CodeConverter.ConvertFromCode(codeString, alphabet);
-
-            await _connection.OpenAsync();
-
-            using(var command = _connection.CreateCommand())
+            try
             {
-                command.CommandText = $@"SELECT Codes.*, Batch.DateActive, Batch.DateExpires FROM Codes
-                                         INNER JOIN Batch ON Batch.ID = Codes.BatchID
-                                         WHERE SeedValue = @seedvalue";
-
-                command.Parameters.AddWithValue("@seedvalue", seedvalue);
-                using(var reader = await command.ExecuteReaderAsync())
+                await _connection.OpenAsync();
+                
+                using (var command = _connection.CreateCommand())
                 {
-                    if(await reader.ReadAsync())
-                    {
-                        var state = CodeStateSerializer.DeserializeState((byte) reader["State"]);
+                    command.CommandText = @"SELECT Codes.ID, Codes.SeedValue, Codes.BatchID, Codes.State, Batch.DateActive, Batch.DateExpires FROM Codes
+                                            INNER JOIN Batch ON Batch.ID = Codes.BatchID
+                                            WHERE Codes.SeedValue = @seedValue AND Codes.State = 1";
 
-                        code = new Code(state);
-                        code.SeedValue = seedvalue;
-                        code.StringValue = codeString;
-                        code.Id = (int)reader["ID"];
-                        code.BatchId = (Guid)reader["BatchID"];
-                        code.DateActive = (DateTime)reader["DateActive"];
-                        code.DateExpires = (DateTime)reader["DateExpires"];
+                    command.Parameters.AddWithValue("@seedValue", value);
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            var code = new RedeemCode
+                            {
+                                BatchId = (Guid) reader["BatchId"],
+                                DateActive = (DateTime) reader["DateActive"],
+                                DateExpires = (DateTime) reader["DateExpires"],
+                                Id = (int) reader["ID"],
+                                SeedValue = (int) reader["SeedValue"],
+                                State = CodeStateSerializer.DeserializeState((byte) reader["State"]),
+                            };
+
+                            return code;
+                        }
+                    }
+                }
+
+                return new RedeemCode();
+            }
+
+            finally
+            {
+                await _connection.CloseAsync();
+            }
+        }
+
+        public async Task<DeactivateCode> GetCodeForDeactivationAsync(int value)
+        {
+            try
+            {
+                await _connection.OpenAsync();
+
+                using (var command = _connection.CreateCommand())
+                {
+                    command.CommandText = @"SELECT Codes.ID, Codes.SeedValue, Codes.BatchID, Codes.State, Batch.DateActive, Batch.DateExpires FROM Codes
+                                            INNER JOIN Batch ON Batch.ID = Codes.BatchID
+                                            WHERE Codes.SeedValue = @seedValue AND (Codes.State = 0 OR Codes.State = 1)";
+                    command.Parameters.AddWithValue("@seedValue", value);
+
+                    using (var reader = await command.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            var code = new DeactivateCode
+                            {
+                                BatchId = (Guid) reader["BatchId"],
+                                DateActive = (DateTime) reader["DateActive"],
+                                DateExpires = (DateTime) reader["DateExpires"],
+                                Id = (int) reader["Id"],
+                                SeedValue = (int) reader["SeedValue"],
+                                State = CodeStateSerializer.DeserializeState((byte) reader["State"]),
+                            };
+
+                            return code;
+                        }
+                    }
+                }
+
+                return new DeactivateCode();
+            }
+
+            finally
+            {
+                await _connection.CloseAsync();
+            }
+        }
+
+        public async IAsyncEnumerable<ActivateCode> GetCodesForActivationAsync(DateTime date)
+        {
+            try
+            {
+                await _connection.OpenAsync();
+
+                using(var command = _connection.CreateCommand())
+                {
+                    command.CommandText = @"SELECT Codes.ID, Codes.SeedValue, Codes.BatchID, Codes.State, Batch.DateActive, Batch.DateExpires FROM Codes
+                                            INNER JOIN Batch ON Batch.ID = Codes.BatchID
+                                            WHERE Codes.State = 0 AND Batch.DateActive <= @date";
+
+                    command.Parameters.AddWithValue("@date", date);
+
+                    using(var reader = await command.ExecuteReaderAsync())
+                    {
+                        while(await reader.ReadAsync())
+                        {
+                            var state = CodeStateSerializer.DeserializeState((byte) reader["State"]);
+                            var code = new ActivateCode();
+                            code.Id = (int) reader["ID"];
+                            code.SeedValue = (int)reader["SeedValue"];
+                            code.BatchId = (Guid) reader["BatchId"];
+                            code.DateActive = (DateTime) reader["DateActive"];
+                            code.DateExpires = (DateTime) reader["DateExpires"];
+
+                            yield return code;
+                        }
                     }
                 }
             }
 
-            return code;
+            finally
+            {
+                await _connection.CloseAsync();
+            }
+
         }
 
-        public async Task<Code> GetCodeAsync(string stringValue, string alphabet)
+        public async IAsyncEnumerable<ExpireCode> GetCodesForExpirationAsync(DateTime date)
         {
-            Code code = null;
-            var seedValue = CodeConverter.ConvertFromCode(stringValue, alphabet);
-
-            await _connection.OpenAsync();
-
-            using (var command = _connection.CreateCommand())
+            try
             {
-                command.CommandText = @"SELECT * FROM Codes WHERE SeedValue = @seedValue";
-                command.Parameters.AddWithValue("@seedValue", seedValue);
+                await _connection.OpenAsync();
 
-                using (var reader = await command.ExecuteReaderAsync())
+                using(var command = _connection.CreateCommand())
                 {
-                    if (await reader.ReadAsync())
+                    command.CommandText = @"SELECT Codes.ID, Codes.SeedValue, Codes.BatchID, Codes.State, Batch.DateActive, Batch.DateExpires FROM Codes
+                                            INNER JOIN Batch ON Batch.ID = Codes.BatchID
+                                            WHERE (Codes.State = 0 OR Codes.State = 1) AND Batch.DateExpires <= @forDate";
+
+                    command.Parameters.AddWithValue("@forDate", date.Date);
+
+                    using(var reader = await command.ExecuteReaderAsync())
                     {
-                        var state = CodeStateSerializer.DeserializeState((byte) reader["State"]);
-                        code = new Code(state);
-                        var seed = (int)reader["SeedValue"];
-                        code.StringValue = CodeConverter.ConvertToCode(seed, alphabet);
+                        while(await reader.ReadAsync())
+                        {
+                            var state = CodeStateSerializer.DeserializeState((byte) reader["State"]);
+                            var code = new ExpireCode();
+                            code.Id = (int) reader["ID"];
+                            code.SeedValue = (int)reader["SeedValue"];
+                            code.BatchId = (Guid) reader["BatchId"];
+                            code.DateActive = (DateTime) reader["DateActive"];
+                            code.DateExpires = (DateTime) reader["DateExpires"];
+
+                            yield return code;
+                        }
                     }
                 }
             }
 
-            return code;
+            finally
+            {
+                await _connection.CloseAsync();
+            }
         }
     }
 }

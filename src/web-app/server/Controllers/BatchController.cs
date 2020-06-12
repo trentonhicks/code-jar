@@ -21,26 +21,26 @@ namespace CodeJar.WebApp.Controllers
     public class BatchController : ControllerBase
     {
         private readonly IQueueClient _queueClient;
+        private readonly PaginationCount _pagination;
         private readonly ILogger<PromoCodesController> _logger;
         private readonly IConfiguration _config;
         private readonly IBatchRepository _batchRepository;
         private readonly ICodeRepository _codeRepository;
-        private readonly SqlConnection _connection;
 
         public BatchController(
             ILogger<PromoCodesController> logger,
             IConfiguration config,
             IBatchRepository batchRepository,
             ICodeRepository codeRepository,
-            SqlConnection connection,
-            IQueueClient queueClient)
+            IQueueClient queueClient,
+            PaginationCount paginationCount)
         {
             _logger = logger;
             _config = config;
             _batchRepository = batchRepository;
             _codeRepository = codeRepository;
-            _connection = connection;
             _queueClient = queueClient;
+            _pagination = paginationCount;
         }
 
         [HttpGet("batch")]
@@ -50,16 +50,15 @@ namespace CodeJar.WebApp.Controllers
         }
 
         [HttpGet("batch/{id}")]
-        public async Task<IActionResult> GetBatch(int id, [FromQuery] int page)
+        public async Task<IActionResult> GetBatch(Guid id, [FromQuery] int page)
         {
-            var pagination = new PaginationCount(_connection);
             var alphabet = _config.GetSection("Base26")["alphabet"];
             var pageSize = Convert.ToInt32(_config.GetSection("Pagination")["PageNumber"]);
-            var codes = await _codeRepository.GetCodesAsync(id, page, alphabet, pageSize);
+            var codes = await _codeRepository.GetCodesAsync(id, page, pageSize);
 
-            var vm = codes.Select( c => new CodeViewModel { Id = c.Id, State = c.State.ToString(), StringValue = c.StringValue });
+            var vm = codes.Select( c => new CodeViewModel { Id = c.Id, State = c.State.ToString(), StringValue = CodeConverter.ConvertToCode(c.SeedValue, alphabet) });
 
-            var pages = await pagination.PageCount(id);
+            var pages = await _pagination.PageCount(id);
 
             return Ok(new CodesViewModel(vm.ToList(), pages));
         }
@@ -74,20 +73,12 @@ namespace CodeJar.WebApp.Controllers
         [HttpPost("batch")]
         public async Task<IActionResult> Post(CreateBatchCommand request)
         {
-            // Date active must be less than date expires and greater than or equal to the current date time in order to generate codes
-            if (request.DateActive < request.DateExpires && request.DateActive.Date >= DateTime.Now.Date)
-            {
-                string messageBody = JsonConvert.SerializeObject(request);
-                var message = new Message(Encoding.UTF8.GetBytes(messageBody));
+            string messageBody = JsonConvert.SerializeObject(request);
+            var message = new Message(Encoding.UTF8.GetBytes(messageBody));
 
-                await _queueClient.SendAsync(message);
-                
-                return Ok(request);
-            }
-            else
-            {
-                return BadRequest();
-            }
+            await _queueClient.SendAsync(message);
+            
+            return Ok(request);
         }
     }
 }

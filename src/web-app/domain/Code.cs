@@ -7,21 +7,52 @@ namespace CodeJar.Domain
 {
     public class Code
     {
-        public Code(CodeState state)
+        public Code () { }
+
+        public Code(Guid batchId, int value)
         {
-            State = state;
+            BatchId = batchId;
+            SeedValue = value;
+            State = CodeStates.Generated;
         }
 
         public int Id {get; set;}
         public Guid BatchId {get; set;}
-        public string StringValue { get; set; }
         public int SeedValue {get; set;}
-        public CodeState State { get; private set; }
+        public string State { get; set; }
         public DateTime DateActive {get; set;}
         public DateTime DateExpires {get; set;}
-        public void Activate() => State = State.Activate();
-        public void Expire() => State = State.Expire();
-        public void Redeem() => State = State.Redeem();
-        public void Deactivate() => State = State.Deactivate();
-    }    
+    }
+
+    public class DeactivateCode : Code
+    {
+        public void Deactivate()
+        {
+            base.State = CodeStates.Inactive;
+        }
+    }
+
+    public class RedeemCode : Code
+    {
+        public void Redeem()
+        {
+            base.State = CodeStates.Redeemed;
+        }
+    }
+
+    public class ExpireCode : Code
+    {
+        public void Expire()
+        {
+            base.State = CodeStates.Expired;
+        }
+    }
+
+    public class ActivateCode : Code
+    {
+        public void Activate()
+        {
+            base.State = CodeStates.Active;
+        }
+    }
 }

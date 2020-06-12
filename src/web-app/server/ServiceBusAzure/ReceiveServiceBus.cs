@@ -16,6 +16,7 @@ using System.IO;
 using CodeFlip.CodeJar.Api;
 using CodeJar.WebApp.Commands;
 using CodeJar.Infrastructure.Guids;
+using System.Diagnostics;
 
 namespace CodeJar.ServiceBusAzure
 {
@@ -40,10 +41,10 @@ namespace CodeJar.ServiceBusAzure
 
         public async Task ProcessMessagesAsync(Message message, CancellationToken token)
         {
+            var watch = Stopwatch.StartNew();
+
             using (var connection = new SqlConnection(_configuration.GetConnectionString("Storage")))
             {
-                await connection.OpenAsync();
-
                 var batchRepository = new SqlBatchRepository(connection);
                 var codeRepository = new SqlCodeRepository(connection);
 
@@ -63,13 +64,15 @@ namespace CodeJar.ServiceBusAzure
 
                 await batchRepository.AddAsync(batch);
 
-                var codes = batch.GenerateCodes(reader, _configuration.GetSection("Base26")["alphabet"]);
+                var codes = batch.GenerateCodes(reader);
 
                 await codeRepository.AddCodesAsync(codes);
 
                 batch.State = BatchStates.Generated;
 
                 await batchRepository.UpdateBatchAsync(batch);
+
+                _logger.LogInformation($"Batch {batch.Id} with {batch.BatchSize} generated in {watch.ElapsedMilliseconds}ms.");
             }
         }
 

@@ -13,36 +13,46 @@ namespace CodeJar.Infrastructure
             _connection = connection;
         }
 
-         public async Task<int> PageCount(int id)
+         public async Task<int> PageCount(Guid id)
         {
             var pages = 0;
 
             var pagesRemainder = 0;
 
-            using (var command = _connection.CreateCommand())
+            try
             {
-                command.CommandText = "SELECT BatchSize FROM Batch WHERE ID = @id";
+                await _connection.OpenAsync();
 
-                command.Parameters.AddWithValue("@id", id);
-
-                using (var reader = await command.ExecuteReaderAsync())
+                using (var command = _connection.CreateCommand())
                 {
-                    while (await reader.ReadAsync())
+                    command.CommandText = "SELECT BatchSize FROM Batch WHERE ID = @id";
+
+                    command.Parameters.AddWithValue("@id", id);
+
+                    using (var reader = await command.ExecuteReaderAsync())
                     {
-                        var numberOfCodes = (int)reader["BatchSize"];
-
-                        pages = numberOfCodes / 10;
-
-                        pagesRemainder = numberOfCodes % 10;
-
-                        if (pagesRemainder > 0)
+                        while (await reader.ReadAsync())
                         {
-                            pages++;
+                            var numberOfCodes = (int)reader["BatchSize"];
+
+                            pages = numberOfCodes / 10;
+
+                            pagesRemainder = numberOfCodes % 10;
+
+                            if (pagesRemainder > 0)
+                            {
+                                pages++;
+                            }
                         }
                     }
                 }
+                return pages;
             }
-            return pages;
+
+            finally
+            {
+                await _connection.CloseAsync();
+            }
         }
     }
    

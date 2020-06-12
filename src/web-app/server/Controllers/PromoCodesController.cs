@@ -31,14 +31,14 @@ namespace CodeJar.WebApp.Controllers
         public async Task<IActionResult> Get([FromQuery] string stringValue)
         {
             var alphabet = _config.GetSection("Base26")["alphabet"];
-
-            var code = await _codeRepository.GetCodeAsync(stringValue, alphabet);
+            var seedValue = CodeConverter.ConvertFromCode(stringValue, alphabet);
+            var code = await _codeRepository.GetCodeAsync(seedValue);
 
             var codeViewModel = new CodeViewModel
             {
                 Id = code.Id,
-                State = code.State.ToString(),
-                StringValue = code.StringValue
+                State = code.State,
+                StringValue = CodeConverter.ConvertToCode(seedValue, alphabet)
             };
 
             return Ok(codeViewModel);
@@ -49,15 +49,16 @@ namespace CodeJar.WebApp.Controllers
         public async Task<IActionResult> Deactivate([FromBody]string[] codes)
         {
             var alphabet = _config.GetSection("Base26")["alphabet"];
-           
-           foreach(var code in codes)
-           {
-               var codeFound = await _codeRepository.FindCodeBySeedValueAsync(code, alphabet);
-               codeFound.Deactivate();
-               await _codeRepository.UpdateCodeAsync(codeFound);
-           }
 
-           return Ok();
+            foreach(var code in codes)
+            {
+                var seedValue = CodeConverter.ConvertFromCode(code, alphabet);
+                var codeToDeactivate = await _codeRepository.GetCodeForDeactivationAsync(seedValue);
+                codeToDeactivate.Deactivate();
+                await _codeRepository.UpdateCodeAsync(codeToDeactivate);
+            }
+
+            return Ok();
         }
     }
 }

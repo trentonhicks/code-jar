@@ -14,19 +14,10 @@ namespace CodeJar.Domain
         public DateTime DateActive {get; set;}
         public DateTime DateExpires {get; set;}
 
-        public IEnumerable<Code> GenerateCodes(ISeedValueReader reader, string alphabet)
+        public IEnumerable<Code> GenerateCodes(ISeedValueReader reader)
         {
             foreach(var seedValue in reader.ReadSeedValues(BatchSize))
-            {
-                var code = new Code(new CodeGeneratedState())
-                {
-                    BatchId = Id,
-                    SeedValue = seedValue,
-                    StringValue = CodeConverter.ConvertToCode(seedValue, alphabet)
-                };
-
-                yield return code;
-            }
+                yield return new Code(Id, seedValue);
         }
     }
 }

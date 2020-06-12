@@ -43,16 +43,19 @@ namespace TodoWebAPI.CronJob
         {
             _logger.LogInformation($"{DateTime.Now:hh:mm:ss} Expiration job is working.");
 
+            var now = DateTime.Now;
+
             using(var connection = new SqlConnection(_configuration.GetConnectionString("Storage")))
             {
-                await connection.OpenAsync();
-
                 var codeRepository = new SqlCodeRepository(connection);
 
-                var codes = await codeRepository.GetCodesForExpirationAsync(DateTime.Now.Date, _configuration.GetSection("Base26")["alphabet"]);
+                var codes = new List<Code>();
 
-                foreach(var code in codes)
+                await foreach(var code in codeRepository.GetCodesForExpirationAsync(now))
+                {
                     code.Expire();
+                    codes.Add(code);
+                }
 
                 await codeRepository.UpdateCodesAsync(codes);
             }

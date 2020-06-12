@@ -27,14 +27,15 @@ namespace CodeJar.WebApp.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] string code)
+        public async Task<IActionResult> Post([FromBody] string value)
         {
             var alphabet = _config.GetSection("Base26")["alphabet"];
-            var codeFound = await _codeRepository.FindCodeBySeedValueAsync(code, alphabet);
-            
-            codeFound.Redeem();
+            var seedValue = CodeConverter.ConvertFromCode(value, alphabet);
+            var code = await _codeRepository.GetCodeForRedemptionAsync(seedValue);
 
-            await _codeRepository.UpdateCodeAsync(codeFound);
+            code.Redeem();
+
+            await _codeRepository.UpdateCodeAsync(code);
 
             return Ok();
         }
