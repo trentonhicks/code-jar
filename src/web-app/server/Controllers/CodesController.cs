@@ -14,13 +14,13 @@ namespace CodeJar.WebApp.Controllers
 {
     [ApiController]
     [Route("codes")]
-    public class PromoCodesController : ControllerBase
+    public class CodesController : ControllerBase
     {
-        private readonly ILogger<PromoCodesController> _logger;
+        private readonly ILogger<CodesController> _logger;
         private readonly IConfiguration _config;
         private readonly ICodeRepository _codeRepository;
 
-        public PromoCodesController(ILogger<PromoCodesController> logger, IConfiguration config, ICodeRepository codeRepository)
+        public CodesController(ILogger<CodesController> logger, IConfiguration config, ICodeRepository codeRepository)
         {
             _logger = logger;
             _config = config;
@@ -44,7 +44,6 @@ namespace CodeJar.WebApp.Controllers
             return Ok(codeViewModel);
         }
 
-        //Set code status to inactive
         [HttpDelete]
         public async Task<IActionResult> Deactivate([FromBody]string[] codes)
         {
@@ -57,6 +56,20 @@ namespace CodeJar.WebApp.Controllers
                 codeToDeactivate.Deactivate();
                 await _codeRepository.UpdateCodeAsync(codeToDeactivate);
             }
+
+            return Ok();
+        }
+
+        [HttpPost("redeem-code")]
+        public async Task<IActionResult> Post([FromBody] string value)
+        {
+            var alphabet = _config.GetSection("Base26")["alphabet"];
+            var seedValue = CodeConverter.ConvertFromCode(value, alphabet);
+            var code = await _codeRepository.GetCodeForRedemptionAsync(seedValue);
+
+            code.Redeem();
+
+            await _codeRepository.UpdateCodeAsync(code);
 
             return Ok();
         }

@@ -22,13 +22,13 @@ namespace CodeJar.WebApp.Controllers
     {
         private readonly IQueueClient _queueClient;
         private readonly PaginationCount _pagination;
-        private readonly ILogger<PromoCodesController> _logger;
+        private readonly ILogger<CodesController> _logger;
         private readonly IConfiguration _config;
         private readonly IBatchRepository _batchRepository;
         private readonly ICodeRepository _codeRepository;
 
         public BatchController(
-            ILogger<PromoCodesController> logger,
+            ILogger<CodesController> logger,
             IConfiguration config,
             IBatchRepository batchRepository,
             ICodeRepository codeRepository,
