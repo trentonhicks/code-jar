@@ -5,6 +5,10 @@ CREATE TABLE [dbo].[Codes](
     SeedValue int UNIQUE NOT NULL,
     BatchID UNIQUEIDENTIFIER NOT NULL,
     [State] tinyint NOT NULL,
+    RedeemedBy NVARCHAR(50) NULL,
+    RedeemedOn DATETIME NULL,
+    DeactivatedBy NVARCHAR(50) NULL,
+    DeactivatedOn DATETIME NULL,
     FOREIGN KEY(BatchID) REFERENCES Batch(ID))
    
    

@@ -58,19 +58,13 @@ namespace CodeJar.ServiceBusAzure
                     BatchSize = command.BatchSize,
                     DateActive = command.DateActive,
                     DateExpires = command.DateExpires,
-                    State = BatchStates.Pending,
                     Id = _idGenerator.NextId()
                 };
 
-                await batchRepository.AddAsync(batch);
-
                 var codes = batch.GenerateCodes(reader);
 
+                await batchRepository.AddAsync(batch);
                 await codeRepository.AddCodesAsync(codes);
-
-                batch.State = BatchStates.Generated;
-
-                await batchRepository.UpdateBatchAsync(batch);
 
                 _logger.LogInformation($"Batch {batch.Id} with {batch.BatchSize} generated in {watch.ElapsedMilliseconds}ms.");
             }

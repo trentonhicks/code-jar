@@ -66,7 +66,7 @@ namespace CodeJar.WebApp.Controllers
         [HttpDelete("batch")]
         public async Task<IActionResult> DeactivateBatch([FromBody] Batch batch)
         {
-            await _batchRepository.DeactivateBatchAsync(batch);
+            await _batchRepository.DeactivateBatchAsync(batch.Id);
             return Ok();
         }
 

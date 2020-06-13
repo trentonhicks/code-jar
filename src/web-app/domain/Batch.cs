@@ -10,14 +10,13 @@ namespace CodeJar.Domain
         public Guid Id {get; set;}
         public string BatchName {get; set;}
         public int BatchSize {get; set;}
-        public string State {get; set;}
         public DateTime DateActive {get; set;}
         public DateTime DateExpires {get; set;}
 
-        public IEnumerable<Code> GenerateCodes(ISeedValueReader reader)
+        public IEnumerable<GeneratedCode> GenerateCodes(ISeedValueReader reader)
         {
             foreach(var seedValue in reader.ReadSeedValues(BatchSize))
-                yield return new Code(Id, seedValue);
+                yield return new GeneratedCode(Id, seedValue);
         }
     }
 }

@@ -7,9 +7,9 @@ namespace CodeJar.Domain
 {
     public interface ICodeRepository
     {
-        Task AddCodesAsync(IEnumerable<Code> codes);
-        Task<Code> GetCodeAsync(int value);
-        Task<List<Code>> GetCodesAsync(Guid batchID, int pageNumber, int pageSize);
+        Task AddCodesAsync(IEnumerable<GeneratedCode> codes);
+        Task<CodeDto> GetCodeAsync(int value);
+        Task<List<CodeDto>> GetCodesAsync(Guid batchID, int pageNumber, int pageSize);
         Task UpdateCodesAsync(List<Code> codes);
         Task UpdateCodeAsync(Code code);
         Task<RedeemCode> GetCodeForRedemptionAsync(int value);

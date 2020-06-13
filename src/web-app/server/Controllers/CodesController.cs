@@ -48,12 +48,13 @@ namespace CodeJar.WebApp.Controllers
         public async Task<IActionResult> Deactivate([FromBody]string[] codes)
         {
             var alphabet = _config.GetSection("Base26")["alphabet"];
+            var now = DateTime.Now;
 
             foreach(var code in codes)
             {
                 var seedValue = CodeConverter.ConvertFromCode(code, alphabet);
                 var codeToDeactivate = await _codeRepository.GetCodeForDeactivationAsync(seedValue);
-                codeToDeactivate.Deactivate();
+                codeToDeactivate.Deactivate("user", now);
                 await _codeRepository.UpdateCodeAsync(codeToDeactivate);
             }
 
@@ -66,8 +67,8 @@ namespace CodeJar.WebApp.Controllers
             var alphabet = _config.GetSection("Base26")["alphabet"];
             var seedValue = CodeConverter.ConvertFromCode(value, alphabet);
             var code = await _codeRepository.GetCodeForRedemptionAsync(seedValue);
-
-            code.Redeem();
+            
+            code.Redeem("user", DateTime.Now);
 
             await _codeRepository.UpdateCodeAsync(code);
 
