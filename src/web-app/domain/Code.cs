@@ -38,7 +38,7 @@ namespace CodeJar.Domain
         {
             By = by;
             When = when;
-            base.State = CodeStates.Redeemed;
+            base.State = CodeStates.Inactive;
         }
     }
 

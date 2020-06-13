@@ -7,11 +7,11 @@ namespace CodeJar.Domain
 {
     public interface ICodeRepository
     {
-        Task AddCodesAsync(IEnumerable<GeneratedCode> codes);
         Task<CodeDto> GetCodeAsync(int value);
         Task<List<CodeDto>> GetCodesAsync(Guid batchID, int pageNumber, int pageSize);
         Task UpdateCodesAsync(List<Code> codes);
         Task UpdateCodeAsync(Code code);
+        Task AddCodesAsync(IEnumerable<GeneratedCode> codes);
         Task<RedeemCode> GetCodeForRedemptionAsync(int value);
         Task<DeactivateCode> GetCodeForDeactivationAsync(int value);
         IAsyncEnumerable<ActivateCode> GetCodesForActivationAsync(DateTime date);
