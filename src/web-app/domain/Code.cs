@@ -4,13 +4,6 @@ using System.Text;
 
 namespace CodeJar.Domain
 {
-    public class CodeDto
-    {
-        public int Id {get; set;}
-        public int SeedValue {get; set;}
-        public string State {get; set;}
-    }
-
     public abstract class Code
     {
         public int Id {get; set;}

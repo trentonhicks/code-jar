@@ -7,8 +7,6 @@ namespace CodeJar.Domain
 {
     public interface ICodeRepository
     {
-        Task<CodeDto> GetAsync(int value);
-        Task<List<CodeDto>> GetAsync(Guid batchID, int pageNumber, int pageSize);
         Task UpdateAsync(List<Code> codes);
         Task UpdateAsync(Code code);
         Task AddAsync(IEnumerable<GeneratedCode> codes);

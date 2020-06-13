@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,12 +20,14 @@ namespace CodeJar.WebApp.Controllers
         private readonly ILogger<CodesController> _logger;
         private readonly IConfiguration _config;
         private readonly ICodeRepository _codeRepository;
+        private readonly SqlConnection _connection;
 
-        public CodesController(ILogger<CodesController> logger, IConfiguration config, ICodeRepository codeRepository)
+        public CodesController(ILogger<CodesController> logger, IConfiguration config, ICodeRepository codeRepository, SqlConnection connection)
         {
             _logger = logger;
             _config = config;
             _codeRepository = codeRepository;
+            _connection = connection;
         }
 
         [HttpGet]
@@ -32,16 +35,42 @@ namespace CodeJar.WebApp.Controllers
         {
             var alphabet = _config.GetSection("Base26")["alphabet"];
             var seedValue = CodeConverter.ConvertFromCode(stringValue, alphabet);
-            var code = await _codeRepository.GetAsync(seedValue);
 
-            var codeViewModel = new CodeViewModel
+            try
             {
-                Id = code.Id,
-                State = code.State,
-                StringValue = CodeConverter.ConvertToCode(seedValue, alphabet)
-            };
+                await _connection.OpenAsync();
 
-            return Ok(codeViewModel);
+                using(var command = _connection.CreateCommand())
+                {
+                    command.CommandText = @"SELECT Codes.ID, Codes.State FROM Codes
+                                            WHERE Codes.SeedValue = @seedValue";
+
+                    command.Parameters.AddWithValue("@seedValue", seedValue);
+
+                    using(var reader = await command.ExecuteReaderAsync())
+                    {
+                        if(await reader.ReadAsync())
+                        {
+                            var code = new CodeViewModel();
+                            code.Id = (int) reader["ID"];
+                            code.State = CodeStateSerializer.DeserializeState((byte) reader["State"]);
+                            code.StringValue = CodeConverter.ConvertToCode(seedValue, alphabet);
+                            
+                            return Ok(code);
+                        }
+
+                        else
+                        {
+                            return NotFound();
+                        }
+                    }
+                }
+            }
+            
+            finally
+            {
+                await _connection.CloseAsync();
+            }
         }
 
         [HttpDelete]
