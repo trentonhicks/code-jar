@@ -211,9 +211,12 @@ namespace CodeJar.Infrastructure
                         {
                             var code = new RedeemCode
                             {
-                                Id = (int) reader["ID"],
-                                State = CodeStateSerializer.DeserializeState((byte) reader["State"]),
+                                Id = (int) reader["ID"]
                             };
+
+                            code.GetType()
+                            .GetProperty(nameof(code.State))
+                            .SetValue(code, CodeStateSerializer.DeserializeState((byte) reader["State"]));
 
                             return code;
                         }
@@ -247,9 +250,12 @@ namespace CodeJar.Infrastructure
                         {
                             var code = new DeactivateCode
                             {
-                                Id = (int) reader["Id"],
-                                State = CodeStateSerializer.DeserializeState((byte) reader["State"]),
+                                Id = (int) reader["Id"]
                             };
+
+                            code.GetType()
+                            .GetProperty(nameof(code.State))
+                            .SetValue(code, CodeStateSerializer.DeserializeState((byte) reader["State"]));
 
                             return code;
                         }
@@ -283,9 +289,12 @@ namespace CodeJar.Infrastructure
                     {
                         while(await reader.ReadAsync())
                         {
-                            var state = CodeStateSerializer.DeserializeState((byte) reader["State"]);
                             var code = new ActivateCode();
                             code.Id = (int) reader["ID"];
+
+                            code.GetType()
+                            .GetProperty(nameof(code.State))
+                            .SetValue(code, CodeStateSerializer.DeserializeState((byte) reader["State"]));
 
                             yield return code;
                         }
@@ -318,9 +327,11 @@ namespace CodeJar.Infrastructure
                     {
                         while(await reader.ReadAsync())
                         {
-                            var state = CodeStateSerializer.DeserializeState((byte) reader["State"]);
                             var code = new ExpireCode();
                             code.Id = (int) reader["ID"];
+                            code.GetType()
+                            .GetProperty(nameof(code.State))
+                            .SetValue(code, CodeStateSerializer.DeserializeState((byte) reader["State"]));
 
                             yield return code;
                         }

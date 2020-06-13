@@ -14,7 +14,7 @@ namespace CodeJar.Domain
     public abstract class Code
     {
         public int Id {get; set;}
-        public string State { get; set; }
+        public string State { get; protected set; }
     }
 
     public class GeneratedCode : Code
@@ -23,6 +23,7 @@ namespace CodeJar.Domain
         {
             BatchId = batchId;
             SeedValue = seedValue;
+            State = CodeStates.Generated;
         }
 
         public Guid BatchId {get; set;}
