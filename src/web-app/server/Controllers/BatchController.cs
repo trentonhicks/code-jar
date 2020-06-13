@@ -54,7 +54,7 @@ namespace CodeJar.WebApp.Controllers
         {
             var alphabet = _config.GetSection("Base26")["alphabet"];
             var pageSize = Convert.ToInt32(_config.GetSection("Pagination")["PageNumber"]);
-            var codes = await _codeRepository.GetCodesAsync(id, page, pageSize);
+            var codes = await _codeRepository.GetAsync(id, page, pageSize);
 
             var vm = codes.Select( c => new CodeViewModel { Id = c.Id, State = c.State.ToString(), StringValue = CodeConverter.ConvertToCode(c.SeedValue, alphabet) });
 

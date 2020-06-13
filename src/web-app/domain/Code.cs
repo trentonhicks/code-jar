@@ -30,7 +30,7 @@ namespace CodeJar.Domain
         public int SeedValue {get; set;}
     }
 
-    public class DeactivateCode : Code
+    public class DeactivatingCode : Code
     {
         public DateTime? When {get; private set;}
         public string By {get; private set;}
@@ -43,7 +43,7 @@ namespace CodeJar.Domain
         }
     }
 
-    public class RedeemCode : Code
+    public class RedeemingCode : Code
     {
         public DateTime? When {get; private set;}
         public string By {get; private set;}
@@ -56,7 +56,7 @@ namespace CodeJar.Domain
         }
     }
 
-    public class ExpireCode : Code
+    public class ExpiringCode : Code
     {
         public void Expire()
         {
@@ -64,7 +64,7 @@ namespace CodeJar.Domain
         }
     }
 
-    public class ActivateCode : Code
+    public class ActivatingCode : Code
     {
         public void Activate()
         {

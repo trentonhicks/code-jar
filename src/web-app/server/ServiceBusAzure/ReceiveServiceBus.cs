@@ -64,7 +64,7 @@ namespace CodeJar.ServiceBusAzure
                 var codes = batch.GenerateCodes(reader);
 
                 await batchRepository.AddAsync(batch);
-                await codeRepository.AddCodesAsync(codes);
+                await codeRepository.AddAsync(codes);
 
                 _logger.LogInformation($"Batch {batch.Id} with {batch.BatchSize} generated in {watch.ElapsedMilliseconds}ms.");
             }

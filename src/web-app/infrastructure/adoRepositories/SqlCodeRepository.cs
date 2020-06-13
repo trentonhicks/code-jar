@@ -16,7 +16,7 @@ namespace CodeJar.Infrastructure
             _connection = connection;
         }
 
-        public async Task AddCodesAsync(IEnumerable<GeneratedCode> codes)
+        public async Task AddAsync(IEnumerable<GeneratedCode> codes)
         {
             try
             {
@@ -45,7 +45,7 @@ namespace CodeJar.Infrastructure
             }
         }
 
-        public async Task<CodeDto> GetCodeAsync(int value)
+        public async Task<CodeDto> GetAsync(int value)
         {
             try
             {
@@ -81,7 +81,7 @@ namespace CodeJar.Infrastructure
             
         }
 
-        public async Task<List<CodeDto>> GetCodesAsync(Guid batchID, int pageNumber, int pageSize)
+        public async Task<List<CodeDto>> GetAsync(Guid batchID, int pageNumber, int pageSize)
         {
             try
             {
@@ -125,7 +125,7 @@ namespace CodeJar.Infrastructure
             }
         }
 
-        public async Task UpdateCodesAsync(List<Code> codes)
+        public async Task UpdateAsync(List<Code> codes)
         {
             try
             {
@@ -152,7 +152,7 @@ namespace CodeJar.Infrastructure
             }
         }
         
-        public async Task UpdateCodeAsync(Code code)
+        public async Task UpdateAsync(Code code)
         {
             try
             {
@@ -168,10 +168,10 @@ namespace CodeJar.Infrastructure
                                              SET RedeemedOn = @redeemedOn
                                              WHERE ID = @id";
 
-                    var deactivatedBy = code is DeactivateCode ? ((DeactivateCode)code).By : null;
-                    var deactivatedOn = code is DeactivateCode ? ((DeactivateCode)code).When : null;
-                    var redeemedBy = code is RedeemCode ? ((RedeemCode)code).By : null;
-                    var redeemedOn = code is RedeemCode ? ((RedeemCode)code).When : null;
+                    var deactivatedBy = code is DeactivatingCode ? ((DeactivatingCode)code).By : null;
+                    var deactivatedOn = code is DeactivatingCode ? ((DeactivatingCode)code).When : null;
+                    var redeemedBy = code is RedeemingCode ? ((RedeemingCode)code).By : null;
+                    var redeemedOn = code is RedeemingCode ? ((RedeemingCode)code).When : null;
 
                     command.Parameters.AddWithValue("@state", CodeStateSerializer.SerializeState(code.State));
                     command.Parameters.AddWithValue("@deactivatedBy", deactivatedBy);
@@ -192,7 +192,7 @@ namespace CodeJar.Infrastructure
             }
         }
 
-        public async Task<RedeemCode> GetCodeForRedemptionAsync(int value)
+        public async Task<RedeemingCode> GetRedeemingAsync(int value)
         {
             try
             {
@@ -209,7 +209,7 @@ namespace CodeJar.Infrastructure
                     {
                         if (await reader.ReadAsync())
                         {
-                            var code = new RedeemCode
+                            var code = new RedeemingCode
                             {
                                 Id = (int) reader["ID"]
                             };
@@ -223,7 +223,7 @@ namespace CodeJar.Infrastructure
                     }
                 }
 
-                return new RedeemCode();
+                return new RedeemingCode();
             }
 
             finally
@@ -232,7 +232,7 @@ namespace CodeJar.Infrastructure
             }
         }
 
-        public async Task<DeactivateCode> GetCodeForDeactivationAsync(int value)
+        public async Task<DeactivatingCode> GetDeactivatingAsync(int value)
         {
             try
             {
@@ -248,7 +248,7 @@ namespace CodeJar.Infrastructure
                     {
                         if (await reader.ReadAsync())
                         {
-                            var code = new DeactivateCode
+                            var code = new DeactivatingCode
                             {
                                 Id = (int) reader["Id"]
                             };
@@ -262,7 +262,7 @@ namespace CodeJar.Infrastructure
                     }
                 }
 
-                return new DeactivateCode();
+                return new DeactivatingCode();
             }
 
             finally
@@ -271,7 +271,7 @@ namespace CodeJar.Infrastructure
             }
         }
 
-        public async IAsyncEnumerable<ActivateCode> GetCodesForActivationAsync(DateTime date)
+        public async IAsyncEnumerable<ActivatingCode> GetActivatingAsync(DateTime date)
         {
             try
             {
@@ -289,7 +289,7 @@ namespace CodeJar.Infrastructure
                     {
                         while(await reader.ReadAsync())
                         {
-                            var code = new ActivateCode();
+                            var code = new ActivatingCode();
                             code.Id = (int) reader["ID"];
 
                             code.GetType()
@@ -309,7 +309,7 @@ namespace CodeJar.Infrastructure
 
         }
 
-        public async IAsyncEnumerable<ExpireCode> GetCodesForExpirationAsync(DateTime date)
+        public async IAsyncEnumerable<ExpiringCode> GetExpiringAsync(DateTime date)
         {
             try
             {
@@ -327,7 +327,7 @@ namespace CodeJar.Infrastructure
                     {
                         while(await reader.ReadAsync())
                         {
-                            var code = new ExpireCode();
+                            var code = new ExpiringCode();
                             code.Id = (int) reader["ID"];
                             code.GetType()
                             .GetProperty(nameof(code.State))

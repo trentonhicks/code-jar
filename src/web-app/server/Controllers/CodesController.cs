@@ -32,7 +32,7 @@ namespace CodeJar.WebApp.Controllers
         {
             var alphabet = _config.GetSection("Base26")["alphabet"];
             var seedValue = CodeConverter.ConvertFromCode(stringValue, alphabet);
-            var code = await _codeRepository.GetCodeAsync(seedValue);
+            var code = await _codeRepository.GetAsync(seedValue);
 
             var codeViewModel = new CodeViewModel
             {
@@ -53,9 +53,9 @@ namespace CodeJar.WebApp.Controllers
             foreach(var code in codes)
             {
                 var seedValue = CodeConverter.ConvertFromCode(code, alphabet);
-                var codeToDeactivate = await _codeRepository.GetCodeForDeactivationAsync(seedValue);
+                var codeToDeactivate = await _codeRepository.GetDeactivatingAsync(seedValue);
                 codeToDeactivate.Deactivate("user", now);
-                await _codeRepository.UpdateCodeAsync(codeToDeactivate);
+                await _codeRepository.UpdateAsync(codeToDeactivate);
             }
 
             return Ok();
@@ -66,11 +66,11 @@ namespace CodeJar.WebApp.Controllers
         {
             var alphabet = _config.GetSection("Base26")["alphabet"];
             var seedValue = CodeConverter.ConvertFromCode(value, alphabet);
-            var code = await _codeRepository.GetCodeForRedemptionAsync(seedValue);
+            var code = await _codeRepository.GetRedeemingAsync(seedValue);
             
             code.Redeem("user", DateTime.Now);
 
-            await _codeRepository.UpdateCodeAsync(code);
+            await _codeRepository.UpdateAsync(code);
 
             return Ok();
         }
