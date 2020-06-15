@@ -90,7 +90,7 @@ namespace CodeJar.WebApp.Controllers
             return Ok();
         }
 
-        [HttpPost("redeem-code")]
+        [HttpPost("/redeem-code")]
         public async Task<IActionResult> Post([FromBody] string value)
         {
             var alphabet = _config.GetSection("Base26")["alphabet"];

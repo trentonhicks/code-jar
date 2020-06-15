@@ -87,7 +87,7 @@ namespace CodeJar.ServiceBusAzure
                 return Task.CompletedTask;
             })
             {
-                MaxConcurrentCalls = 3,
+                MaxConcurrentCalls = 1,
                 AutoComplete = true
             };
             _queueClient.RegisterMessageHandler(ProcessMessagesAsync, messageHandlerOptions);

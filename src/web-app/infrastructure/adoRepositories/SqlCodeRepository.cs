@@ -82,23 +82,22 @@ namespace CodeJar.Infrastructure
                 {
                     command.CommandText = $@"UPDATE Codes
                                              SET State = @state,
-                                             SET DeactivatedBy = @deactivatedBy,
-                                             SET DeactivatedOn = @deactivatedOn,
-                                             SET RedeemedBy = @redeemedBy,
-                                             SET RedeemedOn = @redeemedOn
+                                             DeactivatedBy = @deactivatedBy,
+                                             DeactivatedOn = @deactivatedOn,
+                                             RedeemedBy = @redeemedBy,
+                                             RedeemedOn = @redeemedOn
                                              WHERE ID = @id";
 
-                    var deactivatedBy = code is DeactivatingCode ? ((DeactivatingCode)code).By : null;
-                    var deactivatedOn = code is DeactivatingCode ? ((DeactivatingCode)code).When : null;
-                    var redeemedBy = code is RedeemingCode ? ((RedeemingCode)code).By : null;
-                    var redeemedOn = code is RedeemingCode ? ((RedeemingCode)code).When : null;
+                    var deactivatedBy = code is DeactivatingCode ? (object) ((DeactivatingCode)code).By : DBNull.Value;
+                    var deactivatedOn = code is DeactivatingCode ? (object) ((DeactivatingCode)code).When : DBNull.Value;
+                    var redeemedBy = code is RedeemingCode ? (object) ((RedeemingCode)code).By : DBNull.Value;
+                    var redeemedOn = code is RedeemingCode ? (object) ((RedeemingCode)code).When : DBNull.Value;
 
                     command.Parameters.AddWithValue("@state", CodeStateSerializer.SerializeState(code.State));
                     command.Parameters.AddWithValue("@deactivatedBy", deactivatedBy);
                     command.Parameters.AddWithValue("@deactivatedOn", deactivatedOn);
                     command.Parameters.AddWithValue("@redeemedBy", redeemedBy);
                     command.Parameters.AddWithValue("@redeemedOn", redeemedOn);
-                    command.Parameters.AddWithValue("@state", CodeStateSerializer.SerializeState(code.State));
 
                     command.Parameters.AddWithValue("@id", code.Id);
 
