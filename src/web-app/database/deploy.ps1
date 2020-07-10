@@ -1,5 +1,5 @@
-Invoke-Sqlcmd -InputFile DropDatabase.sql
-Invoke-Sqlcmd -InputFile RandomCode.sql
-Invoke-Sqlcmd -InputFile Batch.sql
-Invoke-Sqlcmd -InputFile Codes.sql
-Invoke-Sqlcmd -InputFile Offset.sql
+Invoke-Sqlcmd -InputFile DropDatabase.sql -U "sa" -P "Passw0rd!"
+Invoke-Sqlcmd -InputFile RandomCode.sql -U "sa" -P "Passw0rd!"
+Invoke-Sqlcmd -InputFile Batch.sql -U "sa" -P "Passw0rd!"
+Invoke-Sqlcmd -InputFile Codes.sql -U "sa" -P "Passw0rd!"
+Invoke-Sqlcmd -InputFile Offset.sql -U "sa" -P "Passw0rd!"

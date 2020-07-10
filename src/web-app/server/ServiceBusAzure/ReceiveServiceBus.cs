@@ -24,8 +24,6 @@ namespace CodeJar.ServiceBusAzure
     {
         private IQueueClient _queueClient;
         const string QueueName = "codejar";
-        const string ConnectionString = "Endpoint=sb://codefliptodo.servicebus.windows.net/;SharedAccessKeyName=web-app;SharedAccessKey=x9SEbxQ1AlykQv+ygjDh7hlVup1ZAOZkRTrhkuDHgJA=";
-        
         private readonly ILogger _logger;
         private readonly ILoggerFactory _loggerFactory;
         private readonly IConfiguration _configuration;
@@ -49,8 +47,8 @@ namespace CodeJar.ServiceBusAzure
                 var codeRepository = new SqlCodeRepository(connection);
 
                 var command = JsonConvert.DeserializeObject<CreateBatchCommand>(Encoding.UTF8.GetString(message.Body));
-            
-                var reader = new CloudReader(_configuration.GetSection("File")["SeedBlobUrl"], connection);
+
+                var reader = new FileSystemSeedValueReader(_configuration.GetSection("File")["Path"], connection);
 
                 var batch = new Batch
                 {
@@ -83,7 +81,7 @@ namespace CodeJar.ServiceBusAzure
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _queueClient = new QueueClient(ConnectionString, QueueName);
+            _queueClient = new QueueClient(_configuration.GetConnectionString("ServiceBus"), QueueName);
 
             _logger.LogDebug($"BusListenerService starting; registering message handler.");
 
